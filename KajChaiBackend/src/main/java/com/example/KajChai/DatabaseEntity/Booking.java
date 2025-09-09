@@ -20,8 +20,8 @@ public class Booking {
     private Integer bookingId;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "post_id", nullable = false)
+    private HirePost hirePost;
 
     @ManyToOne
     @JoinColumn(name = "worker_id", nullable = false)

@@ -1,0 +1,18 @@
+Customer
+1. My profile
+2. Notifications
+3. Review
+4. HirePost
+5. Forum
+6. Work history
+7. Chat
+8. Sign out
+
+Worker
+1. My profile
+2. Notification
+3. HirePost
+4. Forum
+5. Sign out
+6. Working history
+7. Chat

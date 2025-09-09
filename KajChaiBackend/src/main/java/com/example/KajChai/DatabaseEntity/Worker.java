@@ -20,6 +20,8 @@ public class Worker {
     @Column(nullable = false)
     private String name;
 
+    private String photo;
+
     @Column(nullable = false)
     private String gmail;
 

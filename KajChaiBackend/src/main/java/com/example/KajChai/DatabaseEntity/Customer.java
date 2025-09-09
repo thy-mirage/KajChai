@@ -20,6 +20,8 @@ public class Customer {
     @Column(nullable = false)
     private String customerName;
 
+    private String photo;
+
     @Column(nullable = false)
     private String gmail;
 
