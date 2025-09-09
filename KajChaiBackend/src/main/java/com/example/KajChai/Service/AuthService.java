@@ -96,6 +96,7 @@ public class AuthService {
                         .city(request.getCity())
                         .upazila(request.getUpazila())
                         .district(request.getDistrict())
+                        .division(request.getDivision())
                         .build();
                 customerRepository.save(customer);
             } else if (request.getRole() == UserRole.WORKER) {
@@ -108,6 +109,7 @@ public class AuthService {
                         .city(request.getCity())
                         .upazila(request.getUpazila())
                         .district(request.getDistrict())
+                        .division(request.getDivision())
                         .field(request.getField())
                         .experience(request.getExperience() != null ? request.getExperience() : 0.0f)
                         .rating(0.0f)

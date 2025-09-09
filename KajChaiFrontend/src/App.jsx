@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
+import MyProfile from './components/MyProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -27,6 +28,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/my-profile" 
+              element={
+                <ProtectedRoute>
+                  <MyProfile />
                 </ProtectedRoute>
               } 
             />

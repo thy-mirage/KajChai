@@ -44,6 +44,9 @@ public class Worker {
     private String district;
 
     @Column(nullable = false)
+    private String division;
+
+    @Column(nullable = false)
     private String field;
 
     private float rating;

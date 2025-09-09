@@ -16,6 +16,7 @@ const Signup = () => {
     city: '',
     upazila: '',
     district: '',
+    division: '',
     // Worker specific fields
     field: '',
     experience: ''
@@ -38,7 +39,7 @@ const Signup = () => {
 
   const validateForm = () => {
     if (!formData.email || !formData.password || !formData.name || !formData.phone || 
-        !formData.gender || !formData.city || !formData.upazila || !formData.district) {
+        !formData.gender || !formData.city || !formData.upazila || !formData.district || !formData.division) {
       setError('Please fill in all required fields');
       return false;
     }
@@ -78,7 +79,8 @@ const Signup = () => {
       gender: formData.gender,
       city: formData.city,
       upazila: formData.upazila,
-      district: formData.district
+      district: formData.district,
+      division: formData.division
     };
 
     // Add worker-specific fields if role is WORKER
@@ -119,7 +121,8 @@ const Signup = () => {
       gender: formData.gender,
       city: formData.city,
       upazila: formData.upazila,
-      district: formData.district
+      district: formData.district,
+      division: formData.division
     };
 
     if (formData.role === 'WORKER') {
@@ -372,6 +375,20 @@ const Signup = () => {
               onChange={handleChange}
               required
               placeholder="Enter your district"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="division">Division *</label>
+            <input
+              type="text"
+              id="division"
+              name="division"
+              value={formData.division}
+              onChange={handleChange}
+              required
+              placeholder="Enter your division"
               disabled={loading}
             />
           </div>

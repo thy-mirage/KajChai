@@ -1,173 +1,142 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { authAPI } from '../services/authService';
+import Layout from './Layout';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
-  const [testResults, setTestResults] = useState({
-    public: '',
-    protected: '',
-    roleSpecific: ''
-  });
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    // Test API calls when component mounts
-    testAPIEndpoints();
-  }, [user]);
-
-  const testAPIEndpoints = async () => {
-    setLoading(true);
-    
-    try {
-      // Test public endpoint
-      const publicResult = await authAPI.getPublicData();
-      setTestResults(prev => ({
-        ...prev,
-        public: publicResult || 'Success'
-      }));
-
-      // Test protected endpoint
-      const protectedResult = await authAPI.getProtectedData();
-      setTestResults(prev => ({
-        ...prev,
-        protected: protectedResult.message || 'Success'
-      }));
-
-      // Test role-specific endpoint
-      if (user?.role === 'CUSTOMER') {
-        const customerResult = await authAPI.getCustomerData();
-        setTestResults(prev => ({
-          ...prev,
-          roleSpecific: customerResult.message || 'Customer access successful'
-        }));
-      } else if (user?.role === 'WORKER') {
-        const workerResult = await authAPI.getWorkerData();
-        setTestResults(prev => ({
-          ...prev,
-          roleSpecific: workerResult.message || 'Worker access successful'
-        }));
-      }
-    } catch (error) {
-      console.error('API Test Error:', error);
-    } finally {
-      setLoading(false);
-    }
+  const getWelcomeMessage = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   };
 
-  const handleLogout = async () => {
-    await logout();
-  };
+  const customerStats = [
+    { label: 'Active Posts', value: '3', icon: '📝', color: '#3498db' },
+    { label: 'Completed Jobs', value: '12', icon: '✅', color: '#27ae60' },
+    { label: 'Total Spent', value: '$1,250', icon: '💰', color: '#f39c12' },
+    { label: 'Reviews Given', value: '8', icon: '⭐', color: '#e74c3c' },
+  ];
+
+  const workerStats = [
+    { label: 'Jobs Completed', value: '27', icon: '🔧', color: '#27ae60' },
+    { label: 'Current Rating', value: '4.8', icon: '⭐', color: '#f39c12' },
+    { label: 'Total Earned', value: '$3,450', icon: '💰', color: '#3498db' },
+    { label: 'Active Bids', value: '5', icon: '📋', color: '#9b59b6' },
+  ];
+
+  const stats = user?.role === 'CUSTOMER' ? customerStats : workerStats;
+
+  const recentActivities = [
+    { id: 1, action: 'New job application received', time: '2 hours ago', icon: '📩' },
+    { id: 2, action: 'Payment completed for plumbing work', time: '1 day ago', icon: '💳' },
+    { id: 3, action: 'Review submitted', time: '3 days ago', icon: '⭐' },
+    { id: 4, action: 'Profile updated', time: '5 days ago', icon: '👤' },
+  ];
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <div className="welcome-section">
-          <h1>Welcome to KajChai Dashboard</h1>
-          <p>You are successfully logged in!</p>
+    <Layout>
+      <div className="dashboard">
+        <div className="dashboard-header">
+          <div className="welcome-section">
+            <h1 className="welcome-title">
+              {getWelcomeMessage()}, {user?.role === 'CUSTOMER' ? 'Customer' : 'Worker'}!
+            </h1>
+            <p className="welcome-subtitle">
+              Welcome back to your {user?.role === 'CUSTOMER' ? 'KajChai customer' : 'KajChai worker'} dashboard
+            </p>
+          </div>
+          <div className="user-badge">
+            <div className={`role-badge ${user?.role?.toLowerCase()}`}>
+              {user?.role === 'CUSTOMER' ? '👤' : '🔧'} {user?.role}
+            </div>
+          </div>
         </div>
-        <button onClick={handleLogout} className="logout-button">
-          Logout
-        </button>
+
+        {/* Stats Cards */}
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-icon" style={{ backgroundColor: stat.color }}>
+                {stat.icon}
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-value">{stat.value}</h3>
+                <p className="stat-label">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="quick-actions">
+          <h2 className="section-title">Quick Actions</h2>
+          <div className="actions-grid">
+            {user?.role === 'CUSTOMER' ? (
+              <>
+                <div className="action-card">
+                  <div className="action-icon">📝</div>
+                  <h3>Post a Job</h3>
+                  <p>Create a new job posting and find skilled workers</p>
+                  <button className="action-btn">Create Post</button>
+                </div>
+                <div className="action-card">
+                  <div className="action-icon">👥</div>
+                  <h3>Browse Workers</h3>
+                  <p>Find and hire professional workers for your needs</p>
+                  <button className="action-btn">Browse</button>
+                </div>
+                <div className="action-card">
+                  <div className="action-icon">📋</div>
+                  <h3>View History</h3>
+                  <p>Check your previous jobs and transactions</p>
+                  <button className="action-btn">View History</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="action-card">
+                  <div className="action-icon">🔍</div>
+                  <h3>Find Jobs</h3>
+                  <p>Browse available jobs that match your skills</p>
+                  <button className="action-btn">Find Jobs</button>
+                </div>
+                <div className="action-card">
+                  <div className="action-icon">📊</div>
+                  <h3>My Performance</h3>
+                  <p>Track your ratings, earnings and job completion</p>
+                  <button className="action-btn">View Stats</button>
+                </div>
+                <div className="action-card">
+                  <div className="action-icon">💼</div>
+                  <h3>Active Jobs</h3>
+                  <p>Manage your current ongoing projects</p>
+                  <button className="action-btn">Manage Jobs</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="recent-activity">
+          <h2 className="section-title">Recent Activity</h2>
+          <div className="activity-list">
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="activity-item">
+                <div className="activity-icon">{activity.icon}</div>
+                <div className="activity-content">
+                  <p className="activity-action">{activity.action}</p>
+                  <span className="activity-time">{activity.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-      <div className="dashboard-content">
-        <div className="user-info-card">
-          <h2>Your Account Information</h2>
-          <div className="user-details">
-            <div className="detail-item">
-              <strong>Email:</strong> {user?.email}
-            </div>
-            <div className="detail-item">
-              <strong>Role:</strong> 
-              <span className={`role-badge ${user?.role?.toLowerCase()}`}>
-                {user?.role}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="api-test-card">
-          <h2>API Connectivity Test</h2>
-          {loading ? (
-            <div className="loading">Testing API endpoints...</div>
-          ) : (
-            <div className="test-results">
-              <div className="test-item">
-                <strong>Public Endpoint:</strong>
-                <span className="test-result success">
-                  {testResults.public || 'Not tested'}
-                </span>
-              </div>
-              <div className="test-item">
-                <strong>Protected Endpoint:</strong>
-                <span className="test-result success">
-                  {testResults.protected || 'Not tested'}
-                </span>
-              </div>
-              <div className="test-item">
-                <strong>{user?.role} Specific Endpoint:</strong>
-                <span className="test-result success">
-                  {testResults.roleSpecific || 'Not tested'}
-                </span>
-              </div>
-            </div>
-          )}
-          <button onClick={testAPIEndpoints} className="test-button" disabled={loading}>
-            {loading ? 'Testing...' : 'Retest APIs'}
-          </button>
-        </div>
-
-        <div className="features-card">
-          <h2>Available Features</h2>
-          <div className="features-grid">
-            <div className="feature-item">
-              <h3>🔐 Secure Authentication</h3>
-              <p>JWT-based authentication with HTTP-only cookies</p>
-            </div>
-            <div className="feature-item">
-              <h3>✉️ Email Verification</h3>
-              <p>Account verification through email codes</p>
-            </div>
-            <div className="feature-item">
-              <h3>👥 Role-Based Access</h3>
-              <p>Different access levels for Customers and Workers</p>
-            </div>
-            <div className="feature-item">
-              <h3>🔄 Session Management</h3>
-              <p>Automatic session handling and token refresh</p>
-            </div>
-          </div>
-        </div>
-
-        {user?.role === 'WORKER' && (
-          <div className="worker-info-card">
-            <h2>Worker Dashboard</h2>
-            <p>Welcome to your worker dashboard! Here you can:</p>
-            <ul>
-              <li>Manage your job applications</li>
-              <li>Update your skills and experience</li>
-              <li>View customer requests</li>
-              <li>Track your earnings</li>
-            </ul>
-          </div>
-        )}
-
-        {user?.role === 'CUSTOMER' && (
-          <div className="customer-info-card">
-            <h2>Customer Dashboard</h2>
-            <p>Welcome to your customer dashboard! Here you can:</p>
-            <ul>
-              <li>Post job requirements</li>
-              <li>Browse available workers</li>
-              <li>Manage your bookings</li>
-              <li>Rate and review workers</li>
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
+    </Layout>
   );
 };
 

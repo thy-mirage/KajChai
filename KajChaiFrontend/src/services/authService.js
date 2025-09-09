@@ -85,6 +85,27 @@ export const authAPI = {
   getWorkerData: () => {
     return apiClient.get('/test/worker');
   },
+
+  // Profile endpoints
+  getProfile: () => {
+    return apiClient.get('/profile');
+  },
+
+  getCustomerProfile: () => {
+    return apiClient.get('/profile/customer');
+  },
+
+  getWorkerProfile: () => {
+    return apiClient.get('/profile/worker');
+  },
+
+  updateCustomerProfile: (profileData) => {
+    return apiClient.put('/profile/customer', profileData);
+  },
+
+  updateWorkerProfile: (profileData) => {
+    return apiClient.put('/profile/worker', profileData);
+  },
 };
 
 // Simplified service object for components
@@ -103,6 +124,13 @@ const authService = {
   forgotPassword: authAPI.forgotPassword,
   verifyResetCode: authAPI.verifyResetCode,
   resetPassword: authAPI.resetPassword,
+
+  // Profile
+  getProfile: authAPI.getProfile,
+  getCustomerProfile: authAPI.getCustomerProfile,
+  getWorkerProfile: authAPI.getWorkerProfile,
+  updateCustomerProfile: authAPI.updateCustomerProfile,
+  updateWorkerProfile: authAPI.updateWorkerProfile,
 
   // Test endpoints
   getPublicData: authAPI.getPublicData,

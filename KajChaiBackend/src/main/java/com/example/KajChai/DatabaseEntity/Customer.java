@@ -42,4 +42,7 @@ public class Customer {
 
     @Column(nullable = false)
     private String district;
+
+    @Column(nullable = false)
+    private String division;
 }
