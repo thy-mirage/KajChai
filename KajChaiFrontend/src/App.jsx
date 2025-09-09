@@ -7,6 +7,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import MyProfile from './components/MyProfile';
+import Chat from './components/chat';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -21,7 +22,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            
+
             {/* Protected Routes */}
             <Route 
               path="/dashboard" 
@@ -37,6 +38,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MyProfile />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <Chat />
                 </ProtectedRoute>
               } 
             />

@@ -62,7 +62,7 @@ public class AuthController {
                 
                 String token = jwtUtil.generateToken(user, extraClaims);
                 
-                // Create HTTP-only secure cookie
+                // Create HTTP-only secure cookie (for backward compatibility)
                 Cookie jwtCookie = new Cookie("jwt", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
@@ -70,6 +70,9 @@ public class AuthController {
                 // jwtCookie.setSecure(true); // Enable for HTTPS
                 
                 response.addCookie(jwtCookie);
+                
+                // Also return token in response for localStorage storage
+                authResponse.setToken(token);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(AuthResponse.builder()

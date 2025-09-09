@@ -26,6 +26,7 @@ const Navbar = () => {
     { path: '/hire-posts', label: 'HirePost', icon: '💼' },
     { path: '/forum', label: 'Forum', icon: '💬' },
     { path: '/work-history', label: 'Work History', icon: '📋' },
+    { path: '/chat', label: 'Chat', icon: '💬' },
   ];
 
   const workerNavItems = [
@@ -34,6 +35,7 @@ const Navbar = () => {
     { path: '/hire-posts', label: 'HirePost', icon: '💼' },
     { path: '/forum', label: 'Forum', icon: '💬' },
     { path: '/working-history', label: 'Working History', icon: '📈' },
+    { path: '/chat', label: 'Chat', icon: '💬' },
   ];
 
   const navItems = user.role === 'CUSTOMER' ? customerNavItems : workerNavItems;

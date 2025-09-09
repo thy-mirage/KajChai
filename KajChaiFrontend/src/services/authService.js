@@ -5,11 +5,22 @@ const API_BASE_URL = 'http://localhost:8080/api';
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // Important for sending cookies
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Request interceptor to add JWT token to headers
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Response interceptor to handle common response patterns
 apiClient.interceptors.response.use(

@@ -32,7 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         
-        String jwt = extractJwtFromCookie(request);
+        // Try to get JWT from header first, then from cookie
+        String jwt = extractJwtFromHeader(request);
+        if (jwt == null) {
+            jwt = extractJwtFromCookie(request);
+        }
+        
         String username = null;
 
         if (jwt != null) {
@@ -59,6 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromHeader(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 
     private String extractJwtFromCookie(HttpServletRequest request) {

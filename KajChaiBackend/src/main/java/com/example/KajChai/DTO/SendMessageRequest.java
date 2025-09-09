@@ -8,12 +8,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponse {
-    private String message;
-    private String email;
-    private UserRole role;
-    private boolean success;
-    private String token; // JWT token for client-side storage
+@AllArgsConstructor
+public class SendMessageRequest {
+    private Integer receiverId;
+    private UserRole receiverRole; // Explicitly specify receiver role to avoid ambiguity
+    private String content;
 }

@@ -23,16 +23,44 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      // Check if we have a token in localStorage
+      const token = localStorage.getItem('jwt_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       const response = await authAPI.getCurrentUser();
       if (response.success) {
+        // Get detailed profile to fetch user ID
+        const profileResponse = await authAPI.getProfile();
+        let userId = null;
+        let userName = null;
+        
+        if (profileResponse.success && profileResponse.data) {
+          if (response.role === 'CUSTOMER') {
+            userId = profileResponse.data.customerId;
+            userName = profileResponse.data.customerName;
+          } else if (response.role === 'WORKER') {
+            userId = profileResponse.data.workerId;
+            userName = profileResponse.data.name;
+          }
+        }
+        
         setUser({
           email: response.email,
-          role: response.role
+          role: response.role,
+          userId: userId,
+          name: userName
         });
         setIsAuthenticated(true);
       }
     } catch (error) {
       console.log('Not authenticated');
+      // Clear invalid token
+      localStorage.removeItem('jwt_token');
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -44,9 +72,31 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login({ email, password });
       if (response.success) {
+        // Store JWT token in localStorage
+        if (response.token) {
+          localStorage.setItem('jwt_token', response.token);
+        }
+        
+        // Get detailed profile to fetch user ID
+        const profileResponse = await authAPI.getProfile();
+        let userId = null;
+        let userName = null;
+        
+        if (profileResponse.success && profileResponse.data) {
+          if (response.role === 'CUSTOMER') {
+            userId = profileResponse.data.customerId;
+            userName = profileResponse.data.customerName;
+          } else if (response.role === 'WORKER') {
+            userId = profileResponse.data.workerId;
+            userName = profileResponse.data.name;
+          }
+        }
+        
         setUser({
           email: response.email,
-          role: response.role
+          role: response.role,
+          userId: userId,
+          name: userName
         });
         setIsAuthenticated(true);
         return { success: true, message: response.message };
@@ -64,11 +114,19 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authAPI.logout();
+      return { success: true, message: 'Logged out successfully' };
     } catch (error) {
       console.error('Logout error:', error);
+      // Even if server logout fails, we still clear local state
+      return { success: false, message: 'Logout completed locally' };
     } finally {
+      // Always clear local authentication state
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Clear JWT token and cached data
+      localStorage.removeItem('jwt_token');
+      sessionStorage.clear();
     }
   };
 
