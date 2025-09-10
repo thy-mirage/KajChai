@@ -9,6 +9,7 @@ import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.Service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class ChatController {
     private final ChatService chatService;
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/rooms")
     public ResponseEntity<Map<String, Object>> getUserChatRooms() {
@@ -108,6 +110,13 @@ public class ChatController {
             UserContextInfo userInfo = getUserContextFromAuth(auth);
             
             ChatMessageResponse message = chatService.sendMessage(userInfo.userId, userInfo.role, request);
+            
+            // Also broadcast via WebSocket for real-time delivery
+            if (message != null) {
+                String destination = "/topic/chat/" + message.getRoomId();
+                System.out.println("📡 Broadcasting HTTP message to WebSocket: " + destination);
+                messagingTemplate.convertAndSend(destination, message);
+            }
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
