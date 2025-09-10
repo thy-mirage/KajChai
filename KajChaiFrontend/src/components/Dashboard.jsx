@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from './Layout';
 import './Dashboard.css';
@@ -76,45 +77,45 @@ const Dashboard = () => {
           <div className="actions-grid">
             {user?.role === 'CUSTOMER' ? (
               <>
-                <div className="action-card">
+                <Link to="/create-post" className="action-card">
                   <div className="action-icon">📝</div>
                   <h3>Post a Job</h3>
                   <p>Create a new job posting and find skilled workers</p>
                   <button className="action-btn">Create Post</button>
-                </div>
-                <div className="action-card">
+                </Link>
+                <Link to="/jobs" className="action-card">
                   <div className="action-icon">👥</div>
                   <h3>Browse Workers</h3>
                   <p>Find and hire professional workers for your needs</p>
                   <button className="action-btn">Browse</button>
-                </div>
-                <div className="action-card">
+                </Link>
+                <Link to="/my-profile" className="action-card">
                   <div className="action-icon">📋</div>
-                  <h3>View History</h3>
-                  <p>Check your previous jobs and transactions</p>
-                  <button className="action-btn">View History</button>
-                </div>
+                  <h3>View Profile</h3>
+                  <p>Check your profile and account information</p>
+                  <button className="action-btn">View Profile</button>
+                </Link>
               </>
             ) : (
               <>
-                <div className="action-card">
+                <Link to="/jobs" className="action-card">
                   <div className="action-icon">🔍</div>
                   <h3>Find Jobs</h3>
                   <p>Browse available jobs that match your skills</p>
                   <button className="action-btn">Find Jobs</button>
-                </div>
-                <div className="action-card">
+                </Link>
+                <Link to="/my-profile" className="action-card">
                   <div className="action-icon">📊</div>
-                  <h3>My Performance</h3>
+                  <h3>My Profile</h3>
                   <p>Track your ratings, earnings and job completion</p>
-                  <button className="action-btn">View Stats</button>
-                </div>
-                <div className="action-card">
+                  <button className="action-btn">View Profile</button>
+                </Link>
+                <Link to="/notifications" className="action-card">
                   <div className="action-icon">💼</div>
-                  <h3>Active Jobs</h3>
-                  <p>Manage your current ongoing projects</p>
-                  <button className="action-btn">Manage Jobs</button>
-                </div>
+                  <h3>Notifications</h3>
+                  <p>View your latest notifications and updates</p>
+                  <button className="action-btn">View Notifications</button>
+                </Link>
               </>
             )}
           </div>

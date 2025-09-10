@@ -16,12 +16,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Helper function to get user-specific token key
+  const getTokenKey = (email) => {
+    return email ? `jwt_token_${email}` : 'jwt_token';
+  };
+
   // Helper function to clear authentication state
-  const clearAuthState = () => {
+  const clearAuthState = (userEmail = null) => {
+    const currentUserEmail = userEmail || (user && user.email);
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('jwt_token');
+    
+    // Clear user-specific token from localStorage if email is available
+    if (currentUserEmail) {
+      localStorage.removeItem(getTokenKey(currentUserEmail));
+    } else {
+      // Fallback: remove generic token
+      localStorage.removeItem('jwt_token');
+    }
+    
     sessionStorage.clear();
+    // Also clean up any logout event data
+    localStorage.removeItem('auth_logout_user');
   };
 
   // Check if user is authenticated on app load
@@ -29,26 +45,51 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  // Listen for storage changes across tabs (for logout synchronization)
+  // Listen for storage changes across tabs (for logout synchronization only)
   useEffect(() => {
     const handleStorageChange = (event) => {
-      // If JWT token was removed in another tab, logout this tab too
-      if (event.key === 'jwt_token' && event.newValue === null) {
-        console.log('Token removed in another tab, logging out...');
-        setUser(null);
-        setIsAuthenticated(false);
-        sessionStorage.clear();
+      // Handle user-specific token removal or generic token removal
+      if (event.key && (event.key.startsWith('jwt_token_') || event.key === 'jwt_token') && event.newValue === null && isAuthenticated) {
+        console.log('Token removed in another tab, checking if same user...');
+        
+        // If it's a user-specific token, extract the email
+        let tokenUserEmail = null;
+        if (event.key.startsWith('jwt_token_')) {
+          tokenUserEmail = event.key.replace('jwt_token_', '');
+        }
+        
+        // Check if there's a logout event with user info
+        const logoutEvent = localStorage.getItem('auth_logout_user');
+        if (logoutEvent) {
+          try {
+            const logoutData = JSON.parse(logoutEvent);
+            // Only logout if it's the same user
+            if (user && (logoutData.email === user.email || (tokenUserEmail && tokenUserEmail === user.email))) {
+              console.log('Same user logged out in another tab, logging out...');
+              setUser(null);
+              setIsAuthenticated(false);
+              sessionStorage.clear();
+            }
+          } catch (error) {
+            console.error('Error parsing logout data:', error);
+          }
+        }
       }
       // If a logout event was triggered in another tab
-      else if (event.key === 'auth_logout') {
-        console.log('Logout event detected in another tab, logging out...');
-        clearAuthState();
+      else if (event.key === 'auth_logout_user' && event.newValue) {
+        try {
+          const logoutData = JSON.parse(event.newValue);
+          // Only logout if it's the same user who logged out in the other tab
+          if (user && logoutData.email === user.email) {
+            console.log('Same user logout event detected in another tab, logging out...');
+            clearAuthState();
+            sessionStorage.removeItem('current_user_email');
+          }
+        } catch (error) {
+          console.error('Error parsing logout event data:', error);
+        }
       }
-      // If a new token was added in another tab, check auth status
-      else if (event.key === 'jwt_token' && event.newValue !== null && !isAuthenticated) {
-        console.log('New token detected in another tab, checking auth status...');
-        checkAuthStatus();
-      }
+      // Removed auto login synchronization to prevent account switching between tabs
     };
 
     // Add event listener for storage changes
@@ -58,12 +99,40 @@ export const AuthProvider = ({ children }) => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]); // Add user as dependency
+
+  // Cleanup logout events when page is unloaded
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Clean up any logout event data when the page is closed
+      localStorage.removeItem('auth_logout_user');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   const checkAuthStatus = async () => {
     try {
-      // Check if we have a token in localStorage
-      const token = localStorage.getItem('jwt_token');
+      // First, try to get user-specific tokens from localStorage
+      let token = null;
+      let userEmail = null;
+      
+      // Check if there's session storage data to identify the current user
+      const sessionUser = sessionStorage.getItem('current_user_email');
+      if (sessionUser) {
+        userEmail = sessionUser;
+        token = localStorage.getItem(getTokenKey(userEmail));
+      }
+      
+      // If no session user or token, check for generic token
+      if (!token) {
+        token = localStorage.getItem('jwt_token');
+      }
+      
       if (!token) {
         setIsAuthenticated(false);
         setUser(null);
@@ -88,12 +157,33 @@ export const AuthProvider = ({ children }) => {
           }
         }
         
-        setUser({
+        const newUserData = {
           email: response.email,
           role: response.role,
           userId: userId,
           name: userName
-        });
+        };
+        
+        // Additional safety check: If there's already a user and it's different,
+        // don't auto-switch accounts unless explicitly requested
+        if (user && user.email && user.email !== newUserData.email) {
+          console.log('Different user detected, not auto-switching accounts');
+          // Clear the token as it belongs to a different user
+          clearAuthState();
+          setLoading(false);
+          return;
+        }
+        
+        // Store current user email in sessionStorage for this tab
+        sessionStorage.setItem('current_user_email', response.email);
+        
+        // Migrate generic token to user-specific token if needed
+        if (localStorage.getItem('jwt_token') && !localStorage.getItem(getTokenKey(response.email))) {
+          localStorage.setItem(getTokenKey(response.email), token);
+          localStorage.removeItem('jwt_token');
+        }
+        
+        setUser(newUserData);
         setIsAuthenticated(true);
       }
     } catch (error) {
@@ -109,9 +199,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login({ email, password });
       if (response.success) {
-        // Store JWT token in localStorage
+        // Clear any previous authentication state for this tab
+        clearAuthState();
+        
+        // Store JWT token with user-specific key in localStorage
         if (response.token) {
-          localStorage.setItem('jwt_token', response.token);
+          localStorage.setItem(getTokenKey(response.email), response.token);
+          // Also store in sessionStorage for this specific tab
+          sessionStorage.setItem('current_user_email', response.email);
         }
         
         // Get detailed profile to fetch user ID
@@ -129,12 +224,14 @@ export const AuthProvider = ({ children }) => {
           }
         }
         
-        setUser({
+        const newUserData = {
           email: response.email,
           role: response.role,
           userId: userId,
           name: userName
-        });
+        };
+        
+        setUser(newUserData);
         setIsAuthenticated(true);
         return { success: true, message: response.message };
       } else {
@@ -155,16 +252,36 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
       // Even if server logout fails, we still clear local state
     } finally {
-      // Clear authentication state
+      // Store user info before clearing state for cross-tab synchronization
+      const currentUser = user;
+      
+      // Clear authentication state (will remove user-specific token)
       clearAuthState();
       
-      // Trigger a custom storage event for immediate cross-tab synchronization
-      // This is needed because storage event doesn't fire in the same tab that made the change
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'auth_logout',
-        newValue: Date.now().toString(),
-        storageArea: localStorage
-      }));
+      // Clear session storage for this tab
+      sessionStorage.removeItem('current_user_email');
+      
+      // Trigger a user-specific storage event for cross-tab synchronization
+      if (currentUser && currentUser.email) {
+        const logoutData = {
+          email: currentUser.email,
+          timestamp: Date.now()
+        };
+        
+        localStorage.setItem('auth_logout_user', JSON.stringify(logoutData));
+        
+        // Remove the logout event after a short delay to allow other tabs to process it
+        setTimeout(() => {
+          localStorage.removeItem('auth_logout_user');
+        }, 1000);
+        
+        // Also dispatch a custom storage event for immediate synchronization in the same browser
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'auth_logout_user',
+          newValue: JSON.stringify(logoutData),
+          storageArea: localStorage
+        }));
+      }
       
       return { success: true, message: 'Logged out successfully' };
     }

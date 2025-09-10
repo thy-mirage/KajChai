@@ -10,10 +10,30 @@ const apiClient = axios.create({
   },
 });
 
+// Helper function to get user-specific token key
+const getTokenKey = (email) => {
+  return email ? `jwt_token_${email}` : 'jwt_token';
+};
+
+// Helper function to get the current user's token
+const getCurrentUserToken = () => {
+  // First check if there's a current user email in session storage
+  const currentUserEmail = sessionStorage.getItem('current_user_email');
+  if (currentUserEmail) {
+    const userToken = localStorage.getItem(getTokenKey(currentUserEmail));
+    if (userToken) {
+      return userToken;
+    }
+  }
+  
+  // Fallback to generic token
+  return localStorage.getItem('jwt_token');
+};
+
 // Request interceptor to add JWT token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token');
+    const token = getCurrentUserToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
