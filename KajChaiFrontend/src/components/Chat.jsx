@@ -82,11 +82,26 @@ const Chat = () => {
             setChatRooms(prevRooms => {
                 return prevRooms.map(room => {
                     if (room.roomId === roomId) {
+                        // Only increment unread count if:
+                        // 1. The message is NOT from the current user
+                        // 2. The room is NOT currently selected
+                        console.log('🔍 Checking unread logic:', {
+                            messageSenderId: message.senderId, 
+                            currentUserId: user.userId, 
+                            messageFromCurrentUser: message.senderId == user.userId,
+                            isCurrentRoom: selectedRoom?.roomId === roomId,
+                            roomId: roomId
+                        });
+                        
+                        const shouldIncrementUnread = message.senderId != user.userId && 
+                                                    selectedRoom?.roomId !== roomId;
+                        
                         return {
                             ...room,
                             lastMessage: message.content,
                             lastActivity: message.sentAt,
-                            unreadCount: selectedRoom?.roomId === roomId ? 0 : (room.unreadCount || 0) + 1
+                            unreadCount: selectedRoom?.roomId === roomId ? 0 : 
+                                       shouldIncrementUnread ? (room.unreadCount || 0) + 1 : room.unreadCount
                         };
                     }
                     return room;
@@ -96,18 +111,36 @@ const Chat = () => {
             // If message is for the currently selected room, add it to messages
             if (selectedRoom && selectedRoom.roomId === roomId) {
                 setMessages(prevMessages => {
-                    // Check if message already exists to prevent duplicates
-                    const messageExists = prevMessages.some(msg => msg.messageId === message.messageId);
-                    if (!messageExists) {
-                        console.log('➕ Adding new message to current room');
-                        return [...prevMessages, message];
+                    console.log('🔍 Checking for optimistic message replacement. Received message:', message);
+                    console.log('🔍 Current messages:', prevMessages.map(m => ({id: m.messageId, content: m.content, isPending: m.isPending, senderId: m.senderId})));
+                    
+                    // Check if this is replacing an optimistic message from the same sender
+                    const optimisticMessageIndex = prevMessages.findIndex(msg => 
+                        msg.isPending && 
+                        msg.senderId === message.senderId && 
+                        msg.content.trim() === message.content.trim()
+                    );
+                    
+                    if (optimisticMessageIndex !== -1) {
+                        console.log('🔄 Replacing optimistic message with real message at index:', optimisticMessageIndex);
+                        // Replace optimistic message with real message
+                        const updatedMessages = [...prevMessages];
+                        updatedMessages[optimisticMessageIndex] = { ...message, isPending: false };
+                        return updatedMessages;
                     } else {
-                        console.log('🔄 Message already exists in current room, skipping');
-                        return prevMessages;
+                        // Check if message already exists to prevent duplicates
+                        const messageExists = prevMessages.some(msg => msg.messageId === message.messageId);
+                        if (!messageExists) {
+                            console.log('➕ Adding new message to current room (no optimistic message found)');
+                            return [...prevMessages, { ...message, isPending: false }];
+                        } else {
+                            console.log('🔄 Message already exists in current room, skipping');
+                            return prevMessages;
+                        }
                     }
                 });
                 
-                // Mark as read if it's the current room
+                // Mark as read if it's the current room and not sent by current user
                 if (message.senderId !== user.userId) {
                     setTimeout(() => {
                         chatService.markMessagesAsRead(roomId);
@@ -194,6 +227,27 @@ const Chat = () => {
         if (!newMessage.trim() || !selectedRoom || sendingMessage) return;
 
         setSendingMessage(true);
+        const messageContent = newMessage.trim();
+        
+        // Clear input immediately for better UX
+        setNewMessage('');
+        
+        // Create optimistic message for immediate UI feedback
+        const optimisticMessage = {
+            messageId: `temp-${Date.now()}`, // Temporary ID
+            senderId: user.userId,
+            senderRole: user.role,
+            content: messageContent,
+            sentAt: new Date().toISOString(),
+            isRead: false,
+            isPending: true // Flag to indicate this is a pending message
+        };
+
+        console.log('✨ Creating optimistic message:', optimisticMessage);
+
+        // Add optimistic message to UI immediately
+        setMessages(prevMessages => [...prevMessages, optimisticMessage]);
+
         try {
             // Get receiver ID based on current user role
             const receiverId = user.role === 'CUSTOMER' ? selectedRoom.workerId : selectedRoom.customerId;
@@ -202,39 +256,50 @@ const Chat = () => {
             const messageData = {
                 receiverId: receiverId,
                 receiverRole: receiverRole,
-                content: newMessage.trim()
+                content: messageContent
             };
 
             // Try WebSocket first, fallback to HTTP
             let messageSent = false;
             
-            if (wsConnected) {
-                messageSent = webSocketService.sendMessage(messageData);
+            // Send message via HTTP API (more reliable)
+            console.log('📤 Sending message via HTTP API');
+            const response = await chatService.sendMessage(messageData);
+            if (response.success) {
+                console.log('✅ Message sent via HTTP successfully:', response.message);
+                // Replace optimistic message with real message
+                const realMessage = response.message;
+                setMessages(prevMessages => 
+                    prevMessages.map(msg => 
+                        msg.messageId === optimisticMessage.messageId ? 
+                        { ...realMessage, isPending: false } : msg
+                    )
+                );
+                
+                // Update the chat rooms list immediately
+                setChatRooms(prevRooms => {
+                    return prevRooms.map(room => {
+                        if (room.roomId == realMessage.roomId) {
+                            return {
+                                ...room,
+                                lastMessage: realMessage.content,
+                                lastActivity: realMessage.sentAt,
+                                // Don't increment unread count for sent messages
+                            };
+                        }
+                        return room;
+                    });
+                });
+            } else {
+                throw new Error('Failed to send message via HTTP');
             }
             
-            if (!messageSent) {
-                // Fallback to HTTP API
-                console.log('Sending message via HTTP fallback');
-                const response = await chatService.sendMessage(messageData);
-                if (response.success) {
-                    // Manually add the message to the UI since WebSocket didn't handle it
-                    const newMsg = response.message || {
-                        messageId: Date.now(), // Temporary ID
-                        senderId: user.userId,
-                        senderRole: user.role,
-                        content: newMessage.trim(),
-                        sentAt: new Date().toISOString(),
-                        isRead: false
-                    };
-                    
-                    setMessages(prevMessages => [...prevMessages, newMsg]);
-                    loadChatRooms(); // Update last message in sidebar
-                }
-            }
-            
-            setNewMessage('');
         } catch (error) {
-            console.error('Failed to send message:', error);
+            console.error('❌ Failed to send message:', error);
+            // Remove optimistic message on error
+            setMessages(prevMessages => 
+                prevMessages.filter(msg => msg.messageId !== optimisticMessage.messageId)
+            );
             alert('Failed to send message. Please try again.');
         } finally {
             setSendingMessage(false);
@@ -430,7 +495,7 @@ const Chat = () => {
                                 {messages.map(message => (
                                     <div 
                                         key={message.messageId}
-                                        className={`message ${message.senderId === getCurrentUserId() ? 'sent' : 'received'}`}
+                                        className={`message ${message.senderId === getCurrentUserId() ? 'sent' : 'received'} ${message.isPending ? 'pending' : ''}`}
                                     >
                                         <div className="message-content">
                                             {message.content}
