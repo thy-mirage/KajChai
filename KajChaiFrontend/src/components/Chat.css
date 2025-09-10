@@ -235,6 +235,21 @@
   border-right: 3px solid #007bff;
 }
 
+.chat-room-item.has-unread {
+  background-color: #f8f9ff;
+  border-left: 3px solid #007bff;
+}
+
+.chat-room-item.has-unread .room-name {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.chat-room-item.has-unread .last-message {
+  color: #333;
+  font-weight: 500;
+}
+
 .room-avatar {
   width: 50px;
   height: 50px;
@@ -291,6 +306,23 @@
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
+  animation: pulse-badge 1s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+@keyframes pulse-badge {
+  0% { 
+    transform: scale(1); 
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  }
+  50% { 
+    transform: scale(1.1); 
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.5);
+  }
+  100% { 
+    transform: scale(1); 
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  }
 }
 
 /* Main Chat Area */

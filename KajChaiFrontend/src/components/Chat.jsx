@@ -17,6 +17,7 @@ const Chat = () => {
     const [loading, setLoading] = useState(true);
     const [sendingMessage, setSendingMessage] = useState(false);
     const [wsConnected, setWsConnected] = useState(false);
+    const [allRoomsSubscribed, setAllRoomsSubscribed] = useState(false);
     const messagesEndRef = useRef(null);
 
     if (!user) {
@@ -44,6 +45,14 @@ const Chat = () => {
         };
     }, []);
 
+    // Subscribe to all rooms when chat rooms are loaded and WebSocket is connected
+    useEffect(() => {
+        if (chatRooms.length > 0 && wsConnected && !allRoomsSubscribed) {
+            console.log('🌐 Setting up real-time subscriptions for all chat rooms');
+            setupAllRoomSubscriptions();
+        }
+    }, [chatRooms, wsConnected, allRoomsSubscribed]);
+
     // Setup WebSocket connection
     const setupWebSocket = async () => {
         if (user && user.userId) {
@@ -61,51 +70,72 @@ const Chat = () => {
         }
     };
 
-    // Subscribe to room messages when room is selected
-    useEffect(() => {
-        if (selectedRoom && wsConnected) {
-            console.log('🎯 Setting up real-time subscription for room:', selectedRoom.roomId);
+    // Setup real-time subscriptions for all chat rooms
+    const setupAllRoomSubscriptions = () => {
+        const roomIds = chatRooms.map(room => room.roomId);
+        
+        // Global message handler for all rooms
+        const globalMessageHandler = (message, roomId) => {
+            console.log('🌍 Global message received for room', roomId, ':', message);
             
-            const handleNewMessage = (message) => {
-                console.log('📨 Handling new real-time message:', message);
-                
-                // Add new message to the current messages
+            // Update chat rooms list to reflect new message
+            setChatRooms(prevRooms => {
+                return prevRooms.map(room => {
+                    if (room.roomId === roomId) {
+                        return {
+                            ...room,
+                            lastMessage: message.content,
+                            lastActivity: message.sentAt,
+                            unreadCount: selectedRoom?.roomId === roomId ? 0 : (room.unreadCount || 0) + 1
+                        };
+                    }
+                    return room;
+                });
+            });
+
+            // If message is for the currently selected room, add it to messages
+            if (selectedRoom && selectedRoom.roomId === roomId) {
                 setMessages(prevMessages => {
                     // Check if message already exists to prevent duplicates
                     const messageExists = prevMessages.some(msg => msg.messageId === message.messageId);
                     if (!messageExists) {
-                        console.log('➕ Adding new message to UI');
+                        console.log('➕ Adding new message to current room');
                         return [...prevMessages, message];
                     } else {
-                        console.log('🔄 Message already exists, skipping');
+                        console.log('🔄 Message already exists in current room, skipping');
                         return prevMessages;
                     }
                 });
                 
-                // Update chat rooms to reflect new last message
-                loadChatRooms();
-            };
-
-            // Subscribe to the selected room
-            const subscription = webSocketService.subscribeToRoom(selectedRoom.roomId, handleNewMessage);
-            
-            if (subscription) {
-                console.log('✅ Successfully subscribed to room:', selectedRoom.roomId);
-            } else {
-                console.error('❌ Failed to subscribe to room:', selectedRoom.roomId);
-            }
-
-            // Cleanup subscription when room changes
-            return () => {
-                if (selectedRoom) {
-                    console.log('🧹 Cleaning up subscription for room:', selectedRoom.roomId);
-                    webSocketService.unsubscribeFromRoom(selectedRoom.roomId);
+                // Mark as read if it's the current room
+                if (message.senderId !== user.userId) {
+                    setTimeout(() => {
+                        chatService.markMessagesAsRead(roomId);
+                    }, 1000);
                 }
+            }
+        };
+
+        // Subscribe to all rooms
+        webSocketService.subscribeToAllRooms(roomIds, globalMessageHandler);
+        setAllRoomsSubscribed(true);
+        console.log('✅ Subscribed to all chat rooms for real-time updates');
+    };
+
+    // Update handler for selected room (no longer need to subscribe/unsubscribe)
+    useEffect(() => {
+        if (selectedRoom && wsConnected && allRoomsSubscribed) {
+            console.log('🎯 Updating handler for selected room:', selectedRoom.roomId);
+            
+            const handleRoomMessage = (message) => {
+                console.log('📨 Handling message for selected room:', message);
+                // This is now handled by the global handler, but we keep this for any room-specific logic
             };
-        } else {
-            console.log('⏸️ Not setting up subscription. selectedRoom:', !!selectedRoom, 'wsConnected:', wsConnected);
+
+            // Update the handler for this specific room
+            webSocketService.updateRoomHandler(selectedRoom.roomId, handleRoomMessage);
         }
-    }, [selectedRoom, wsConnected]);
+    }, [selectedRoom, wsConnected, allRoomsSubscribed]);
 
     const loadChatRooms = async () => {
         try {
@@ -146,10 +176,17 @@ const Chat = () => {
         }
     };
 
-    const handleRoomSelect = (room) => {
+    const handleRoomSelect = async (room) => {
         setSelectedRoom(room);
         loadMessages(room.roomId);
         setShowUserList(false);
+        
+        // Reset unread count for this room
+        setChatRooms(prevRooms => 
+            prevRooms.map(r => 
+                r.roomId === room.roomId ? { ...r, unreadCount: 0 } : r
+            )
+        );
     };
 
     const handleSendMessage = async (e) => {
@@ -212,8 +249,13 @@ const Chat = () => {
                 setSelectedRoom(newRoom);
                 loadMessages(newRoom.roomId);
                 setShowUserList(false);
-                // Refresh chat rooms list
-                loadChatRooms();
+                // Refresh chat rooms list and subscribe to new room if created
+                await loadChatRooms();
+                
+                // Subscribe to the new room if not already subscribed
+                if (wsConnected && !webSocketService.subscriptions.has(newRoom.roomId)) {
+                    webSocketService.subscribeToRoom(newRoom.roomId, null);
+                }
             }
         } catch (error) {
             console.error('Failed to create chat room:', error);
@@ -321,7 +363,7 @@ const Chat = () => {
                         chatRooms.map(room => (
                             <div 
                                 key={room.roomId}
-                                className={`chat-room-item ${selectedRoom?.roomId === room.roomId ? 'active' : ''}`}
+                                className={`chat-room-item ${selectedRoom?.roomId === room.roomId ? 'active' : ''} ${room.unreadCount > 0 ? 'has-unread' : ''}`}
                                 onClick={() => handleRoomSelect(room)}
                             >
                                 <div className="room-avatar">

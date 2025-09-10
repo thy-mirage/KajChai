@@ -7,6 +7,7 @@ class WebSocketService {
     this.connected = false;
     this.subscriptions = new Map();
     this.messageHandlers = new Map();
+    this.globalMessageHandler = null; // Handler for all room messages
   }
 
   connect(userId, userRole) {
@@ -97,10 +98,11 @@ class WebSocketService {
     const destination = `/topic/chat/${roomId}`;
     console.log('📡 Subscribing to room:', roomId, 'at destination:', destination);
     
-    // Unsubscribe if already subscribed
+    // Don't unsubscribe if already subscribed, keep all subscriptions active
     if (this.subscriptions.has(roomId)) {
-      console.log('🔄 Unsubscribing from existing subscription for room:', roomId);
-      this.subscriptions.get(roomId).unsubscribe();
+      console.log('🔄 Already subscribed to room:', roomId, ', updating handler');
+      this.messageHandlers.set(roomId, onMessageReceived);
+      return this.subscriptions.get(roomId);
     }
 
     // Subscribe to room messages
@@ -108,8 +110,16 @@ class WebSocketService {
       try {
         const messageData = JSON.parse(message.body);
         console.log('📨 Received real-time message for room', roomId, ':', messageData);
-        if (onMessageReceived) {
-          onMessageReceived(messageData);
+        
+        // Call the global message handler for all rooms
+        if (this.globalMessageHandler) {
+          this.globalMessageHandler(messageData, roomId);
+        }
+        
+        // Call the specific room handler if exists
+        const roomHandler = this.messageHandlers.get(roomId);
+        if (roomHandler) {
+          roomHandler(messageData);
         }
       } catch (error) {
         console.error('❌ Error parsing received message:', error);
@@ -123,11 +133,34 @@ class WebSocketService {
     return subscription;
   }
 
+  // Subscribe to all chat rooms for a user
+  subscribeToAllRooms(roomIds, globalMessageHandler) {
+    console.log('📡 Subscribing to all rooms:', roomIds);
+    this.globalMessageHandler = globalMessageHandler;
+    
+    roomIds.forEach(roomId => {
+      this.subscribeToRoom(roomId, null); // No specific handler, use global
+    });
+  }
+
+  // Set global message handler for all rooms
+  setGlobalMessageHandler(handler) {
+    this.globalMessageHandler = handler;
+  }
+
   unsubscribeFromRoom(roomId) {
     if (this.subscriptions.has(roomId)) {
       this.subscriptions.get(roomId).unsubscribe();
       this.subscriptions.delete(roomId);
       this.messageHandlers.delete(roomId);
+    }
+  }
+
+  // Update room handler without unsubscribing
+  updateRoomHandler(roomId, handler) {
+    if (this.subscriptions.has(roomId)) {
+      this.messageHandlers.set(roomId, handler);
+      console.log('✅ Updated handler for room:', roomId);
     }
   }
 
