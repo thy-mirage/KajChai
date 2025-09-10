@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import chatService from '../services/chatService';
+import webSocketService from '../services/websocketService';
 import Layout from './Layout';
 import './Chat.css';
 
@@ -15,6 +16,7 @@ const Chat = () => {
     const [showUserList, setShowUserList] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sendingMessage, setSendingMessage] = useState(false);
+    const [wsConnected, setWsConnected] = useState(false);
     const messagesEndRef = useRef(null);
 
     if (!user) {
@@ -30,11 +32,80 @@ const Chat = () => {
         scrollToBottom();
     }, [messages]);
 
-    // Load chat rooms on component mount
+    // Load chat rooms on component mount and setup WebSocket
     useEffect(() => {
         loadChatRooms();
         loadAvailableUsers();
+        setupWebSocket();
+        
+        // Cleanup WebSocket on unmount
+        return () => {
+            webSocketService.disconnect();
+        };
     }, []);
+
+    // Setup WebSocket connection
+    const setupWebSocket = async () => {
+        if (user && user.userId) {
+            try {
+                console.log('🔌 Setting up WebSocket for user:', user.userId, 'role:', user.role);
+                await webSocketService.connect(user.userId, user.role);
+                setWsConnected(true);
+                console.log('✅ WebSocket connected successfully');
+            } catch (error) {
+                console.error('❌ Failed to connect to WebSocket:', error);
+                setWsConnected(false);
+            }
+        } else {
+            console.error('❌ Cannot setup WebSocket: user or userId is missing', user);
+        }
+    };
+
+    // Subscribe to room messages when room is selected
+    useEffect(() => {
+        if (selectedRoom && wsConnected) {
+            console.log('🎯 Setting up real-time subscription for room:', selectedRoom.roomId);
+            
+            const handleNewMessage = (message) => {
+                console.log('📨 Handling new real-time message:', message);
+                
+                // Add new message to the current messages
+                setMessages(prevMessages => {
+                    // Check if message already exists to prevent duplicates
+                    const messageExists = prevMessages.some(msg => msg.messageId === message.messageId);
+                    if (!messageExists) {
+                        console.log('➕ Adding new message to UI');
+                        return [...prevMessages, message];
+                    } else {
+                        console.log('🔄 Message already exists, skipping');
+                        return prevMessages;
+                    }
+                });
+                
+                // Update chat rooms to reflect new last message
+                loadChatRooms();
+            };
+
+            // Subscribe to the selected room
+            const subscription = webSocketService.subscribeToRoom(selectedRoom.roomId, handleNewMessage);
+            
+            if (subscription) {
+                console.log('✅ Successfully subscribed to room:', selectedRoom.roomId);
+            } else {
+                console.error('❌ Failed to subscribe to room:', selectedRoom.roomId);
+            }
+
+            // Cleanup subscription when room changes
+            return () => {
+                if (selectedRoom) {
+                    console.log('🧹 Cleaning up subscription for room:', selectedRoom.roomId);
+                    webSocketService.unsubscribeFromRoom(selectedRoom.roomId);
+                }
+            };
+        } else {
+            console.log('⏸️ Not setting up subscription. selectedRoom:', !!selectedRoom, 'wsConnected:', wsConnected);
+        }
+    }, [selectedRoom, wsConnected]);
 
     const loadChatRooms = async () => {
         try {
@@ -97,14 +168,34 @@ const Chat = () => {
                 content: newMessage.trim()
             };
 
-            const response = await chatService.sendMessage(messageData);
-            if (response.success) {
-                setNewMessage('');
-                // Reload messages to show the new message
-                loadMessages(selectedRoom.roomId);
-                // Refresh chat rooms to update last message
-                loadChatRooms();
+            // Try WebSocket first, fallback to HTTP
+            let messageSent = false;
+            
+            if (wsConnected) {
+                messageSent = webSocketService.sendMessage(messageData);
             }
+            
+            if (!messageSent) {
+                // Fallback to HTTP API
+                console.log('Sending message via HTTP fallback');
+                const response = await chatService.sendMessage(messageData);
+                if (response.success) {
+                    // Manually add the message to the UI since WebSocket didn't handle it
+                    const newMsg = response.message || {
+                        messageId: Date.now(), // Temporary ID
+                        senderId: user.userId,
+                        senderRole: user.role,
+                        content: newMessage.trim(),
+                        sentAt: new Date().toISOString(),
+                        isRead: false
+                    };
+                    
+                    setMessages(prevMessages => [...prevMessages, newMsg]);
+                    loadChatRooms(); // Update last message in sidebar
+                }
+            }
+            
+            setNewMessage('');
         } catch (error) {
             console.error('Failed to send message:', error);
             alert('Failed to send message. Please try again.');
@@ -165,6 +256,10 @@ const Chat = () => {
                 <div className="sidebar-header">
                     <h3>Messages</h3>
                     <div className="header-actions">
+                        <div className={`connection-status ${wsConnected ? 'connected' : 'disconnected'}`} 
+                             title={wsConnected ? 'Real-time messaging active' : 'Real-time messaging offline'}>
+                            <span className="status-dot"></span>
+                        </div>
                         <button 
                             className="new-chat-btn"
                             onClick={() => setShowUserList(!showUserList)}
