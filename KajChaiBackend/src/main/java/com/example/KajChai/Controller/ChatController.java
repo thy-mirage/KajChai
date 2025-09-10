@@ -32,12 +32,9 @@ public class ChatController {
     public ResponseEntity<Map<String, Object>> getUserChatRooms() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            System.out.println("Authentication: " + (auth != null ? auth.getName() : "null"));
-            System.out.println("Authorities: " + (auth != null ? auth.getAuthorities() : "null"));
             
             // Get user ID and role from authentication
             UserContextInfo userInfo = getUserContextFromAuth(auth);
-            System.out.println("User Info - ID: " + userInfo.userId + ", Role: " + userInfo.role);
             
             List<ChatRoomResponse> chatRooms = chatService.getUserChatRooms(userInfo.userId, userInfo.role);
             

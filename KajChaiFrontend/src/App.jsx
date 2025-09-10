@@ -1,20 +1,26 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import MyProfile from './components/MyProfile';
-import Chat from './components/chat';
+import Chat from './components/Chat';
+import CreateHirePost from './components/CreateHirePost';
+import HirePostList from './components/HirePostList';
+import HirePostApplications from './components/HirePostApplications';
+import Notifications from './components/Notifications';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <NotificationProvider>
+        <Router>
         <div className="App">
           <Routes>
             {/* Public Routes */}
@@ -50,6 +56,43 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+
+            {/* HirePost Routes */}
+            <Route 
+              path="/create-post" 
+              element={
+                <ProtectedRoute>
+                  <CreateHirePost />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/jobs" 
+              element={
+                <ProtectedRoute>
+                  <HirePostList />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/my-posts/:postId/applications" 
+              element={
+                <ProtectedRoute>
+                  <HirePostApplications />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/notifications" 
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -59,6 +102,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
+import hirePostService from '../services/hirePostService';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { getUnreadCount } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Get unread count from NotificationContext
+  useEffect(() => {
+    if (user) {
+      const updateCount = () => {
+        const count = getUnreadCount();
+        setUnreadCount(count);
+      };
+      
+      updateCount(); // Initial update
+      
+      // Update every 2 seconds to sync with context
+      const interval = setInterval(updateCount, 2000);
+      
+      return () => clearInterval(interval);
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user, getUnreadCount]);
 
   const handleLogout = async () => {
     try {
@@ -20,21 +43,19 @@ const Navbar = () => {
   if (!user) return null;
 
   const customerNavItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
+    { path: '/create-post', label: 'Create Job', icon: '➕' },
+    { path: '/jobs', label: 'Find Workers', icon: '🔍' },
     { path: '/my-profile', label: 'My Profile', icon: '👤' },
     { path: '/notifications', label: 'Notifications', icon: '🔔' },
-    { path: '/reviews', label: 'Reviews', icon: '⭐' },
-    { path: '/hire-posts', label: 'HirePost', icon: '💼' },
-    { path: '/forum', label: 'Forum', icon: '💬' },
-    { path: '/work-history', label: 'Work History', icon: '📋' },
     { path: '/chat', label: 'Chat', icon: '💬' },
   ];
 
   const workerNavItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
+    { path: '/jobs', label: 'Available Jobs', icon: '💼' },
     { path: '/my-profile', label: 'My Profile', icon: '👤' },
     { path: '/notifications', label: 'Notifications', icon: '🔔' },
-    { path: '/hire-posts', label: 'HirePost', icon: '💼' },
-    { path: '/forum', label: 'Forum', icon: '💬' },
-    { path: '/working-history', label: 'Working History', icon: '📈' },
     { path: '/chat', label: 'Chat', icon: '💬' },
   ];
 
@@ -62,6 +83,9 @@ const Navbar = () => {
                 >
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-text">{item.label}</span>
+                  {item.path === '/notifications' && unreadCount > 0 && (
+                    <span className="notification-badge">{unreadCount}</span>
+                  )}
                 </Link>
               </li>
             ))}

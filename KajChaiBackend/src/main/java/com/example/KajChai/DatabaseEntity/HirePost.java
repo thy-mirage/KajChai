@@ -24,6 +24,7 @@ public class HirePost {
     @GeneratedValue
     private Integer postId;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)

@@ -22,6 +22,7 @@ public class ForumPost {
     @GeneratedValue
     private Integer forumId;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne
