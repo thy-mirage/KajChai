@@ -16,10 +16,49 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Helper function to clear authentication state
+  const clearAuthState = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('jwt_token');
+    sessionStorage.clear();
+  };
+
   // Check if user is authenticated on app load
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
+  // Listen for storage changes across tabs (for logout synchronization)
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      // If JWT token was removed in another tab, logout this tab too
+      if (event.key === 'jwt_token' && event.newValue === null) {
+        console.log('Token removed in another tab, logging out...');
+        setUser(null);
+        setIsAuthenticated(false);
+        sessionStorage.clear();
+      }
+      // If a logout event was triggered in another tab
+      else if (event.key === 'auth_logout') {
+        console.log('Logout event detected in another tab, logging out...');
+        clearAuthState();
+      }
+      // If a new token was added in another tab, check auth status
+      else if (event.key === 'jwt_token' && event.newValue !== null && !isAuthenticated) {
+        console.log('New token detected in another tab, checking auth status...');
+        checkAuthStatus();
+      }
+    };
+
+    // Add event listener for storage changes
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [isAuthenticated]);
 
   const checkAuthStatus = async () => {
     try {
@@ -60,9 +99,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.log('Not authenticated');
       // Clear invalid token
-      localStorage.removeItem('jwt_token');
-      setIsAuthenticated(false);
-      setUser(null);
+      clearAuthState();
     } finally {
       setLoading(false);
     }
@@ -114,19 +151,22 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authAPI.logout();
-      return { success: true, message: 'Logged out successfully' };
     } catch (error) {
       console.error('Logout error:', error);
       // Even if server logout fails, we still clear local state
-      return { success: false, message: 'Logout completed locally' };
     } finally {
-      // Always clear local authentication state
-      setUser(null);
-      setIsAuthenticated(false);
+      // Clear authentication state
+      clearAuthState();
       
-      // Clear JWT token and cached data
-      localStorage.removeItem('jwt_token');
-      sessionStorage.clear();
+      // Trigger a custom storage event for immediate cross-tab synchronization
+      // This is needed because storage event doesn't fire in the same tab that made the change
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'auth_logout',
+        newValue: Date.now().toString(),
+        storageArea: localStorage
+      }));
+      
+      return { success: true, message: 'Logged out successfully' };
     }
   };
 
