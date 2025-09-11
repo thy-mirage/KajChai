@@ -28,6 +28,7 @@ public class ReviewService {
     private final WorkerRepository workerRepository;
     private final CustomerRepository customerRepository;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
     
     public List<String> getAllFields() {
         return Arrays.stream(JobField.values()).map(JobField::name).toList();
@@ -105,6 +106,17 @@ public class ReviewService {
             
             // Update worker's average rating
             updateWorkerRating(worker);
+            
+            // Send notification to worker about new review
+            String notificationMessage = String.format(
+                "You received a new %d-star review from %s: \"%s\"",
+                reviewRequest.getStars(),
+                customer.getCustomerName(),
+                reviewRequest.getMessage().length() > 50 
+                    ? reviewRequest.getMessage().substring(0, 50) + "..." 
+                    : reviewRequest.getMessage()
+            );
+            notificationService.createWorkerNotification(worker, notificationMessage);
             
             return convertToReviewResponseDTO(savedReview);
             

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Layout from './Layout';
 import './Review.css';
 import reviewService from '../services/reviewService';
 
@@ -226,267 +225,265 @@ const Review = () => {
     };
 
     return (
-        <Layout>
-            <div className="review-container">
-                <div className="review-header">
-                    <h1>Worker Reviews</h1>
-                    <p>Search and review workers based on their services</p>
+        <div className="review-container">
+            <div className="review-header">
+                <h1>Worker Reviews</h1>
+                <p>Search and review workers based on their services</p>
+            </div>
+
+            {/* Search Controls */}
+            <div className="search-controls">
+                <div className="search-type-tabs">
+                    <button
+                        className={`tab ${searchType === 'field' ? 'active' : ''}`}
+                        onClick={() => setSearchType('field')}
+                    >
+                        By Field
+                    </button>
+                    <button
+                        className={`tab ${searchType === 'completed' ? 'active' : ''}`}
+                        onClick={() => setSearchType('completed')}
+                    >
+                        Completed Tasks
+                    </button>
+                    <button
+                        className={`tab ${searchType === 'name' ? 'active' : ''}`}
+                        onClick={() => setSearchType('name')}
+                    >
+                        By Name
+                    </button>
                 </div>
 
-                {/* Search Controls */}
-                <div className="search-controls">
-                    <div className="search-type-tabs">
-                        <button
-                            className={`tab ${searchType === 'field' ? 'active' : ''}`}
-                            onClick={() => setSearchType('field')}
-                        >
-                            By Field
-                        </button>
-                        <button
-                            className={`tab ${searchType === 'completed' ? 'active' : ''}`}
-                            onClick={() => setSearchType('completed')}
-                        >
-                            Completed Tasks
-                        </button>
-                        <button
-                            className={`tab ${searchType === 'name' ? 'active' : ''}`}
-                            onClick={() => setSearchType('name')}
-                        >
-                            By Name
-                        </button>
-                    </div>
+                <div className="search-inputs">
+                    {searchType === 'field' && (
+                        <div className="field-search">
+                            <select
+                                value={selectedField}
+                                onChange={(e) => setSelectedField(e.target.value)}
+                                className="field-select"
+                            >
+                                <option value="">Select a field</option>
+                                {(Array.isArray(workerFields) ? workerFields : []).map(field => (
+                                    <option key={field} value={field}>{field}</option>
+                                ))}
+                            </select>
+                            <button 
+                                onClick={searchWorkers}
+                                disabled={!selectedField}
+                                className="search-btn"
+                            >
+                                Search Workers
+                            </button>
+                        </div>
+                    )}
 
-                    <div className="search-inputs">
-                        {searchType === 'field' && (
-                            <div className="field-search">
-                                <select
-                                    value={selectedField}
-                                    onChange={(e) => setSelectedField(e.target.value)}
-                                    className="field-select"
-                                >
-                                    <option value="">Select a field</option>
-                                    {(Array.isArray(workerFields) ? workerFields : []).map(field => (
-                                        <option key={field} value={field}>{field}</option>
-                                    ))}
-                                </select>
-                                <button 
-                                    onClick={searchWorkers}
-                                    disabled={!selectedField}
-                                    className="search-btn"
-                                >
-                                    Search Workers
-                                </button>
-                            </div>
-                        )}
+                    {searchType === 'name' && (
+                        <div className="name-search">
+                            <input
+                                type="text"
+                                placeholder="Enter worker's name"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="name-input"
+                            />
+                            <button 
+                                onClick={searchWorkers}
+                                disabled={!searchQuery.trim()}
+                                className="search-btn"
+                            >
+                                Search Workers
+                            </button>
+                        </div>
+                    )}
 
-                        {searchType === 'name' && (
-                            <div className="name-search">
-                                <input
-                                    type="text"
-                                    placeholder="Enter worker's name"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="name-input"
-                                />
-                                <button 
-                                    onClick={searchWorkers}
-                                    disabled={!searchQuery.trim()}
-                                    className="search-btn"
-                                >
-                                    Search Workers
-                                </button>
-                            </div>
-                        )}
-
-                        {searchType === 'completed' && (
-                            <div className="completed-info">
-                                <p>Showing workers who have completed tasks for you</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Workers List */}
-                <div className="workers-section">
-                    {loading ? (
-                        <div className="loading">Loading workers...</div>
-                    ) : (
-                        <div className="workers-grid">
-                            {(Array.isArray(workers) ? workers : []).map(worker => (
-                                <div key={worker.workerId} id={`worker-card-${worker.workerId}`} className="worker-card">
-                                    <div 
-                                        className="worker-summary"
-                                        onClick={() => handleWorkerClick(worker)}
-                                    >
-                                        <div className="worker-avatar">
-                                            {worker.profilePicture ? (
-                                                <img src={worker.photo} alt={worker.name} />
-                                            ) : (
-                                                <div className="avatar-placeholder">
-                                                    {worker.name.charAt(0)}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="worker-info">
-                                            <h3>{worker.name}</h3>
-                                            <p className="worker-field">{worker.field}</p>
-                                            <div className="worker-rating">
-                                                {renderStars(Math.round(worker.rating))}
-                                                <span className="rating-text">
-                                                    ({worker.rating?.toFixed(2)} ★)
-                                                </span>
-                                            </div>
-                                            <p className="worker-phone">📞 {worker.phone}</p>
-                                            <p className="worker-address">📍 {worker.city}, {worker.upazila}, {worker.district}</p>
-                                            <p className="worker-experience">⏱️ {worker.experience} experience</p>
-                                        </div>
-                                        <div className="expand-icon">
-                                            {expandedWorker?.workerId === worker.workerId ? '▼' : '▶'}
-                                        </div>
-                                    </div>
-
-                                    {/* Expanded Reviews Section */}
-                                    {expandedWorker?.workerId === worker.workerId && (
-                                        <div className="reviews-section">
-                                            <div className="reviews-header">
-                                                <h4>Reviews ({Array.isArray(reviews) ? reviews.length : 0})</h4>
-                                                {canAddReview && !showAddReview && (
-                                                    <button
-                                                        className="add-review-btn"
-                                                        onClick={() => setShowAddReview(true)}
-                                                    >
-                                                        Add Review
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Add Review Form */}
-                                            {showAddReview && (
-                                                <div className="add-review-form">
-                                                    <h5>Add Your Review</h5>
-                                                    <div className="rating-input">
-                                                        <label>Rating:</label>
-                                                        {renderStars(newReview.rating, true, (rating) => 
-                                                            setNewReview(prev => ({ ...prev, rating }))
-                                                        )}
-                                                    </div>
-                                                    <textarea
-                                                        placeholder="Write your review..."
-                                                        value={newReview.message}
-                                                        onChange={(e) => setNewReview(prev => ({ ...prev, message: e.target.value }))}
-                                                        className="review-textarea"
-                                                        rows="4"
-                                                    />
-                                                    <div className="image-upload-section">
-                                                        <label htmlFor="review-images" className="upload-label">
-                                                            📷 Add Photos (Optional)
-                                                        </label>
-                                                        <input
-                                                            id="review-images"
-                                                            type="file"
-                                                            multiple
-                                                            accept="image/*"
-                                                            onChange={handleImageUpload}
-                                                            className="image-input"
-                                                        />
-                                                        {previewImages.length > 0 && (
-                                                            <div className="image-previews">
-                                                                {previewImages.map((img, index) => (
-                                                                    <div key={index} className="image-preview">
-                                                                        <img src={img} alt={`Preview ${index + 1}`} />
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => removeImage(index)}
-                                                                            className="remove-image"
-                                                                        >
-                                                                            ✕
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="form-actions">
-                                                        <button
-                                                            onClick={() => setShowAddReview(false)}
-                                                            className="cancel-btn"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                        <button
-                                                            onClick={submitReview}
-                                                            className="submit-btn"
-                                                            disabled={!newReview.message.trim() || newReview.rating === 0}
-                                                        >
-                                                            Submit Review
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Reviews List */}
-                                            <div className="reviews-list">
-                                                {(!Array.isArray(reviews) || reviews.length === 0) ? (
-                                                    <p className="no-reviews">No reviews yet</p>
-                                                ) : (
-                                                    (Array.isArray(reviews) ? reviews : []).map(review => (
-                                                        <div key={review.reviewId} className="review-item">
-                                                            <div className="review-header">
-                                                                <div className="reviewer-profile">
-                                                                    <div className="reviewer-avatar">
-                                                                        {review.customer.photo ? (
-                                                                            <img 
-                                                                                src={review.customer.photo} 
-                                                                                alt={review.customer.customerName}
-                                                                                className="reviewer-photo"
-                                                                            />
-                                                                        ) : (
-                                                                            <div className="reviewer-placeholder">
-                                                                                {review.customer.customerName.charAt(0).toUpperCase()}
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="reviewer-name">
-                                                                        <strong>{review.customer.customerName}</strong>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="review-meta">
-                                                                    <div className="review-rating">
-                                                                        {renderStars(review.stars)}
-                                                                    </div>
-                                                                    <div className="review-date">
-                                                                        {formatDate(review.reviewTime)}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="review-content">
-                                                                <p className="review-message">{review.message}</p>
-                                                                {review.images && review.images.length > 0 && (
-                                                                    <div className="review-images">
-                                                                        {review.images.map((img, index) => (
-                                                                            <img
-                                                                                key={index}
-                                                                                src={img}
-                                                                                alt={`Review ${index + 1}`}
-                                                                                className="review-image"
-                                                                            />
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                    {searchType === 'completed' && (
+                        <div className="completed-info">
+                            <p>Showing workers who have completed tasks for you</p>
                         </div>
                     )}
                 </div>
             </div>
-        </Layout>
+
+            {/* Workers List */}
+            <div className="workers-section">
+                {loading ? (
+                    <div className="loading">Loading workers...</div>
+                ) : (
+                    <div className="workers-grid">
+                        {(Array.isArray(workers) ? workers : []).map(worker => (
+                            <div key={worker.workerId} id={`worker-card-${worker.workerId}`} className="worker-card">
+                                <div 
+                                    className="worker-summary"
+                                    onClick={() => handleWorkerClick(worker)}
+                                >
+                                    <div className="worker-avatar">
+                                        {worker.profilePicture ? (
+                                            <img src={worker.photo} alt={worker.name} />
+                                        ) : (
+                                            <div className="avatar-placeholder">
+                                                {worker.name.charAt(0)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="worker-info">
+                                        <h3>{worker.name}</h3>
+                                        <p className="worker-field">{worker.field}</p>
+                                        <div className="worker-rating">
+                                            {renderStars(Math.round(worker.rating))}
+                                            <span className="rating-text">
+                                                ({worker.rating?.toFixed(2)} ★)
+                                            </span>
+                                        </div>
+                                        <p className="worker-phone">📞 {worker.phone}</p>
+                                        <p className="worker-address">📍 {worker.city}, {worker.upazila}, {worker.district}</p>
+                                        <p className="worker-experience">⏱️ {worker.experience} experience</p>
+                                    </div>
+                                    <div className="expand-icon">
+                                        {expandedWorker?.workerId === worker.workerId ? '▼' : '▶'}
+                                    </div>
+                                </div>
+
+                                {/* Expanded Reviews Section */}
+                                {expandedWorker?.workerId === worker.workerId && (
+                                    <div className="reviews-section">
+                                        <div className="reviews-header">
+                                            <h4>Reviews ({Array.isArray(reviews) ? reviews.length : 0})</h4>
+                                            {canAddReview && !showAddReview && (
+                                                <button
+                                                    className="add-review-btn"
+                                                    onClick={() => setShowAddReview(true)}
+                                                >
+                                                    Add Review
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Add Review Form */}
+                                        {showAddReview && (
+                                            <div className="add-review-form">
+                                                <h5>Add Your Review</h5>
+                                                <div className="rating-input">
+                                                    <label>Rating:</label>
+                                                    {renderStars(newReview.rating, true, (rating) => 
+                                                        setNewReview(prev => ({ ...prev, rating }))
+                                                    )}
+                                                </div>
+                                                <textarea
+                                                    placeholder="Write your review..."
+                                                    value={newReview.message}
+                                                    onChange={(e) => setNewReview(prev => ({ ...prev, message: e.target.value }))}
+                                                    className="review-textarea"
+                                                    rows="4"
+                                                />
+                                                <div className="image-upload-section">
+                                                    <label htmlFor="review-images" className="upload-label">
+                                                        📷 Add Photos (Optional)
+                                                    </label>
+                                                    <input
+                                                        id="review-images"
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="image-input"
+                                                    />
+                                                    {previewImages.length > 0 && (
+                                                        <div className="image-previews">
+                                                            {previewImages.map((img, index) => (
+                                                                <div key={index} className="image-preview">
+                                                                    <img src={img} alt={`Preview ${index + 1}`} />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeImage(index)}
+                                                                        className="remove-image"
+                                                                    >
+                                                                        ✕
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="form-actions">
+                                                    <button
+                                                        onClick={() => setShowAddReview(false)}
+                                                        className="cancel-btn"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={submitReview}
+                                                        className="submit-btn"
+                                                        disabled={!newReview.message.trim() || newReview.rating === 0}
+                                                    >
+                                                        Submit Review
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Reviews List */}
+                                        <div className="reviews-list">
+                                            {(!Array.isArray(reviews) || reviews.length === 0) ? (
+                                                <p className="no-reviews">No reviews yet</p>
+                                            ) : (
+                                                (Array.isArray(reviews) ? reviews : []).map(review => (
+                                                    <div key={review.reviewId} className="review-item">
+                                                        <div className="review-header">
+                                                            <div className="reviewer-profile">
+                                                                <div className="reviewer-avatar">
+                                                                    {review.customer.photo ? (
+                                                                        <img 
+                                                                            src={review.customer.photo} 
+                                                                            alt={review.customer.customerName}
+                                                                            className="reviewer-photo"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="reviewer-placeholder">
+                                                                            {review.customer.customerName.charAt(0).toUpperCase()}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="reviewer-name">
+                                                                    <strong>{review.customer.customerName}</strong>
+                                                                </div>
+                                                            </div>
+                                                            <div className="review-meta">
+                                                                <div className="review-rating">
+                                                                    {renderStars(review.stars)}
+                                                                </div>
+                                                                <div className="review-date">
+                                                                    {formatDate(review.reviewTime)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="review-content">
+                                                            <p className="review-message">{review.message}</p>
+                                                            {review.images && review.images.length > 0 && (
+                                                                <div className="review-images">
+                                                                    {review.images.map((img, index) => (
+                                                                        <img
+                                                                            key={index}
+                                                                            src={img}
+                                                                            alt={`Review ${index + 1}`}
+                                                                            className="review-image"
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
