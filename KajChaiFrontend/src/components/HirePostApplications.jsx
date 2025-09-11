@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import hirePostService from '../services/hirePostService';
-import Layout from './Layout';
 import './HirePost.css';
 
 const HirePostApplications = () => {
@@ -89,9 +88,8 @@ const HirePostApplications = () => {
   }
 
   return (
-    <Layout>
-      <div className="hire-post-applications">
-        {post && (
+    <div className="hire-post-applications">
+      {post && (
         <div className="post-summary">
           <h2>Applications for: {post.field} Job</h2>
           <div className="post-info">
@@ -212,8 +210,7 @@ const HirePostApplications = () => {
           Back to My Posts
         </button>
       </div>
-      </div>
-    </Layout>
+    </div>
   );
 };
 

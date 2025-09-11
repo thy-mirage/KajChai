@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Layout from './Layout';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -38,106 +37,104 @@ const Dashboard = () => {
   ];
 
   return (
-    <Layout>
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <div className="welcome-section">
-            <h1 className="welcome-title">
-              {getWelcomeMessage()}, {user?.role === 'CUSTOMER' ? 'Customer' : 'Worker'}!
-            </h1>
-            <p className="welcome-subtitle">
-              Welcome back to your {user?.role === 'CUSTOMER' ? 'KajChai customer' : 'KajChai worker'} dashboard
-            </p>
-          </div>
-          <div className="user-badge">
-            <div className={`role-badge ${user?.role?.toLowerCase()}`}>
-              {user?.role === 'CUSTOMER' ? '👤' : '🔧'} {user?.role}
-            </div>
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <div className="welcome-section">
+          <h1 className="welcome-title">
+            {getWelcomeMessage()}, {user?.role === 'CUSTOMER' ? 'Customer' : 'Worker'}!
+          </h1>
+          <p className="welcome-subtitle">
+            Welcome back to your {user?.role === 'CUSTOMER' ? 'KajChai customer' : 'KajChai worker'} dashboard
+          </p>
+        </div>
+        <div className="user-badge">
+          <div className={`role-badge ${user?.role?.toLowerCase()}`}>
+            {user?.role === 'CUSTOMER' ? '👤' : '🔧'} {user?.role}
           </div>
         </div>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-card">
-              <div className="stat-icon" style={{ backgroundColor: stat.color }}>
-                {stat.icon}
-              </div>
-              <div className="stat-content">
-                <h3 className="stat-value">{stat.value}</h3>
-                <p className="stat-label">{stat.label}</p>
+      {/* Stats Cards */}
+      <div className="stats-grid">
+        {stats.map((stat, index) => (
+          <div key={index} className="stat-card">
+            <div className="stat-icon" style={{ backgroundColor: stat.color }}>
+              {stat.icon}
+            </div>
+            <div className="stat-content">
+              <h3 className="stat-value">{stat.value}</h3>
+              <p className="stat-label">{stat.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <h2 className="section-title">Quick Actions</h2>
+        <div className="actions-grid">
+          {user?.role === 'CUSTOMER' ? (
+            <>
+              <Link to="/create-post" className="action-card">
+                <div className="action-icon">📝</div>
+                <h3>Post a Job</h3>
+                <p>Create a new job posting and find skilled workers</p>
+                <button className="action-btn">Create Post</button>
+              </Link>
+              <Link to="/jobs" className="action-card">
+                <div className="action-icon">👥</div>
+                <h3>Browse Workers</h3>
+                <p>Find and hire professional workers for your needs</p>
+                <button className="action-btn">Browse</button>
+              </Link>
+              <Link to="/my-profile" className="action-card">
+                <div className="action-icon">📋</div>
+                <h3>View Profile</h3>
+                <p>Check your profile and account information</p>
+                <button className="action-btn">View Profile</button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/jobs" className="action-card">
+                <div className="action-icon">🔍</div>
+                <h3>Find Jobs</h3>
+                <p>Browse available jobs that match your skills</p>
+                <button className="action-btn">Find Jobs</button>
+              </Link>
+              <Link to="/my-profile" className="action-card">
+                <div className="action-icon">📊</div>
+                <h3>My Profile</h3>
+                <p>Track your ratings, earnings and job completion</p>
+                <button className="action-btn">View Profile</button>
+              </Link>
+              <Link to="/notifications" className="action-card">
+                <div className="action-icon">💼</div>
+                <h3>Notifications</h3>
+                <p>View your latest notifications and updates</p>
+                <button className="action-btn">View Notifications</button>
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="recent-activity">
+        <h2 className="section-title">Recent Activity</h2>
+        <div className="activity-list">
+          {recentActivities.map((activity) => (
+            <div key={activity.id} className="activity-item">
+              <div className="activity-icon">{activity.icon}</div>
+              <div className="activity-content">
+                <p className="activity-action">{activity.action}</p>
+                <span className="activity-time">{activity.time}</span>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <h2 className="section-title">Quick Actions</h2>
-          <div className="actions-grid">
-            {user?.role === 'CUSTOMER' ? (
-              <>
-                <Link to="/create-post" className="action-card">
-                  <div className="action-icon">📝</div>
-                  <h3>Post a Job</h3>
-                  <p>Create a new job posting and find skilled workers</p>
-                  <button className="action-btn">Create Post</button>
-                </Link>
-                <Link to="/jobs" className="action-card">
-                  <div className="action-icon">👥</div>
-                  <h3>Browse Workers</h3>
-                  <p>Find and hire professional workers for your needs</p>
-                  <button className="action-btn">Browse</button>
-                </Link>
-                <Link to="/my-profile" className="action-card">
-                  <div className="action-icon">📋</div>
-                  <h3>View Profile</h3>
-                  <p>Check your profile and account information</p>
-                  <button className="action-btn">View Profile</button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/jobs" className="action-card">
-                  <div className="action-icon">🔍</div>
-                  <h3>Find Jobs</h3>
-                  <p>Browse available jobs that match your skills</p>
-                  <button className="action-btn">Find Jobs</button>
-                </Link>
-                <Link to="/my-profile" className="action-card">
-                  <div className="action-icon">📊</div>
-                  <h3>My Profile</h3>
-                  <p>Track your ratings, earnings and job completion</p>
-                  <button className="action-btn">View Profile</button>
-                </Link>
-                <Link to="/notifications" className="action-card">
-                  <div className="action-icon">💼</div>
-                  <h3>Notifications</h3>
-                  <p>View your latest notifications and updates</p>
-                  <button className="action-btn">View Notifications</button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="recent-activity">
-          <h2 className="section-title">Recent Activity</h2>
-          <div className="activity-list">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-icon">{activity.icon}</div>
-                <div className="activity-content">
-                  <p className="activity-action">{activity.action}</p>
-                  <span className="activity-time">{activity.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

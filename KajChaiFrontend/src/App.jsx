@@ -34,7 +34,7 @@ function App() {
             <Route 
               path="/dashboard" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute showBackButton={false}>
                   <Dashboard />
                 </ProtectedRoute>
               } 
@@ -98,7 +98,7 @@ function App() {
             <Route 
               path="/notifications" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute title="Notifications">
                   <Notifications />
                 </ProtectedRoute>
               } 

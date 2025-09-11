@@ -122,39 +122,13 @@ export const notificationAPI = {
 
   // Get unread notifications (Customer & Worker)
   getUnreadNotifications: () => {
-    console.log('API: Getting unread notifications...');
-    return apiClient.get('/notifications/unread').then(response => {
-      console.log('API: Unread notifications response:', response.data);
-      return response.data;
-    }).catch(error => {
-      console.error('API: Error getting unread notifications:', error);
-      throw error;
-    });
+    return apiClient.get('/notifications/unread');
   },
 
   // Get unread notifications count (Customer & Worker)
   getUnreadNotificationsCount: () => {
-  console.log('API: Getting unread notifications count...');
-  return apiClient.get('/notifications/unread/count').then(responseData => {
-    console.log('API: Response data (after interceptor):', responseData);
-    console.log('API: Response data type:', typeof responseData);
-    
-    // responseData is already the extracted data object from the interceptor
-    // Backend returns { count: number }
-    if (responseData) {
-      console.log('API: Successfully parsed count:', responseData.count);
-      return responseData; // Return the full response data object
-    } else {
-      // Fallback if structure is different
-      console.warn('API: Unexpected response structure, using fallback. Response:', responseData);
-      return { count: 0 };
-    }
-  }).catch(error => {
-    console.error('API: Error getting unread count:', error);
-    console.error('API: Error response:', error.response);
-    throw error;
-  });
-},
+    return apiClient.get('/notifications/unread/count');
+  },
 
   // Mark notification as read (Customer & Worker)
   markNotificationAsRead: (notificationId) => {

@@ -62,20 +62,30 @@ const Notifications = () => {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDateTime = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 1) {
-      return 'Today';
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (diffMinutes < 1) {
+      return `Just now • ${timeStr}`;
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes}m ago • ${timeStr}`;
+    } else if (diffHours < 24) {
+      return `${diffHours}h ago • ${timeStr}`;
+    } else if (diffDays === 1) {
+      return `Today • ${timeStr}`;
     } else if (diffDays === 2) {
-      return 'Yesterday';
+      return `Yesterday • ${timeStr}`;
     } else if (diffDays <= 7) {
-      return `${diffDays - 1} days ago`;
+      return `${diffDays - 1} days ago • ${timeStr}`;
     } else {
-      return date.toLocaleDateString();
+      return `${date.toLocaleDateString()} • ${timeStr}`;
     }
   };
 
@@ -94,7 +104,7 @@ const Notifications = () => {
   return (
     <div className="notifications">
       <div className="notifications-header">
-        <h2>Notifications</h2>
+        <h2>Your Notifications</h2>
         
         <div className="notifications-actions">
           <div className="filter-tabs">
@@ -127,7 +137,9 @@ const Notifications = () => {
 
       {notifications.length === 0 ? (
         <div className="no-notifications">
-          {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
+          <div className="no-notifications-icon">🔔</div>
+          <h3>{filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}</h3>
+          <p>You're all caught up! New notifications will appear here.</p>
         </div>
       ) : (
         <div className="notifications-list">
@@ -141,7 +153,7 @@ const Notifications = () => {
                   {notification.message}
                 </div>
                 <div className="notification-time">
-                  {formatDate(notification.notificationTime)}
+                  {formatDateTime(notification.notificationTime)}
                 </div>
               </div>
               
