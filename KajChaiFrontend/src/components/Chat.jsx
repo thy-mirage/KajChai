@@ -3,7 +3,6 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import chatService from '../services/chatService';
 import webSocketService from '../services/websocketService';
-import Layout from './Layout';
 import './Chat.css';
 
 const Chat = () => {
@@ -347,22 +346,19 @@ const Chat = () => {
 
     if (loading) {
         return (
-            <Layout>
-                <div className="chat-container">
-                    <div className="loading">Loading chats...</div>
-                </div>
-            </Layout>
+            <div className="chat-container">
+                <div className="loading">Loading chats...</div>
+            </div>
         );
     }
 
     return (
-        <Layout>
-            <div className="chat-container">
-            {/* Sidebar */}
-            <div className="chat-sidebar">
-                <div className="sidebar-header">
-                    <h3>Messages</h3>
-                    <div className="header-actions">
+        <div className="chat-container">
+        {/* Sidebar */}
+        <div className="chat-sidebar">
+            <div className="sidebar-header">
+                <h3>Messages</h3>
+                <div className="header-actions">
                         <div className={`connection-status ${wsConnected ? 'connected' : 'disconnected'}`} 
                              title={wsConnected ? 'Real-time messaging active' : 'Real-time messaging offline'}>
                             <span className="status-dot"></span>
@@ -540,7 +536,6 @@ const Chat = () => {
                 )}
             </div>
         </div>
-        </Layout>
     );
 };
 
