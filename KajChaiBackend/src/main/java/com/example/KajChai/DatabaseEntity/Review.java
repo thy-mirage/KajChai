@@ -35,10 +35,13 @@ public class Review {
     private Worker worker;
 
 
-    @Column(name = "images")
+    @ElementCollection
+    @CollectionTable(name = "review_images", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "image_url")
+    @Builder.Default
     private List<String> images = new ArrayList<>();
 
-    private Integer stars;
+    private Integer rating;
 
     @CreationTimestamp
     @Column(name = "review_time", nullable = false, updatable = false)

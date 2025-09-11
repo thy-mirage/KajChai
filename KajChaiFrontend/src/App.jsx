@@ -8,12 +8,13 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import MyProfile from './components/MyProfile';
-import Chat from './components/Chat';
+import Chat from './components/chat';
 import CreateHirePost from './components/CreateHirePost';
 import HirePostList from './components/HirePostList';
 import HirePostApplications from './components/HirePostApplications';
 import Notifications from './components/Notifications';
 import ProtectedRoute from './components/ProtectedRoute';
+import Review from './components/Review';
 import './App.css';
 
 function App() {
@@ -53,6 +54,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/reviews" 
+              element={
+                <ProtectedRoute>
+                  <Review />
                 </ProtectedRoute>
               } 
             />

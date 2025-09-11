@@ -49,6 +49,7 @@ const Navbar = () => {
     { path: '/my-profile', label: 'My Profile', icon: '👤' },
     { path: '/notifications', label: 'Notifications', icon: '🔔' },
     { path: '/chat', label: 'Chat', icon: '💬' },
+    { path: '/reviews', label: 'Reviews', icon: '💬' },
   ];
 
   const workerNavItems = [
