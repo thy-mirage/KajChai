@@ -1,14 +1,16 @@
 package com.example.KajChai.DatabaseEntity;
 
+import com.example.KajChai.Enum.ForumSection;
+import com.example.KajChai.Enum.ForumCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -16,24 +18,63 @@ import java.util.List;
 @Data
 @Builder
 @Entity
-@Table(name = "Forum_post")
+@Table(name = "forum_posts")
 public class ForumPost {
     @Id
-    @GeneratedValue
-    private Integer forumId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long postId;
+
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String description;
+    private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @Column(name = "photo_urls", columnDefinition = "TEXT")
+    private String photoUrls; // JSON array of photo URLs
 
-    @Column(name = "images")
-    private List<String> images = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ForumSection section;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ForumCategory category;
+
+    // Author information - references User entity
+    @Column(nullable = false)
+    private Integer authorId;
+
+    @Column(nullable = false)
+    private String authorName;
+
+    @Column
+    private String authorPhoto;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer likesCount = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer dislikesCount = 0;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer commentsCount = 0;
 
     @CreationTimestamp
-    @Column(name = "post_time", nullable = false, updatable = false)
-    private LocalDateTime postTime;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    // For managing relationships
+    @OneToMany(mappedBy = "forumPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ForumComment> comments;
+
+    @OneToMany(mappedBy = "forumPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ForumLike> likes;
 }

@@ -1,0 +1,110 @@
+Now we will implement the forum feature for our KajChai Project. There will be 3 sections of this feature which are stated as follow:
+
+🗨️ KajChai Forum Sections
+1. Customer Q&A
+
+Purpose: A space where customers can ask service-related questions and get answers from workers or other customers.
+
+Who can post? Customers.
+
+Who can comment? Workers and customers.
+
+Examples:
+
+“My ceiling fan is making noise — do I need an electrician or just cleaning?”
+
+“What’s the average cost of repainting a 2-room flat in Dhaka?”
+
+“Which type of water pipe lasts longer in humid weather?”
+
+✅ Value: Helps customers make informed decisions before hiring, while allowing workers to showcase expertise.
+
+2. Worker Tips & Projects
+
+Purpose: A showcase and knowledge-sharing hub where workers can post useful tips, tutorials, and completed projects.
+
+Who can post? Workers.
+
+Who can comment? Customers and workers.
+
+Examples:
+
+Tips: “5 safety rules everyone should follow before using electrical appliances.”
+
+Projects: A carpenter shares before-and-after pictures of a custom-made wardrobe.
+
+Guides: A plumber explains “How to temporarily fix a leaking tap until help arrives.”
+
+✅ Value: Builds worker reputation and portfolio, while educating customers and boosting trust.
+
+3. Customer Experience
+
+Purpose: A discussion space where customers share their overall service experiences, lessons, or advice with the community (not structured reviews of specific workers).
+
+Who can post? Customers.
+
+Who can comment? Workers and customers.
+
+Examples:
+
+“I hired a painter through KajChai last month — here’s what I learned about preparing my home before painting.”
+
+“The maid I booked was really efficient — 3 tips for managing cleaning schedules at home.”
+
+“During Eid season, finding an available driver was hard. Here’s what I’ll do differently next year.”
+
+✅ Value: Builds trust, encourages community sharing, and helps future customers learn from real experiences
+
+There will be like and dislike options in the forum post and he will be able to upload pictures also.
+
+From customer perspective:
+
+The filter for customer q&a and customer experience will be:
+
+Electrical Work, Plumbing, Carpentry, Painting, Cleaning Services, Cooking & Catering, Driving Services, Photography
+
+
+The filter for worker tips and projects will be:
+
+Electrical Work Tips, Plumbing Tips, Carpentry Tips, Painting Techniques, Cleaning & Maid Tips, Cooking & Catering Tips, Driving Skills & Advice, Photography Tips & Projects
+
+* Now when a user will go to customer q&a and then select any of the filter then there will be another filter where there will be 3 options: recent, most popular, my q&a's of that particular filter like electrical work
+
+* Now when a user will go to worker tips and projects and then select any of the filter then there will be another filter where there will be 2 options: recent, most popular
+
+* Now when a user will go to customer experiences and then select any of the filter then there will be another filter where there will be 3 options: recent, most popular, my experiences of that particular filter like electrical.
+
+
+
+From worker perspective:
+
+The filter for customer q&a and customer experience will be:
+
+Electrical Work, Plumbing, Carpentry, Painting, Cleaning Services, Cooking & Catering, Driving Services, Photography
+
+
+The filter for worker tips and projects will be:
+
+Electrical Work Tips, Plumbing Tips, Carpentry Tips, Painting Techniques, Cleaning & Maid Tips, Cooking & Catering Tips, Driving Skills & Advice, Photography Tips & Projects
+
+Now when a user will go to customer q&a and then select any of the filter then there will be another filter where there will be 2 options: recent, most popular
+
+Now when a user will go to worker tips and projects and then select any of the filter then there will be another filter where there will be 2 options: recent, most popular, my tips and projects of that particular field
+
+Now when a user will go to customer experiences and then select any of the filter then there will be another filter where there will be 3 options: recent, most popular
+
+
+We will show the most popular based on the sorting of most liked forum post.
+
+
+
+
+
+
+
+
+
+
+
+
+

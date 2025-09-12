@@ -8,11 +8,12 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import MyProfile from './components/MyProfile';
-import Chat from './components/chat';
+import Chat from './components/Chat';
 import CreateHirePost from './components/CreateHirePost';
 import HirePostList from './components/HirePostList';
 import HirePostApplications from './components/HirePostApplications';
 import Notifications from './components/Notifications';
+import Forum from './components/Forum';
 import ProtectedRoute from './components/ProtectedRoute';
 import Review from './components/Review';
 import './App.css';
@@ -54,6 +55,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/forum" 
+              element={
+                <ProtectedRoute>
+                  <Forum />
                 </ProtectedRoute>
               } 
             />

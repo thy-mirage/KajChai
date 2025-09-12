@@ -14,24 +14,17 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "forum_comments")
-public class ForumComment {
+@Table(name = "forum_likes", uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"}))
+public class ForumLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long commentId;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
-
-    // Comment author information
-    @Column(nullable = false)
-    private Integer authorId;
+    private Long likeId;
 
     @Column(nullable = false)
-    private String authorName;
+    private Integer userId;
 
-    @Column
-    private String authorPhoto;
+    @Column(nullable = false)
+    private Boolean isLike; // true for like, false for dislike
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

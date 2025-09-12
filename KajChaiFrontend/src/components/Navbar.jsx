@@ -59,6 +59,7 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: '🏠', description: 'Overview & Stats' },
     { path: '/create-post', label: 'Create Job', icon: '➕', description: 'Post a new job' },
     { path: '/jobs', label: 'Find Workers', icon: '🔍', description: 'Browse available workers' },
+    { path: '/forum', label: 'Community', icon: '👥', description: 'Community forum' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', description: 'View your notifications' },
     { path: '/chat', label: 'Messages', icon: '💬', description: 'Chat with workers' },
     { path: '/reviews', label: 'Reviews', icon: '💬', description: 'View and manage reviews' },
@@ -67,6 +68,7 @@ const Navbar = () => {
   const workerNavItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '🏠', description: 'Overview & Stats' },
     { path: '/jobs', label: 'Available Jobs', icon: '💼', description: 'Find work opportunities' },
+    { path: '/forum', label: 'Community', icon: '👥', description: 'Community forum' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', description: 'View your notifications' },
     { path: '/chat', label: 'Messages', icon: '💬', description: 'Chat with customers' },
   ];
