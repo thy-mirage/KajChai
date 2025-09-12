@@ -171,16 +171,28 @@ const CreateHirePost = ({ onPostCreated }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="images">Upload Images (Optional)</label>
-          <input
-            type="file"
-            id="images"
-            name="images"
-            accept="image/*"
-            multiple
-            onChange={handleImageChange}
-            className="file-input"
-          />
+          <label>Upload Images (Optional)</label>
+          <div className="image-upload-section">
+            <div className="file-input-container">
+              <input
+                type="file"
+                id="images"
+                name="images"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="file-input-hidden"
+                disabled={formData.images.length >= 5}
+              />
+              <label htmlFor="images" className="file-upload-button">
+                <span className="upload-icon">📁</span>
+                Choose Images
+              </label>
+              <div className="file-input-info">
+                {formData.images.length}/5 images • Max 5MB each
+              </div>
+            </div>
+          </div>
           <small className="help-text">You can upload up to 5 images to help describe your job</small>
           
           {formData.images.length > 0 && (
