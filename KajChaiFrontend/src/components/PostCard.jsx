@@ -10,6 +10,7 @@ const PostCard = ({ post, onUpdate }) => {
   const [isLiking, setIsLiking] = useState(false);
   const [localPost, setLocalPost] = useState(post);
   const [showFullContent, setShowFullContent] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const CONTENT_PREVIEW_LENGTH = 300;
 
@@ -96,6 +97,26 @@ const PostCard = ({ post, onUpdate }) => {
     if (onUpdate) onUpdate();
   };
 
+  const handleDeletePost = async () => {
+    if (!user || !localPost.canEdit) return;
+    
+    const confirmDelete = window.confirm('Are you sure you want to delete this post? This action cannot be undone.');
+    if (!confirmDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await forumAPI.deletePost(localPost.postId);
+      
+      // Call onUpdate to refresh the post list
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="post-card">
       {/* Post Header */}
@@ -119,8 +140,13 @@ const PostCard = ({ post, onUpdate }) => {
         
         {localPost.canEdit && (
           <div className="post-actions">
-            <button className="edit-btn" title="Edit Post">
-              ✏️
+            <button 
+              className="delete-btn" 
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+              title="Delete Post"
+            >
+              {isDeleting ? '⏳' : '🗑️'}
             </button>
           </div>
         )}

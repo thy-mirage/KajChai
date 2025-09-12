@@ -32,6 +32,7 @@ public class ForumService {
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
     // Create a new forum post
@@ -173,6 +174,11 @@ public class ForumService {
         // Update comment count
         updatePostCommentCount(postId);
         
+        // Send notification to post author if it's not their own comment
+        if (!post.getAuthorId().equals(userId)) {
+            sendCommentNotification(post, authorName, userId);
+        }
+        
         return convertToCommentResponse(savedComment);
     }
 
@@ -207,6 +213,11 @@ public class ForumService {
 
         // Update like/dislike counts
         updatePostLikeCounts(postId);
+        
+        // Send notification to post author if it's not their own like/dislike
+        if (!post.getAuthorId().equals(userId)) {
+            sendLikeNotification(post, userId, isLike);
+        }
     }
 
     // Get comments for a post
@@ -253,6 +264,105 @@ public class ForumService {
             post.setDislikesCount(dislikeCount.intValue());
             forumPostRepository.save(post);
         });
+    }
+
+    // Delete a forum post (only post owner can delete)
+    public void deletePost(Long postId, Integer userId) {
+        // Get the post
+        ForumPost post = forumPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        
+        // Check if the current user is the author of the post
+        if (!post.getAuthorId().equals(userId)) {
+            throw new RuntimeException("You can only delete your own posts");
+        }
+        
+        // Delete all associated comments first (cascade should handle this, but being explicit)
+        forumCommentRepository.deleteByForumPost(post);
+        
+        // Delete all associated likes/dislikes
+        forumLikeRepository.deleteByForumPost(post);
+        
+        // Delete the post
+        forumPostRepository.delete(post);
+    }
+
+    // Helper method to send comment notification
+    private void sendCommentNotification(ForumPost post, String commenterName, Integer commenterId) {
+        try {
+            // Get post author details
+            User postAuthor = userRepository.findById(post.getAuthorId())
+                    .orElse(null);
+            
+            if (postAuthor != null) {
+                String message = String.format("%s commented on your post: \"%s\"", 
+                    commenterName, post.getTitle());
+                
+                if (postAuthor.getRole() == UserRole.CUSTOMER) {
+                    Customer customer = customerRepository.findByGmail(postAuthor.getEmail())
+                            .orElse(null);
+                    if (customer != null) {
+                        notificationService.createCustomerNotification(customer, message);
+                    }
+                } else if (postAuthor.getRole() == UserRole.WORKER) {
+                    Worker worker = workerRepository.findByGmail(postAuthor.getEmail())
+                            .orElse(null);
+                    if (worker != null) {
+                        notificationService.createWorkerNotification(worker, message);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log error but don't fail the main operation
+            System.err.println("Failed to send comment notification: " + e.getMessage());
+        }
+    }
+
+    // Helper method to send like/dislike notification
+    private void sendLikeNotification(ForumPost post, Integer likerId, Boolean isLike) {
+        try {
+            // Get post author details
+            User postAuthor = userRepository.findById(post.getAuthorId())
+                    .orElse(null);
+            
+            // Get liker details
+            User liker = userRepository.findById(likerId)
+                    .orElse(null);
+            
+            if (postAuthor != null && liker != null) {
+                String likerName;
+                if (liker.getRole() == UserRole.CUSTOMER) {
+                    Customer customer = customerRepository.findByGmail(liker.getEmail())
+                            .orElse(null);
+                    likerName = customer != null ? customer.getCustomerName() : "Someone";
+                } else {
+                    Worker worker = workerRepository.findByGmail(liker.getEmail())
+                            .orElse(null);
+                    likerName = worker != null ? worker.getName() : "Someone";
+                }
+                
+                String action = isLike ? "liked" : "disliked";
+                String message = String.format("%s %s your post: \"%s\"", 
+                    likerName, action, post.getTitle());
+                
+                if (postAuthor.getRole() == UserRole.CUSTOMER) {
+                    Customer customer = customerRepository.findByGmail(postAuthor.getEmail())
+                            .orElse(null);
+                    if (customer != null) {
+                        notificationService.createCustomerNotification(customer, message);
+                    }
+                } else if (postAuthor.getRole() == UserRole.WORKER) {
+                    Worker worker = workerRepository.findByGmail(postAuthor.getEmail())
+                            .orElse(null);
+                    if (worker != null) {
+                        notificationService.createWorkerNotification(worker, message);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log error but don't fail the main operation
+            System.err.println("Failed to send like notification: " + e.getMessage());
+        }
     }
 
     // Helper method to convert ForumPost to ForumPostResponse

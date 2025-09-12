@@ -68,18 +68,24 @@
   gap: 8px;
 }
 
-.edit-btn {
+.delete-btn {
   background: none;
   border: none;
   font-size: 16px;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.edit-btn:hover {
-  background: #f0f0f0;
+.delete-btn:hover:not(:disabled) {
+  background: #fee;
+  color: #e74c3c;
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Post Content */

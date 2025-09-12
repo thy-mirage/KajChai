@@ -1,6 +1,7 @@
 package com.example.KajChai.Repository;
 
 import com.example.KajChai.DatabaseEntity.ForumLike;
+import com.example.KajChai.DatabaseEntity.ForumPost;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +30,7 @@ public interface ForumLikeRepository extends JpaRepository<ForumLike, Long> {
     // Check if user has disliked a post
     @Query("SELECT CASE WHEN COUNT(l) > 0 THEN true ELSE false END FROM ForumLike l WHERE l.userId = :userId AND l.forumPost.postId = :postId AND l.isLike = false")
     Boolean hasUserDislikedPost(@Param("userId") Integer userId, @Param("postId") Long postId);
+    
+    // Delete likes/dislikes by post
+    void deleteByForumPost(ForumPost post);
 }

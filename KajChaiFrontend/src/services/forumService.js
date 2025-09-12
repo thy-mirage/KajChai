@@ -99,6 +99,11 @@ export const forumAPI = {
     return apiClient.post(`/forum/posts/${postId}/like`, { isLike });
   },
 
+  // Delete a post
+  deletePost: (postId) => {
+    return apiClient.delete(`/forum/posts/${postId}`);
+  },
+
   // Get available categories for a section
   getCategories: (section) => {
     return apiClient.get(`/forum/categories?section=${section}`);

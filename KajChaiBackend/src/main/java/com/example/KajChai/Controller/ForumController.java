@@ -97,6 +97,14 @@ public class ForumController {
         return ResponseEntity.ok("Like/dislike removed successfully");
     }
 
+    // Delete a post (only post owner can delete)
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable Long postId) {
+        Integer userId = getCurrentUserId();
+        forumService.deletePost(postId, userId);
+        return ResponseEntity.ok("Post deleted successfully");
+    }
+
     // Get forum categories for a specific section
     @GetMapping("/categories")
     public ResponseEntity<List<ForumCategory>> getCategories(@RequestParam ForumSection section) {

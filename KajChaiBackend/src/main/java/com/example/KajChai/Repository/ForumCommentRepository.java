@@ -1,6 +1,7 @@
 package com.example.KajChai.Repository;
 
 import com.example.KajChai.DatabaseEntity.ForumComment;
+import com.example.KajChai.DatabaseEntity.ForumPost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,7 @@ public interface ForumCommentRepository extends JpaRepository<ForumComment, Long
     // Count comments for a specific post
     @Query("SELECT COUNT(c) FROM ForumComment c WHERE c.forumPost.postId = :postId")
     Long countByPostId(@Param("postId") Long postId);
+    
+    // Delete comments by post
+    void deleteByForumPost(ForumPost post);
 }
