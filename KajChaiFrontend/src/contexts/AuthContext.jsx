@@ -142,18 +142,21 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authAPI.getCurrentUser();
       if (response.success) {
-        // Get detailed profile to fetch user ID
+        // Get detailed profile to fetch user ID and photo
         const profileResponse = await authAPI.getProfile();
         let userId = null;
         let userName = null;
+        let userPhoto = null;
         
         if (profileResponse.success && profileResponse.data) {
           if (response.role === 'CUSTOMER') {
             userId = profileResponse.data.customerId;
             userName = profileResponse.data.customerName;
+            userPhoto = profileResponse.data.photo;
           } else if (response.role === 'WORKER') {
             userId = profileResponse.data.workerId;
             userName = profileResponse.data.name;
+            userPhoto = profileResponse.data.photo;
           }
         }
         
@@ -161,7 +164,8 @@ export const AuthProvider = ({ children }) => {
           email: response.email,
           role: response.role,
           userId: userId,
-          name: userName
+          name: userName,
+          photo: userPhoto
         };
         
         // Additional safety check: If there's already a user and it's different,
@@ -209,18 +213,21 @@ export const AuthProvider = ({ children }) => {
           sessionStorage.setItem('current_user_email', response.email);
         }
         
-        // Get detailed profile to fetch user ID
+        // Get detailed profile to fetch user ID and photo
         const profileResponse = await authAPI.getProfile();
         let userId = null;
         let userName = null;
+        let userPhoto = null;
         
         if (profileResponse.success && profileResponse.data) {
           if (response.role === 'CUSTOMER') {
             userId = profileResponse.data.customerId;
             userName = profileResponse.data.customerName;
+            userPhoto = profileResponse.data.photo;
           } else if (response.role === 'WORKER') {
             userId = profileResponse.data.workerId;
             userName = profileResponse.data.name;
+            userPhoto = profileResponse.data.photo;
           }
         }
         
@@ -228,7 +235,8 @@ export const AuthProvider = ({ children }) => {
           email: response.email,
           role: response.role,
           userId: userId,
-          name: userName
+          name: userName,
+          photo: userPhoto
         };
         
         setUser(newUserData);
@@ -299,6 +307,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const initiateSignupWithPhoto = async (formData) => {
+    try {
+      const response = await authAPI.initiateSignupWithPhoto(formData);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Signup with photo failed'
+      };
+    }
+  };
+
   const completeSignup = async (signupData, verificationCode) => {
     try {
       const response = await authAPI.completeSignup(signupData, verificationCode);
@@ -307,6 +327,18 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         message: error.response?.data?.message || 'Verification failed'
+      };
+    }
+  };
+
+  const completeSignupWithPhoto = async (formData, verificationCode) => {
+    try {
+      const response = await authAPI.completeSignupWithPhoto(formData, verificationCode);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Verification with photo failed'
       };
     }
   };
@@ -330,7 +362,9 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     initiateSignup,
+    initiateSignupWithPhoto,
     completeSignup,
+    completeSignupWithPhoto,
     resendVerificationCode,
     checkAuthStatus
   };

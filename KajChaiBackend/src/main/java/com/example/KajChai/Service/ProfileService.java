@@ -79,7 +79,10 @@ public class ProfileService {
         
         Customer customer = customerOpt.get();
         customer.setCustomerName(request.getCustomerName());
-        customer.setPhoto(request.getPhoto());
+        // Only update photo if a new photo URL is provided
+        if (request.getPhoto() != null) {
+            customer.setPhoto(request.getPhoto());
+        }
         customer.setPhone(request.getPhone());
         customer.setGender(request.getGender());
         customer.setCity(request.getCity());
@@ -112,7 +115,10 @@ public class ProfileService {
         
         Worker worker = workerOpt.get();
         worker.setName(request.getName());
-        worker.setPhoto(request.getPhoto());
+        // Only update photo if a new photo URL is provided
+        if (request.getPhoto() != null) {
+            worker.setPhoto(request.getPhoto());
+        }
         worker.setPhone(request.getPhone());
         worker.setGender(request.getGender());
         worker.setCity(request.getCity());

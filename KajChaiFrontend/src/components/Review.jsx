@@ -317,7 +317,7 @@ const Review = () => {
                                     onClick={() => handleWorkerClick(worker)}
                                 >
                                     <div className="worker-avatar">
-                                        {worker.profilePicture ? (
+                                        {worker.photo ? (
                                             <img src={worker.photo} alt={worker.name} />
                                         ) : (
                                             <div className="avatar-placeholder">

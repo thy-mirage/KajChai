@@ -4,7 +4,7 @@ import authService from '../services/authService';
 import './Profile.css';
 
 const WorkerProfile = () => {
-  const { user } = useAuth();
+  const { user, checkAuthStatus } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,6 +22,8 @@ const WorkerProfile = () => {
     field: '',
     experience: ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
   const jobFields = [
     'Electrician',
@@ -73,6 +75,28 @@ const WorkerProfile = () => {
     }));
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -80,17 +104,43 @@ const WorkerProfile = () => {
     setSuccess('');
 
     try {
-      // Convert experience to number if provided
-      const submitData = {
-        ...formData,
-        experience: formData.experience ? parseFloat(formData.experience) : null
-      };
-
-      const response = await authService.updateWorkerProfile(submitData);
+      let response;
+      
+      if (photoFile) {
+        // Use multipart form data for photo upload
+        const uploadFormData = new FormData();
+        uploadFormData.append('name', formData.name);
+        uploadFormData.append('phone', formData.phone);
+        uploadFormData.append('gender', formData.gender);
+        uploadFormData.append('city', formData.city);
+        uploadFormData.append('upazila', formData.upazila);
+        uploadFormData.append('district', formData.district);
+        uploadFormData.append('division', formData.division);
+        uploadFormData.append('field', formData.field);
+        if (formData.experience) {
+          uploadFormData.append('experience', parseFloat(formData.experience));
+        }
+        uploadFormData.append('photo', photoFile);
+        
+        response = await authService.updateWorkerProfileWithPhoto(uploadFormData);
+      } else {
+        // Use regular JSON payload if no photo
+        const submitData = {
+          ...formData,
+          experience: formData.experience ? parseFloat(formData.experience) : null
+        };
+        response = await authService.updateWorkerProfile(submitData);
+      }
+      
       if (response.success) {
         setProfile(response.data);
         setSuccess('Profile updated successfully!');
         setIsEditing(false);
+        // Clear photo states
+        setPhotoFile(null);
+        setPhotoPreview(null);
+        // Refresh user data in AuthContext to update navbar
+        await checkAuthStatus();
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to update profile';
@@ -105,6 +155,8 @@ const WorkerProfile = () => {
     setIsEditing(false);
     setError('');
     setSuccess('');
+    setPhotoFile(null);
+    setPhotoPreview(null);
     // Reset form data to current profile
     if (profile) {
       setFormData({
@@ -226,16 +278,36 @@ const WorkerProfile = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="photo">Photo URL</label>
+                <label htmlFor="photo">Profile Photo</label>
                 <input
-                  type="url"
+                  type="file"
                   id="photo"
                   name="photo"
-                  value={formData.photo}
-                  onChange={handleChange}
-                  placeholder="Enter photo URL"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
                   disabled={loading}
+                  className="photo-input"
                 />
+                {(photoPreview || formData.photo) && (
+                  <div className="photo-preview">
+                    <img 
+                      src={photoPreview || formData.photo} 
+                      alt="Profile Preview" 
+                      className="preview-image" 
+                    />
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      className="remove-photo-btn"
+                      disabled={loading}
+                    >
+                      Remove Photo
+                    </button>
+                  </div>
+                )}
+                <small className="photo-help">
+                  Upload a new profile photo (JPG, PNG, GIF) - Optional
+                </small>
               </div>
 
               <div className="form-group">

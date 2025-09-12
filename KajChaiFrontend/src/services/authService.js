@@ -62,9 +62,29 @@ export const authAPI = {
     return apiClient.post('/auth/signup/initiate', signupData);
   },
 
+  // Initiate signup with photo
+  initiateSignupWithPhoto: (formData) => {
+    return apiClient.post('/auth/signup/initiate-with-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   // Complete signup with verification
   completeSignup: (signupData, verificationCode) => {
     return apiClient.post(`/auth/signup/verify?verificationCode=${verificationCode}`, signupData);
+  },
+
+  // Complete signup with photo and verification
+  completeSignupWithPhoto: (formData, verificationCode) => {
+    // Add verification code to form data
+    formData.append('verificationCode', verificationCode);
+    return apiClient.post('/auth/signup/verify-with-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
 
   // Login
@@ -134,8 +154,24 @@ export const authAPI = {
     return apiClient.put('/profile/customer', profileData);
   },
 
+  updateCustomerProfileWithPhoto: (formData) => {
+    return apiClient.put('/profile/customer-with-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   updateWorkerProfile: (profileData) => {
     return apiClient.put('/profile/worker', profileData);
+  },
+
+  updateWorkerProfileWithPhoto: (formData) => {
+    return apiClient.put('/profile/worker-with-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
 };
 
@@ -148,7 +184,9 @@ const authService = {
 
   // Registration
   initiateSignup: authAPI.initiateSignup,
+  initiateSignupWithPhoto: authAPI.initiateSignupWithPhoto,
   completeSignup: authAPI.completeSignup,
+  completeSignupWithPhoto: authAPI.completeSignupWithPhoto,
   resendVerificationCode: authAPI.resendVerificationCode,
 
   // Password reset
@@ -161,7 +199,9 @@ const authService = {
   getCustomerProfile: authAPI.getCustomerProfile,
   getWorkerProfile: authAPI.getWorkerProfile,
   updateCustomerProfile: authAPI.updateCustomerProfile,
+  updateCustomerProfileWithPhoto: authAPI.updateCustomerProfileWithPhoto,
   updateWorkerProfile: authAPI.updateWorkerProfile,
+  updateWorkerProfileWithPhoto: authAPI.updateWorkerProfileWithPhoto,
 
   // Test endpoints
   getPublicData: authAPI.getPublicData,

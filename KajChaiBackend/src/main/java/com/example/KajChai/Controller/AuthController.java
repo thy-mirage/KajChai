@@ -3,9 +3,15 @@ package com.example.KajChai.Controller;
 import com.example.KajChai.DTO.*;
 import com.example.KajChai.Service.AuthService;
 import com.example.KajChai.Service.EmailVerificationService;
+import com.example.KajChai.CloudinaryConfiguration.CloudinaryService;
 import com.example.KajChai.Security.JwtUtil;
 import com.example.KajChai.DatabaseEntity.User;
+import com.example.KajChai.DatabaseEntity.Customer;
+import com.example.KajChai.DatabaseEntity.Worker;
+import com.example.KajChai.Repository.CustomerRepository;
+import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.Service.UserService;
+import com.example.KajChai.Enum.UserRole;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -15,9 +21,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,14 +35,70 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailVerificationService verificationService;
+    private final CloudinaryService cloudinaryService;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final CustomerRepository customerRepository;
+    private final WorkerRepository workerRepository;
 
     @PostMapping("/signup/initiate")
     public ResponseEntity<AuthResponse> initiateSignup(@Valid @RequestBody SignupRequest request) {
         AuthResponse response = authService.initiateSignup(request);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
                 .body(response);
+    }
+
+    @PostMapping(value = "/signup/initiate-with-photo", consumes = "multipart/form-data")
+    public ResponseEntity<AuthResponse> initiateSignupWithPhoto(
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("role") UserRole role,
+            @RequestParam("name") String name,
+            @RequestParam("phone") String phone,
+            @RequestParam("gender") String gender,
+            @RequestParam("city") String city,
+            @RequestParam("upazila") String upazila,
+            @RequestParam("district") String district,
+            @RequestParam("division") String division,
+            @RequestParam(value = "field", required = false) String field,
+            @RequestParam(value = "experience", required = false) Float experience,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
+        
+        try {
+            String photoUrl = null;
+            
+            // Upload photo to Cloudinary if provided
+            if (photo != null && !photo.isEmpty()) {
+                photoUrl = cloudinaryService.uploadFile(photo, "kajchai/profile-photos");
+            }
+            
+            // Create signup request
+            SignupRequest request = new SignupRequest();
+            request.setEmail(email);
+            request.setPassword(password);
+            request.setRole(role);
+            request.setName(name);
+            request.setPhone(phone);
+            request.setGender(gender);
+            request.setCity(city);
+            request.setUpazila(upazila);
+            request.setDistrict(district);
+            request.setDivision(division);
+            request.setPhoto(photoUrl);
+            request.setField(field);
+            request.setExperience(experience);
+            
+            AuthResponse response = authService.initiateSignup(request);
+            return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
+                    .body(response);
+                    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(AuthResponse.builder()
+                            .success(false)
+                            .message("Failed to upload photo and initiate signup: " + e.getMessage())
+                            .build());
+        }
     }
 
     @PostMapping("/signup/verify")
@@ -44,6 +108,60 @@ public class AuthController {
         AuthResponse response = authService.completeSignup(request, verificationCode);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
                 .body(response);
+    }
+
+    @PostMapping(value = "/signup/verify-with-photo", consumes = "multipart/form-data")
+    public ResponseEntity<AuthResponse> verifyAndCompleteSignupWithPhoto(
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam("role") UserRole role,
+            @RequestParam("name") String name,
+            @RequestParam("phone") String phone,
+            @RequestParam("gender") String gender,
+            @RequestParam("city") String city,
+            @RequestParam("upazila") String upazila,
+            @RequestParam("district") String district,
+            @RequestParam("division") String division,
+            @RequestParam(value = "field", required = false) String field,
+            @RequestParam(value = "experience", required = false) Float experience,
+            @RequestParam(value = "photo", required = false) MultipartFile photo,
+            @RequestParam("verificationCode") String verificationCode) {
+        
+        try {
+            String photoUrl = null;
+            
+            // Upload photo to Cloudinary if provided
+            if (photo != null && !photo.isEmpty()) {
+                photoUrl = cloudinaryService.uploadFile(photo, "kajchai/profile-photos");
+            }
+            
+            // Create signup request
+            SignupRequest request = new SignupRequest();
+            request.setEmail(email);
+            request.setPassword(password);
+            request.setRole(role);
+            request.setName(name);
+            request.setPhone(phone);
+            request.setGender(gender);
+            request.setCity(city);
+            request.setUpazila(upazila);
+            request.setDistrict(district);
+            request.setDivision(division);
+            request.setPhoto(photoUrl);
+            request.setField(field);
+            request.setExperience(experience);
+            
+            AuthResponse response = authService.completeSignup(request, verificationCode);
+            return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST)
+                    .body(response);
+                    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(AuthResponse.builder()
+                            .success(false)
+                            .message("Failed to upload photo and complete signup: " + e.getMessage())
+                            .build());
+        }
     }
 
     @PostMapping("/login")
@@ -134,11 +252,37 @@ public class AuthController {
             
             User user = (User) authentication.getPrincipal();
             
+            // Get user photo and name from database
+            String userPhoto = null;
+            String userName = null;
+            Integer userId = null;
+            
+            if (user.getRole() == UserRole.CUSTOMER) {
+                Optional<Customer> customerOpt = customerRepository.findByGmail(user.getEmail());
+                if (customerOpt.isPresent()) {
+                    Customer customer = customerOpt.get();
+                    userPhoto = customer.getPhoto();
+                    userName = customer.getCustomerName();
+                    userId = customer.getCustomerId();
+                }
+            } else if (user.getRole() == UserRole.WORKER) {
+                Optional<Worker> workerOpt = workerRepository.findByGmail(user.getEmail());
+                if (workerOpt.isPresent()) {
+                    Worker worker = workerOpt.get();
+                    userPhoto = worker.getPhoto();
+                    userName = worker.getName();
+                    userId = worker.getWorkerId();
+                }
+            }
+            
             return ResponseEntity.ok(AuthResponse.builder()
                     .success(true)
                     .message("User information retrieved successfully")
                     .email(user.getEmail())
                     .role(user.getRole())
+                    .userId(userId)
+                    .name(userName)
+                    .photo(userPhoto)
                     .build());
                     
         } catch (Exception e) {

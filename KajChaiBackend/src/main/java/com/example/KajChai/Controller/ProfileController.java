@@ -3,6 +3,7 @@ package com.example.KajChai.Controller;
 import com.example.KajChai.DTO.*;
 import com.example.KajChai.DatabaseEntity.User;
 import com.example.KajChai.Service.ProfileService;
+import com.example.KajChai.CloudinaryConfiguration.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final CloudinaryService cloudinaryService;
 
     @GetMapping
     public ResponseEntity<ProfileResponse> getProfile() {
@@ -147,6 +150,66 @@ public class ProfileController {
         }
     }
 
+    @PutMapping(value = "/customer-with-photo", consumes = "multipart/form-data")
+    public ResponseEntity<ProfileResponse> updateCustomerProfileWithPhoto(
+            @RequestParam("customerName") String customerName,
+            @RequestParam("phone") String phone,
+            @RequestParam("gender") String gender,
+            @RequestParam("city") String city,
+            @RequestParam("upazila") String upazila,
+            @RequestParam("district") String district,
+            @RequestParam("division") String division,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
+        
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ProfileResponse.builder()
+                                .success(false)
+                                .message("Not authenticated")
+                                .build());
+            }
+            
+            User user = (User) authentication.getPrincipal();
+            String photoUrl = null;
+            
+            // Upload photo to Cloudinary if provided
+            if (photo != null && !photo.isEmpty()) {
+                photoUrl = cloudinaryService.uploadFile(photo, "kajchai/profile-photos");
+            }
+            
+            // Create update request
+            CustomerProfileUpdateRequest request = CustomerProfileUpdateRequest.builder()
+                    .customerName(customerName)
+                    .photo(photoUrl) // This will be null if no photo uploaded, which is fine
+                    .phone(phone)
+                    .gender(gender)
+                    .city(city)
+                    .upazila(upazila)
+                    .district(district)
+                    .division(division)
+                    .build();
+            
+            CustomerProfileResponse profileData = profileService.updateCustomerProfile(user.getEmail(), request);
+            
+            return ResponseEntity.ok(ProfileResponse.builder()
+                    .success(true)
+                    .message("Customer profile updated successfully")
+                    .role(user.getRole())
+                    .data(profileData)
+                    .build());
+                    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ProfileResponse.builder()
+                            .success(false)
+                            .message("Failed to update customer profile: " + e.getMessage())
+                            .build());
+        }
+    }
+
     @PutMapping("/worker")
     public ResponseEntity<ProfileResponse> updateWorkerProfile(@Valid @RequestBody WorkerProfileUpdateRequest request) {
         try {
@@ -161,6 +224,70 @@ public class ProfileController {
             }
             
             User user = (User) authentication.getPrincipal();
+            WorkerProfileResponse profileData = profileService.updateWorkerProfile(user.getEmail(), request);
+            
+            return ResponseEntity.ok(ProfileResponse.builder()
+                    .success(true)
+                    .message("Worker profile updated successfully")
+                    .role(user.getRole())
+                    .data(profileData)
+                    .build());
+                    
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ProfileResponse.builder()
+                            .success(false)
+                            .message("Failed to update worker profile: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @PutMapping(value = "/worker-with-photo", consumes = "multipart/form-data")
+    public ResponseEntity<ProfileResponse> updateWorkerProfileWithPhoto(
+            @RequestParam("name") String name,
+            @RequestParam("phone") String phone,
+            @RequestParam("gender") String gender,
+            @RequestParam("city") String city,
+            @RequestParam("upazila") String upazila,
+            @RequestParam("district") String district,
+            @RequestParam("division") String division,
+            @RequestParam("field") String field,
+            @RequestParam(value = "experience", required = false) Float experience,
+            @RequestParam(value = "photo", required = false) MultipartFile photo) {
+        
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ProfileResponse.builder()
+                                .success(false)
+                                .message("Not authenticated")
+                                .build());
+            }
+            
+            User user = (User) authentication.getPrincipal();
+            String photoUrl = null;
+            
+            // Upload photo to Cloudinary if provided
+            if (photo != null && !photo.isEmpty()) {
+                photoUrl = cloudinaryService.uploadFile(photo, "kajchai/profile-photos");
+            }
+            
+            // Create update request
+            WorkerProfileUpdateRequest request = WorkerProfileUpdateRequest.builder()
+                    .name(name)
+                    .photo(photoUrl)
+                    .phone(phone)
+                    .gender(gender)
+                    .city(city)
+                    .upazila(upazila)
+                    .district(district)
+                    .division(division)
+                    .field(field)
+                    .experience(experience)
+                    .build();
+            
             WorkerProfileResponse profileData = profileService.updateWorkerProfile(user.getEmail(), request);
             
             return ResponseEntity.ok(ProfileResponse.builder()

@@ -41,6 +41,9 @@ public class SignupRequest {
     @NotBlank(message = "Division is required")
     private String division;
 
+    // Profile photo field (optional)
+    private String photo;
+
     // Worker-specific fields
     private String field;
     private Float experience;

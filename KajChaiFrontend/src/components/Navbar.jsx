@@ -109,14 +109,18 @@ const Navbar = () => {
         <div className="navbar-user">
           <div className="user-info" onClick={() => setShowUserMenu(!showUserMenu)}>
             <div className="user-avatar">
-              <span className="avatar-text">
-                {user.email?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
+              {user.photo ? (
+                <img src={user.photo} alt={user.name || user.email} className="avatar-image" />
+              ) : (
+                <span className="avatar-text">
+                  {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              )}
               <div className="user-status-dot"></div>
             </div>
             <div className="user-details">
               <span className="user-role">{user.role?.toLowerCase()}</span>
-              <span className="user-email">{user.email}</span>
+              <span className="user-email">{user.name || user.email}</span>
             </div>
             <div className="dropdown-arrow">▼</div>
           </div>
@@ -125,7 +129,11 @@ const Navbar = () => {
             <div className="user-dropdown">
               <div className="dropdown-header">
                 <div className="dropdown-avatar">
-                  <span>{user.email?.charAt(0)?.toUpperCase() || 'U'}</span>
+                  {user.photo ? (
+                    <img src={user.photo} alt={user.name || user.email} className="dropdown-avatar-image" />
+                  ) : (
+                    <span>{user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}</span>
+                  )}
                 </div>
                 <div className="dropdown-info">
                   <div className="dropdown-email">{user.email}</div>

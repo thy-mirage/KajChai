@@ -201,6 +201,14 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   position: relative;
   transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .user-avatar:hover {
@@ -318,6 +326,14 @@
   font-weight: 600;
   font-size: 1.2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dropdown-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .dropdown-info {

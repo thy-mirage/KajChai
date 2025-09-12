@@ -91,6 +91,7 @@ public class AuthService {
                         .customerName(request.getName())
                         .gmail(request.getEmail())
                         .password(passwordEncoder.encode(request.getPassword()))
+                        .photo(request.getPhoto()) // Add photo support
                         .phone(request.getPhone())
                         .gender(request.getGender())
                         .city(request.getCity())
@@ -104,6 +105,7 @@ public class AuthService {
                         .name(request.getName())
                         .gmail(request.getEmail())
                         .password(passwordEncoder.encode(request.getPassword()))
+                        .photo(request.getPhoto()) // Add photo support
                         .phone(request.getPhone())
                         .gender(request.getGender())
                         .city(request.getCity())

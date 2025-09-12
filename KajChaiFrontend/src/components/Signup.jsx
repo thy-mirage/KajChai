@@ -19,14 +19,17 @@ const Signup = () => {
     division: '',
     // Worker specific fields
     field: '',
-    experience: ''
+    experience: '',
+    // Photo upload
+    photo: null
   });
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { initiateSignup, completeSignup, resendVerificationCode } = useAuth();
+  const { initiateSignup, initiateSignupWithPhoto, completeSignup, completeSignupWithPhoto, resendVerificationCode } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -35,6 +38,38 @@ const Signup = () => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({
+        ...formData,
+        photo: file
+      });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFormData({
+        ...formData,
+        photo: null
+      });
+      setPhotoPreview(null);
+    }
+    if (error) setError('');
+  };
+
+  const removePhoto = () => {
+    setFormData({
+      ...formData,
+      photo: null
+    });
+    setPhotoPreview(null);
   };
 
   const validateForm = () => {
@@ -70,35 +105,67 @@ const Signup = () => {
     setLoading(true);
     setError('');
 
-    const signupPayload = {
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      name: formData.name,
-      phone: formData.phone,
-      gender: formData.gender,
-      city: formData.city,
-      upazila: formData.upazila,
-      district: formData.district,
-      division: formData.division
-    };
+    try {
+      let result;
+      
+      if (formData.photo) {
+        // Use multipart form data for photo upload
+        const uploadFormData = new FormData();
+        uploadFormData.append('email', formData.email);
+        uploadFormData.append('password', formData.password);
+        uploadFormData.append('role', formData.role);
+        uploadFormData.append('name', formData.name);
+        uploadFormData.append('phone', formData.phone);
+        uploadFormData.append('gender', formData.gender);
+        uploadFormData.append('city', formData.city);
+        uploadFormData.append('upazila', formData.upazila);
+        uploadFormData.append('district', formData.district);
+        uploadFormData.append('division', formData.division);
+        uploadFormData.append('photo', formData.photo);
+        
+        // Add worker-specific fields if role is WORKER
+        if (formData.role === 'WORKER') {
+          uploadFormData.append('field', formData.field);
+          uploadFormData.append('experience', parseFloat(formData.experience));
+        }
+        
+        result = await initiateSignupWithPhoto(uploadFormData);
+      } else {
+        // Use regular JSON payload for signup without photo
+        const signupPayload = {
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          name: formData.name,
+          phone: formData.phone,
+          gender: formData.gender,
+          city: formData.city,
+          upazila: formData.upazila,
+          district: formData.district,
+          division: formData.division
+        };
 
-    // Add worker-specific fields if role is WORKER
-    if (formData.role === 'WORKER') {
-      signupPayload.field = formData.field;
-      signupPayload.experience = parseFloat(formData.experience);
-    }
+        // Add worker-specific fields if role is WORKER
+        if (formData.role === 'WORKER') {
+          signupPayload.field = formData.field;
+          signupPayload.experience = parseFloat(formData.experience);
+        }
 
-    const result = await initiateSignup(signupPayload);
-    
-    if (result.success) {
-      setStep(2);
-      setSuccess('Verification code sent to your email!');
-    } else {
-      setError(result.message);
+        result = await initiateSignup(signupPayload);
+      }
+      
+      if (result.success) {
+        setStep(2);
+        setSuccess('Verification code sent to your email!');
+      } else {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError('Failed to initiate signup. Please try again.');
+      console.error('Signup error:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleVerification = async (e) => {
@@ -112,36 +179,67 @@ const Signup = () => {
     setLoading(true);
     setError('');
 
-    const signupPayload = {
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      name: formData.name,
-      phone: formData.phone,
-      gender: formData.gender,
-      city: formData.city,
-      upazila: formData.upazila,
-      district: formData.district,
-      division: formData.division
-    };
+    try {
+      let result;
+      
+      if (formData.photo) {
+        // Use multipart form data for photo upload
+        const uploadFormData = new FormData();
+        uploadFormData.append('email', formData.email);
+        uploadFormData.append('password', formData.password);
+        uploadFormData.append('role', formData.role);
+        uploadFormData.append('name', formData.name);
+        uploadFormData.append('phone', formData.phone);
+        uploadFormData.append('gender', formData.gender);
+        uploadFormData.append('city', formData.city);
+        uploadFormData.append('upazila', formData.upazila);
+        uploadFormData.append('district', formData.district);
+        uploadFormData.append('division', formData.division);
+        uploadFormData.append('photo', formData.photo);
+        
+        if (formData.role === 'WORKER') {
+          uploadFormData.append('field', formData.field);
+          uploadFormData.append('experience', parseFloat(formData.experience));
+        }
+        
+        result = await completeSignupWithPhoto(uploadFormData, verificationCode);
+      } else {
+        // Use regular JSON payload for signup without photo
+        const signupPayload = {
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          name: formData.name,
+          phone: formData.phone,
+          gender: formData.gender,
+          city: formData.city,
+          upazila: formData.upazila,
+          district: formData.district,
+          division: formData.division
+        };
 
-    if (formData.role === 'WORKER') {
-      signupPayload.field = formData.field;
-      signupPayload.experience = parseFloat(formData.experience);
-    }
+        if (formData.role === 'WORKER') {
+          signupPayload.field = formData.field;
+          signupPayload.experience = parseFloat(formData.experience);
+        }
 
-    const result = await completeSignup(signupPayload, verificationCode);
-    
-    if (result.success) {
-      setSuccess('Account created successfully! You can now login.');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-    } else {
-      setError(result.message);
+        result = await completeSignup(signupPayload, verificationCode);
+      }
+      
+      if (result.success) {
+        setSuccess('Account created successfully! You can now login.');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError('Failed to verify account. Please try again.');
+      console.error('Verification error:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleResendCode = async () => {
@@ -391,6 +489,36 @@ const Signup = () => {
               placeholder="Enter your division"
               disabled={loading}
             />
+          </div>
+
+          {/* Profile Photo Upload */}
+          <div className="form-group">
+            <label htmlFor="photo">Profile Photo (Optional)</label>
+            <input
+              type="file"
+              id="photo"
+              name="photo"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              disabled={loading}
+              className="photo-input"
+            />
+            {photoPreview && (
+              <div className="photo-preview">
+                <img src={photoPreview} alt="Profile Preview" className="preview-image" />
+                <button
+                  type="button"
+                  onClick={removePhoto}
+                  className="remove-photo-btn"
+                  disabled={loading}
+                >
+                  Remove Photo
+                </button>
+              </div>
+            )}
+            <small className="photo-help">
+              Upload a profile photo (JPG, PNG, GIF) - Optional
+            </small>
           </div>
 
           {/* Worker-specific fields */}

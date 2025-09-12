@@ -16,4 +16,7 @@ public class AuthResponse {
     private UserRole role;
     private boolean success;
     private String token; // JWT token for client-side storage
+    private Integer userId; // User ID for frontend
+    private String name; // User name
+    private String photo; // User photo URL
 }

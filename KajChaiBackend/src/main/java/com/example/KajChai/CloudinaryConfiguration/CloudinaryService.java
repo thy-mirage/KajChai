@@ -25,6 +25,17 @@ public class CloudinaryService {
      * @throws IOException if upload fails
      */
     public String uploadFile(MultipartFile file) throws IOException {
+        return uploadFile(file, "kajchai/general");
+    }
+
+    /**
+     * Upload a single file to Cloudinary with custom folder
+     * @param file MultipartFile to upload
+     * @param folder Custom folder path
+     * @return URL of the uploaded image
+     * @throws IOException if upload fails
+     */
+    public String uploadFile(MultipartFile file, String folder) throws IOException {
         try {
             // Generate unique public ID for the image
             String publicId = "kajchai_" + UUID.randomUUID().toString();
@@ -32,7 +43,7 @@ public class CloudinaryService {
             // Upload options
             Map<String, Object> uploadOptions = ObjectUtils.asMap(
                 "public_id", publicId,
-                "folder", "kajchai/reviews", // Organize in folders
+                "folder", folder, // Use custom folder
                 "resource_type", "auto", // Auto-detect file type
                 "quality", "auto:good", // Optimize quality
                 "fetch_format", "auto" // Auto-optimize format
