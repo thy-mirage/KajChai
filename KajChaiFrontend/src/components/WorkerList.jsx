@@ -1,0 +1,208 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import profileService from '../services/profileService';
+import chatService from '../services/chatService';
+import './HirePost.css'; // Use the same CSS as HirePostList
+
+const WorkerList = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [workers, setWorkers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedField, setSelectedField] = useState('');
+  const [sortByLocation, setSortByLocation] = useState(false);
+  const [contactingWorker, setContactingWorker] = useState(null);
+
+  // Job fields from the backend
+  const JOB_FIELDS = [
+    'Electrician',
+    'Plumber',
+    'Carpenter',
+    'Painter',
+    'Maid',
+    'Chef',
+    'Driver',
+    'Photographer'
+  ];
+
+  useEffect(() => {
+    if (user?.role === 'CUSTOMER') {
+      loadWorkers();
+    }
+  }, [selectedField, sortByLocation, user]);
+
+  const loadWorkers = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await profileService.getAllWorkers(selectedField || null, sortByLocation);
+      setWorkers(data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load workers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatRating = (rating) => {
+    if (rating === null || rating === undefined) return 'Not rated';
+    return `${rating.toFixed(1)} ⭐`;
+  };
+
+  const formatLocation = (upazila, district) => {
+    if (!upazila && !district) return 'Location not specified';
+    if (!upazila) return district;
+    if (!district) return upazila;
+    if (upazila === district) return upazila;
+    return `${upazila}, ${district}`;
+  };
+
+  const handleContactWorker = async (worker) => {
+    setContactingWorker(worker.workerId);
+    
+    try {
+      // Create or get existing chat room with the worker
+      const response = await chatService.createOrGetChatRoom(worker.workerId);
+      
+      if (response.success) {
+        // Navigate to chat page
+        navigate('/chat', { 
+          state: { 
+            openRoomId: response.chatRoom.roomId,
+            workerName: worker.name 
+          }
+        });
+      } else {
+        throw new Error('Failed to create chat room');
+      }
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+      alert('Failed to start chat with worker. Please try again.');
+    } finally {
+      setContactingWorker(null);
+    }
+  };
+
+  if (user?.role !== 'CUSTOMER') {
+    return (
+      <div className="access-denied">
+        <h3>Access Denied</h3>
+        <p>Only customers can view this page.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="loading">Loading workers...</div>;
+  }
+
+  return (
+    <div className="hire-post-list">
+      <div className="list-header">
+        <h3>Find Workers</h3>
+        
+        <div className="filter-section">
+          <select
+            value={selectedField}
+            onChange={(e) => setSelectedField(e.target.value)}
+            className="field-filter"
+          >
+            <option value="">All Fields</option>
+            {JOB_FIELDS.map(field => (
+              <option key={field} value={field}>{field}</option>
+            ))}
+          </select>
+          
+          <div className="location-sort-toggle">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={sortByLocation}
+                onChange={(e) => setSortByLocation(e.target.checked)}
+                className="location-checkbox"
+              />
+              <span className="checkmark">📍</span>
+              Sort by nearest location
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {workers.length === 0 ? (
+        <div className="no-posts">
+          No workers found matching your criteria.
+        </div>
+      ) : (
+        <div className="posts-grid">
+          {workers.map(worker => (
+            <div key={worker.workerId} className="hire-post-card">
+              <div className="card-header">
+                <div className="field-badge">{worker.field}</div>
+                <div className="worker-rating">
+                  {formatRating(worker.rating)}
+                </div>
+              </div>
+              
+              <div className="card-content">
+                <div className="worker-photo-section">
+                  {worker.photo ? (
+                    <img 
+                      src={worker.photo} 
+                      alt={worker.name}
+                      className="worker-photo-img"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="worker-avatar-fallback"
+                    style={{ display: worker.photo ? 'none' : 'flex' }}
+                  >
+                    {worker.name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                </div>
+                
+                <div className="worker-info-section">
+                  <h4 className="worker-name">{worker.name}</h4>
+                  
+                  <div className="post-details">
+                    <div className="detail-item">
+                      <strong>Experience:</strong> {worker.experience || 'Not specified'}
+                    </div>
+                    
+                    <div className="detail-item">
+                      <strong>Location:</strong> {formatLocation(worker.upazila, worker.district)}
+                    </div>
+                    
+                    <div className="detail-item">
+                      <strong>Contact:</strong> {worker.phone}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="card-actions">
+                <button 
+                  className="btn-primary"
+                  onClick={() => handleContactWorker(worker)}
+                  disabled={contactingWorker === worker.workerId}
+                >
+                  {contactingWorker === worker.workerId ? 'Starting Chat...' : 'Contact Worker'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default WorkerList;

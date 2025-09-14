@@ -11,6 +11,8 @@ import MyProfile from './components/MyProfile';
 import Chat from './components/Chat';
 import CreateHirePost from './components/CreateHirePost';
 import HirePostList from './components/HirePostList';
+import WorkerList from './components/WorkerList';
+import JobsPage from './components/JobsPage';
 import HirePostApplications from './components/HirePostApplications';
 import Notifications from './components/Notifications';
 import Forum from './components/Forum';
@@ -91,7 +93,7 @@ function App() {
               path="/jobs" 
               element={
                 <ProtectedRoute>
-                  <HirePostList />
+                  <JobsPage />
                 </ProtectedRoute>
               } 
             />

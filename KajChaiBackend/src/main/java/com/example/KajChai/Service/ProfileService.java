@@ -15,7 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -182,5 +184,66 @@ public class ProfileService {
         } else {
             throw new RuntimeException("Invalid user role");
         }
+    }
+
+    public List<WorkerProfileResponse> getAllWorkers(String field) {
+        List<Worker> workers;
+        if (field != null && !field.isEmpty()) {
+            workers = workerRepository.findByFieldIgnoreCase(field);
+        } else {
+            workers = workerRepository.findAll();
+        }
+
+        return workers.stream()
+                .map(this::convertWorkerToResponse)
+                .toList();
+    }
+
+    public List<WorkerProfileResponse> sortWorkersByLocationForCustomer(List<WorkerProfileResponse> workers, String customerEmail) {
+        Optional<Customer> customerOpt = customerRepository.findByGmail(customerEmail);
+        if (customerOpt.isEmpty()) {
+            throw new RuntimeException("Customer not found");
+        }
+
+        Customer customer = customerOpt.get();
+        double customerLat = customer.getLatitude();
+        double customerLon = customer.getLongitude();
+
+        return workers.stream()
+                .sorted(Comparator.comparingDouble(worker -> 
+                    calculateDistance(customerLat, customerLon, worker.getLatitude(), worker.getLongitude())))
+                .toList();
+    }
+
+    private WorkerProfileResponse convertWorkerToResponse(Worker worker) {
+        return WorkerProfileResponse.builder()
+                .workerId(worker.getWorkerId())
+                .name(worker.getName())
+                .photo(worker.getPhoto())
+                .gmail(worker.getGmail())
+                .phone(worker.getPhone())
+                .gender(worker.getGender())
+                .latitude(worker.getLatitude())
+                .longitude(worker.getLongitude())
+                .city(worker.getCity())
+                .upazila(worker.getUpazila())
+                .district(worker.getDistrict())
+                .fullAddress(worker.getFullAddress())
+                .field(worker.getField())
+                .rating(worker.getRating())
+                .experience(worker.getExperience())
+                .build();
+    }
+
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Earth's radius in kilometers
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in kilometers
     }
 }

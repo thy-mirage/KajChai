@@ -15,13 +15,15 @@ const locationService = {
   // Reverse geocode coordinates to get address
   reverseGeocode: async (latitude, longitude) => {
     try {
+      console.log('LocationService: Sending reverse geocode request for:', latitude, longitude);
       const response = await locationAPI.post('/location/reverse-geocode', {
         latitude,
         longitude
       });
+      console.log('LocationService: Received reverse geocode response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Reverse geocode error:', error);
+      console.error('LocationService: Reverse geocode error:', error);
       // Return a structured error response instead of throwing
       return {
         success: false,

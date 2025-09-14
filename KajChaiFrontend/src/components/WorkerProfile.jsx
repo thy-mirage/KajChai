@@ -79,6 +79,7 @@ const WorkerProfile = () => {
   };
 
   const handleLocationSelect = (locationData) => {
+    console.log('WorkerProfile: Received location data:', locationData);
     setFormData(prev => ({
       ...prev,
       city: locationData.city || '',
@@ -87,6 +88,7 @@ const WorkerProfile = () => {
       latitude: locationData.latitude,
       longitude: locationData.longitude
     }));
+    console.log('WorkerProfile: Updated form data with location');
   };
 
   const handlePhotoChange = (e) => {

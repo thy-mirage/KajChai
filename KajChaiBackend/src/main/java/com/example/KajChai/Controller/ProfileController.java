@@ -13,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
@@ -310,6 +312,38 @@ public class ProfileController {
                     .body(ProfileResponse.builder()
                             .success(false)
                             .message("Failed to update worker profile: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @GetMapping("/workers")
+    public ResponseEntity<?> getAllWorkers(
+            @RequestParam(required = false) String field,
+            @RequestParam(required = false, defaultValue = "false") Boolean sortByLocation) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            List<WorkerProfileResponse> workers = profileService.getAllWorkers(field);
+            
+            // Apply location-based sorting if requested and user is a customer
+            if (sortByLocation && authentication != null && authentication.isAuthenticated()) {
+                try {
+                    User user = (User) authentication.getPrincipal();
+                    if (user.getRole().name().equals("CUSTOMER")) {
+                        workers = profileService.sortWorkersByLocationForCustomer(workers, user.getEmail());
+                    }
+                } catch (Exception e) {
+                    // If there's any error with location sorting, just return unsorted results
+                    System.err.println("Error sorting workers by location: " + e.getMessage());
+                }
+            }
+            
+            return ResponseEntity.ok(workers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ProfileResponse.builder()
+                            .success(false)
+                            .message("Failed to get workers: " + e.getMessage())
                             .build());
         }
     }

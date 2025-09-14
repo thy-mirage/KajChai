@@ -17,6 +17,12 @@ const Review = () => {
     const [canAddReview, setCanAddReview] = useState(false);
     const [workerFields, setWorkerFields] = useState([]);
     const [completedWorkers, setCompletedWorkers] = useState([]);
+    
+    // Autocomplete states
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+    const [isSearching, setIsSearching] = useState(false);
 
     
     // New review form state
@@ -59,6 +65,20 @@ const Review = () => {
         }
     }, [searchType]);
 
+    // Debounced search for name autocomplete
+    useEffect(() => {
+        if (searchType === 'name' && searchQuery.trim()) {
+            const timeoutId = setTimeout(() => {
+                searchWorkersAutocomplete(searchQuery.trim());
+            }, 300); // 300ms delay
+
+            return () => clearTimeout(timeoutId);
+        } else {
+            setSuggestions([]);
+            setShowSuggestions(false);
+        }
+    }, [searchQuery, searchType]);
+
     const loadCompletedWorkers = async () => {
         setLoading(true);
         try {
@@ -74,6 +94,29 @@ const Review = () => {
             setWorkers([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const searchWorkersAutocomplete = async (query) => {
+        if (!query.trim()) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const response = await reviewService.getWorkersByName(query);
+            const workersList = response.data.data || [];
+            setSuggestions(workersList);
+            setShowSuggestions(workersList.length > 0);
+            setActiveSuggestionIndex(-1);
+        } catch (error) {
+            console.error('Failed to search workers:', error);
+            setSuggestions([]);
+            setShowSuggestions(false);
+        } finally {
+            setIsSearching(false);
         }
     };
 
@@ -103,6 +146,66 @@ const Review = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSuggestionSelect = (worker) => {
+        setSearchQuery(worker.name);
+        setWorkers([worker]);
+        setShowSuggestions(false);
+        setActiveSuggestionIndex(-1);
+    };
+
+    const handleKeyDown = (e) => {
+        if (!showSuggestions) return;
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setActiveSuggestionIndex(prev => 
+                    prev < suggestions.length - 1 ? prev + 1 : prev
+                );
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setActiveSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (activeSuggestionIndex >= 0 && activeSuggestionIndex < suggestions.length) {
+                    handleSuggestionSelect(suggestions[activeSuggestionIndex]);
+                } else if (searchQuery.trim()) {
+                    searchWorkers();
+                    setShowSuggestions(false);
+                }
+                break;
+            case 'Escape':
+                setShowSuggestions(false);
+                setActiveSuggestionIndex(-1);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleInputChange = (e) => {
+        setSearchQuery(e.target.value);
+        if (searchType === 'name') {
+            setWorkers([]); // Clear previous results while typing
+        }
+    };
+
+    const handleInputFocus = () => {
+        if (searchType === 'name' && suggestions.length > 0) {
+            setShowSuggestions(true);
+        }
+    };
+
+    const handleInputBlur = () => {
+        // Delay hiding suggestions to allow for click selection
+        setTimeout(() => {
+            setShowSuggestions(false);
+            setActiveSuggestionIndex(-1);
+        }, 200);
     };
 
     const loadWorkerReviews = async (workerId) => {
@@ -279,13 +382,52 @@ const Review = () => {
 
                     {searchType === 'name' && (
                         <div className="name-search">
-                            <input
-                                type="text"
-                                placeholder="Enter worker's name"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="name-input"
-                            />
+                            <div className="autocomplete-container">
+                                <input
+                                    type="text"
+                                    placeholder="Enter worker's name"
+                                    value={searchQuery}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                    onFocus={handleInputFocus}
+                                    onBlur={handleInputBlur}
+                                    className="name-input"
+                                />
+                                {isSearching && (
+                                    <div className="search-loading">🔍</div>
+                                )}
+                                
+                                {/* Autocomplete Suggestions Dropdown */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="suggestions-dropdown">
+                                        {suggestions.map((worker, index) => (
+                                            <div
+                                                key={worker.workerId}
+                                                className={`suggestion-item ${index === activeSuggestionIndex ? 'active' : ''}`}
+                                                onClick={() => handleSuggestionSelect(worker)}
+                                                onMouseEnter={() => setActiveSuggestionIndex(index)}
+                                            >
+                                                <div className="suggestion-avatar">
+                                                    {worker.photo ? (
+                                                        <img src={worker.photo} alt={worker.name} />
+                                                    ) : (
+                                                        <div className="avatar-placeholder">
+                                                            {worker.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="suggestion-info">
+                                                    <div className="suggestion-name">{worker.name}</div>
+                                                    <div className="suggestion-field">{worker.field}</div>
+                                                    <div className="suggestion-rating">
+                                                        ⭐ {worker.rating ? worker.rating.toFixed(1) : 'No rating'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <button 
                                 onClick={searchWorkers}
                                 disabled={!searchQuery.trim()}

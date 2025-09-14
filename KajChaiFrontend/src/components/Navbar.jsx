@@ -62,7 +62,7 @@ const Navbar = () => {
     { path: '/forum', label: 'Community', icon: '👥', description: 'Community forum' },
     { path: '/notifications', label: 'Notifications', icon: '🔔', description: 'View your notifications' },
     { path: '/chat', label: 'Messages', icon: '💬', description: 'Chat with workers' },
-    { path: '/reviews', label: 'Reviews', icon: '💬', description: 'View and manage reviews' },
+    { path: '/reviews', label: 'Reviews', icon: '⭐', description: 'View and manage reviews' },
   ];
 
   const workerNavItems = [

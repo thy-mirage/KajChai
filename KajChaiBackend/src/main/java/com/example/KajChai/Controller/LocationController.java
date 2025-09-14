@@ -103,27 +103,4 @@ public class LocationController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
-    /**
-     * Populate location data for existing users who don't have coordinates
-     * This is a one-time operation to migrate existing data
-     */
-    @PostMapping("/populate-existing-users")
-    public ResponseEntity<Map<String, Object>> populateExistingUsersLocation() {
-        try {
-            locationService.populateExistingUsersLocation();
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Successfully populated location data for existing users");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("message", "Failed to populate location data: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
 }

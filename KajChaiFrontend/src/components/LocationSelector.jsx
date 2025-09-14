@@ -61,19 +61,27 @@ const LocationSelector = ({
       setLoading(true);
       setError('');
       
+      console.log('LocationSelector: Requesting location for coordinates:', lat, lng);
+      
       // Call reverse geocoding API using service
       const data = await locationService.reverseGeocode(lat, lng);
       
+      console.log('LocationSelector: Received location data:', data);
+      
       if (data.success) {
+        console.log('LocationSelector: Setting address info:', data.data);
         setAddressInfo(data.data);
         if (onLocationSelect) {
+          console.log('LocationSelector: Calling onLocationSelect with:', data.data);
           onLocationSelect(data.data);
         }
       } else {
         // Handle graceful error response from service
+        console.error('LocationSelector: Location service error:', data.message);
         setError(data.message || 'Could not determine address for this location');
       }
     } catch (err) {
+      console.error('LocationSelector: Unexpected error:', err);
       setError('An unexpected error occurred while getting location details');
     } finally {
       setLoading(false);
@@ -153,7 +161,9 @@ const LocationSelector = ({
       setPosition(newPosition);
       
       // In edit mode, pre-populate address info without API call to prevent loops
-      if (isEditMode && initialLocation.city) {
+      // BUT only if we have valid initial location data
+      if (isEditMode && initialLocation.city && initialLocation.city !== '') {
+        console.log('LocationSelector: Pre-populating with initial location:', initialLocation);
         setAddressInfo({
           city: initialLocation.city || '',
           upazila: initialLocation.upazila || '',
@@ -162,8 +172,9 @@ const LocationSelector = ({
           latitude: initialLocation.latitude,
           longitude: initialLocation.longitude
         });
-      } else if (!isEditMode) {
-        // Only call API in registration mode
+      } else {
+        // Always call API if we don't have proper initial data or if in registration mode
+        console.log('LocationSelector: Calling API for initial location');
         handleLocationChange(initialLocation.latitude, initialLocation.longitude);
       }
     }
@@ -231,7 +242,7 @@ const LocationSelector = ({
       )}
 
       {addressInfo && (
-        <div className="address-info">
+        <div className="address-info" key={`${addressInfo.latitude}-${addressInfo.longitude}`}>
           <h4>Selected Location:</h4>
           <div className="address-details">
             <p><strong>City:</strong> {addressInfo.city}</p>

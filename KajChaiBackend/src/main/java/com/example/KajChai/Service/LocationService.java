@@ -223,47 +223,92 @@ public class LocationService {
     }
 
     private String extractCity(JsonNode address) {
+        String city = null;
+        
         // Try different possible fields for city (prioritized for Bangladesh)
-        if (address.has("city")) return address.get("city").asText();
-        if (address.has("town")) return address.get("town").asText();
-        if (address.has("village")) return address.get("village").asText();
-        if (address.has("municipality")) return address.get("municipality").asText();
-        if (address.has("hamlet")) return address.get("hamlet").asText();
-        if (address.has("suburb")) return address.get("suburb").asText();
-        if (address.has("neighbourhood")) return address.get("neighbourhood").asText();
+        if (address.has("city")) {
+            city = address.get("city").asText();
+        } else if (address.has("town")) {
+            city = address.get("town").asText();
+        } else if (address.has("village")) {
+            city = address.get("village").asText();
+        } else if (address.has("municipality")) {
+            city = address.get("municipality").asText();
+        } else if (address.has("hamlet")) {
+            city = address.get("hamlet").asText();
+        } else if (address.has("suburb")) {
+            city = address.get("suburb").asText();
+        } else if (address.has("neighbourhood")) {
+            city = address.get("neighbourhood").asText();
+        }
+        
+        // Clean up and capitalize city name
+        if (city != null && !city.trim().isEmpty()) {
+            return capitalizeWords(city.trim());
+        }
+        
         return "Unknown City";
     }
 
     private String extractUpazila(JsonNode address) {
+        String upazila = null;
+        
         // Try different possible fields for upazila/ward/corporation
-        if (address.has("county")) return address.get("county").asText(); // Often maps to upazila in Bangladesh
-        if (address.has("suburb")) return address.get("suburb").asText();
-        if (address.has("neighbourhood")) return address.get("neighbourhood").asText();
-        if (address.has("quarter")) return address.get("quarter").asText();
-        if (address.has("city_district")) return address.get("city_district").asText();
-        if (address.has("municipality")) return address.get("municipality").asText();
-        if (address.has("subdistrict")) return address.get("subdistrict").asText();
+        if (address.has("county")) {
+            upazila = address.get("county").asText(); // Often maps to upazila in Bangladesh
+        } else if (address.has("suburb")) {
+            upazila = address.get("suburb").asText();
+        } else if (address.has("neighbourhood")) {
+            upazila = address.get("neighbourhood").asText();
+        } else if (address.has("quarter")) {
+            upazila = address.get("quarter").asText();
+        } else if (address.has("city_district")) {
+            upazila = address.get("city_district").asText();
+        } else if (address.has("municipality")) {
+            upazila = address.get("municipality").asText();
+        } else if (address.has("subdistrict")) {
+            upazila = address.get("subdistrict").asText();
+        }
+        
+        // Clean up and capitalize upazila name
+        if (upazila != null && !upazila.trim().isEmpty()) {
+            return capitalizeWords(upazila.trim());
+        }
+        
         return "Unknown Area";
     }
 
     private String extractDistrict(JsonNode address) {
+        String district = null;
+        
         // Try different possible fields for district
-        if (address.has("state_district")) return address.get("state_district").asText();
-        if (address.has("region")) return address.get("region").asText();
-        // In Bangladesh, sometimes the district is in the 'state' field
-        if (address.has("state")) {
+        if (address.has("state_district")) {
+            district = address.get("state_district").asText();
+        } else if (address.has("region")) {
+            district = address.get("region").asText();
+        } else if (address.has("state")) {
+            // In Bangladesh, sometimes the district is in the 'state' field
             String state = address.get("state").asText();
             // Check if it looks like a district (ends with common district suffixes)
             if (state.toLowerCase().contains("district") || 
                 state.toLowerCase().endsWith("zila") ||
                 isKnownBangladeshiDistrict(state)) {
-                return state;
+                district = state;
             }
         }
+        
+        // Clean up district name - remove "District" suffix if present
+        if (district != null) {
+            district = cleanDistrictName(district);
+            return district;
+        }
+        
         return "Unknown District";
     }
 
     private String extractDivision(JsonNode address) {
+        String division = null;
+        
         // Try different possible fields for division/state
         if (address.has("state")) {
             String state = address.get("state").asText();
@@ -271,17 +316,23 @@ public class LocationService {
             if (!state.toLowerCase().contains("district") && 
                 !state.toLowerCase().endsWith("zila") &&
                 !isKnownBangladeshiDistrict(state)) {
-                return state;
+                division = state;
             }
-        }
-        if (address.has("province")) return address.get("province").asText();
-        if (address.has("region")) {
+        } else if (address.has("province")) {
+            division = address.get("province").asText();
+        } else if (address.has("region")) {
             String region = address.get("region").asText();
             // Only use region as division if it's not already used as district
             if (!region.equals(extractDistrict(address))) {
-                return region;
+                division = region;
             }
         }
+        
+        // Clean up and capitalize division name
+        if (division != null && !division.trim().isEmpty()) {
+            return capitalizeWords(division.trim());
+        }
+        
         return "Unknown Division";
     }
 
@@ -306,6 +357,58 @@ public class LocationService {
             }
         }
         return false;
+    }
+
+    /**
+     * Clean up district name by removing common suffixes like "District"
+     */
+    private String cleanDistrictName(String districtName) {
+        if (districtName == null || districtName.trim().isEmpty()) {
+            return districtName;
+        }
+        
+        String cleaned = districtName.trim();
+        
+        // Remove "District" suffix (case-insensitive)
+        if (cleaned.toLowerCase().endsWith(" district")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 9).trim();
+        }
+        
+        // Remove "Zila" suffix (case-insensitive)
+        if (cleaned.toLowerCase().endsWith(" zila")) {
+            cleaned = cleaned.substring(0, cleaned.length() - 5).trim();
+        }
+        
+        // Capitalize first letter of each word
+        return capitalizeWords(cleaned);
+    }
+
+    /**
+     * Capitalize the first letter of each word
+     */
+    private String capitalizeWords(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return input;
+        }
+        
+        String[] words = input.trim().split("\\s+");
+        StringBuilder result = new StringBuilder();
+        
+        for (int i = 0; i < words.length; i++) {
+            if (i > 0) {
+                result.append(" ");
+            }
+            
+            String word = words[i];
+            if (word.length() > 0) {
+                result.append(Character.toUpperCase(word.charAt(0)));
+                if (word.length() > 1) {
+                    result.append(word.substring(1).toLowerCase());
+                }
+            }
+        }
+        
+        return result.toString();
     }
 
     private Map<String, String> getDefaultAddressComponents() {

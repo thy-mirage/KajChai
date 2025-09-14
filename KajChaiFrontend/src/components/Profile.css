@@ -382,3 +382,191 @@
     font-size: 2rem;
   }
 }
+
+/* Worker List Styles */
+.worker-list {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.worker-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.worker-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.worker-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.worker-photo {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.worker-photo .profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.worker-photo .profile-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.worker-info {
+  flex: 1;
+}
+
+.worker-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.worker-card .field-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.worker-card .card-content {
+  padding: 1.5rem;
+}
+
+.worker-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.worker-details .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.worker-details .detail-item:last-child {
+  border-bottom: none;
+}
+
+.worker-details .detail-item strong {
+  color: #555;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.worker-card .card-actions {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  display: flex;
+  gap: 0.75rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.worker-card .btn-primary {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  flex: 1;
+}
+
+.worker-card .btn-primary:hover {
+  background: #5a67d8;
+}
+
+.worker-card .btn-secondary {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.worker-card .btn-secondary:hover {
+  background: #667eea;
+  color: white;
+}
+
+.no-workers {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+/* Responsive design for worker list */
+@media (max-width: 768px) {
+  .workers-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .worker-card .card-header {
+    padding: 1rem;
+  }
+  
+  .worker-photo {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .worker-name {
+    font-size: 1rem;
+  }
+  
+  .worker-card .card-actions {
+    flex-direction: column;
+  }
+}

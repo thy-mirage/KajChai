@@ -298,7 +298,11 @@ public class HirePostService {
                 .customerName(post.getCustomer().getCustomerName())
                 .customerPhoto(post.getCustomer().getPhoto())
                 .customerCity(post.getCustomer().getCity())
+                .customerDistrict(post.getCustomer().getDistrict())
+                .customerUpazila(post.getCustomer().getUpazila())
                 .customerPhone(post.getCustomer().getPhone())
+                .customerLatitude(post.getCustomer().getLatitude())
+                .customerLongitude(post.getCustomer().getLongitude())
                 .applicationsCount(applicationsCount.intValue())
                 .build();
     }
@@ -340,5 +344,45 @@ public class HirePostService {
                 .orElseThrow(() -> new RuntimeException("Worker not found"));
         
         return applicationRepository.existsByWorkerAndHirePost(worker, post);
+    }
+    
+    // Location-based sorting method for hire posts
+    public List<HirePostResponse> sortHirePostsByLocationForWorker(List<HirePostResponse> posts, Integer workerId) {
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new RuntimeException("Worker not found"));
+        
+        // If worker doesn't have location coordinates, return unsorted list
+        if (worker.getLatitude() == null || worker.getLongitude() == null) {
+            return posts;
+        }
+        
+        return posts.stream()
+                .sorted((post1, post2) -> {
+                    double distance1 = calculateDistance(
+                        worker.getLatitude(), worker.getLongitude(),
+                        post1.getCustomerLatitude(), post1.getCustomerLongitude()
+                    );
+                    double distance2 = calculateDistance(
+                        worker.getLatitude(), worker.getLongitude(),
+                        post2.getCustomerLatitude(), post2.getCustomerLongitude()
+                    );
+                    return Double.compare(distance1, distance2);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    // Calculate distance between two coordinates using Haversine formula
+    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+        final int R = 6371; // Radius of the earth in km
+        
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c; // Distance in km
+        
+        return distance;
     }
 }

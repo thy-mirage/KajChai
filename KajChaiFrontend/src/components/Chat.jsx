@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import chatService from '../services/chatService';
 import webSocketService from '../services/websocketService';
@@ -7,6 +7,7 @@ import './Chat.css';
 
 const Chat = () => {
     const { user } = useAuth();
+    const location = useLocation();
     const [chatRooms, setChatRooms] = useState([]);
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -51,6 +52,19 @@ const Chat = () => {
             setupAllRoomSubscriptions();
         }
     }, [chatRooms, wsConnected, allRoomsSubscribed]);
+
+    // Handle navigation state to automatically open a specific room
+    useEffect(() => {
+        if (location.state?.openRoomId && chatRooms.length > 0 && !selectedRoom) {
+            const targetRoom = chatRooms.find(room => room.roomId === location.state.openRoomId);
+            if (targetRoom) {
+                console.log('🎯 Auto-opening room from navigation:', targetRoom);
+                handleRoomSelect(targetRoom);
+                // Clear the state to prevent re-triggering
+                window.history.replaceState({}, document.title);
+            }
+        }
+    }, [location.state, chatRooms, selectedRoom]);
 
     // Setup WebSocket connection
     const setupWebSocket = async () => {

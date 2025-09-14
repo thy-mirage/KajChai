@@ -59,14 +59,46 @@ public class HirePostController {
     }
     
     @GetMapping("/available")
-    public ResponseEntity<?> getAvailableHirePosts(@RequestParam(required = false) String field) {
+    public ResponseEntity<?> getAvailableHirePosts(
+            @RequestParam(required = false) String field,
+            @RequestParam(required = false, defaultValue = "false") Boolean sortByLocation) {
         try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
             List<HirePostResponse> posts;
             if (field != null && !field.trim().isEmpty()) {
                 posts = hirePostService.getAvailableHirePostsByField(field);
             } else {
                 posts = hirePostService.getAllAvailableHirePosts();
             }
+            
+            // Apply location-based sorting if requested and user is a worker
+            if (sortByLocation && auth != null && auth.isAuthenticated()) {
+                try {
+                    // Check if user is a worker
+                    UserRole role = auth.getAuthorities().stream()
+                        .filter(authority -> authority.getAuthority().startsWith("ROLE_"))
+                        .map(authority -> {
+                            try {
+                                return UserRole.valueOf(authority.getAuthority().substring(5));
+                            } catch (IllegalArgumentException e) {
+                                return null;
+                            }
+                        })
+                        .filter(r -> r != null)
+                        .findFirst()
+                        .orElse(null);
+                        
+                    if (role == UserRole.WORKER) {
+                        Integer workerId = getUserIdFromAuth(auth, "WORKER");
+                        posts = hirePostService.sortHirePostsByLocationForWorker(posts, workerId);
+                    }
+                } catch (Exception e) {
+                    // If there's any error with location sorting, just return unsorted results
+                    System.err.println("Error sorting by location: " + e.getMessage());
+                }
+            }
+            
             return ResponseEntity.ok(posts);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

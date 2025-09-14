@@ -68,8 +68,10 @@ export const hirePostAPI = {
   },
 
   // Get available hire posts (for workers to browse)
-  getAvailableHirePosts: (field = null) => {
-    const params = field ? { field } : {};
+  getAvailableHirePosts: (field = null, sortByLocation = false) => {
+    const params = {};
+    if (field) params.field = field;
+    if (sortByLocation) params.sortByLocation = true;
     return apiClient.get('/hireposts/available', { params });
   },
 

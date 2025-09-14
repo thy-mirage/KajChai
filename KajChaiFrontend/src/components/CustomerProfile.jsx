@@ -64,6 +64,7 @@ const CustomerProfile = () => {
   };
 
   const handleLocationSelect = (locationData) => {
+    console.log('CustomerProfile: Received location data:', locationData);
     setFormData(prev => ({
       ...prev,
       city: locationData.city || '',
@@ -72,6 +73,7 @@ const CustomerProfile = () => {
       latitude: locationData.latitude,
       longitude: locationData.longitude
     }));
+    console.log('CustomerProfile: Updated form data with location');
   };
 
   const handlePhotoChange = (e) => {

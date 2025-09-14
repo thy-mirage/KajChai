@@ -11,6 +11,7 @@ const HirePostList = ({ viewMode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedField, setSelectedField] = useState('');
+  const [sortByLocation, setSortByLocation] = useState(false); // Location sorting toggle
   const [applicationStatus, setApplicationStatus] = useState({}); // Track which posts worker has applied to
   const [expandedPosts, setExpandedPosts] = useState(new Set()); // Track expanded descriptions
 
@@ -19,7 +20,7 @@ const HirePostList = ({ viewMode }) => {
 
   useEffect(() => {
     loadPosts();
-  }, [effectiveViewMode, selectedField]);
+  }, [effectiveViewMode, selectedField, sortByLocation]);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -30,7 +31,7 @@ const HirePostList = ({ viewMode }) => {
       if (effectiveViewMode === 'customer') {
         data = await hirePostService.getMyHirePosts();
       } else if (effectiveViewMode === 'worker') {
-        data = await hirePostService.getAvailableHirePosts(selectedField || null);
+        data = await hirePostService.getAvailableHirePosts(selectedField || null, sortByLocation);
         // Check application status for each post
         await checkApplicationStatus(data);
       } else {
@@ -136,6 +137,19 @@ const HirePostList = ({ viewMode }) => {
                 <option key={field} value={field}>{field}</option>
               ))}
             </select>
+            
+            <div className="location-sort-toggle">
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={sortByLocation}
+                  onChange={(e) => setSortByLocation(e.target.checked)}
+                  className="location-checkbox"
+                />
+                <span className="checkmark">📍</span>
+                Sort by nearest location
+              </label>
+            </div>
           </div>
         )}
       </div>
@@ -218,7 +232,7 @@ const HirePostList = ({ viewMode }) => {
                   
                   {effectiveViewMode !== 'customer' && (
                     <div className="customer-info">
-                      <strong>Customer:</strong> {post.customerName} ({post.customerCity})
+                      <strong>Customer:</strong> {post.customerName} ({post.customerUpazila})
                     </div>
                   )}
                   

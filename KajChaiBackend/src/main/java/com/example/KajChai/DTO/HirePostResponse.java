@@ -30,7 +30,11 @@ public class HirePostResponse {
     private String customerName;
     private String customerPhoto;
     private String customerCity;
+    private String customerDistrict;
+    private String customerUpazila;
     private String customerPhone;
+    private Double customerLatitude;
+    private Double customerLongitude;
     
     // Additional fields for listing view
     private Integer applicationsCount;
