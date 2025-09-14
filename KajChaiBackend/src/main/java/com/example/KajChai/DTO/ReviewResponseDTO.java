@@ -41,7 +41,6 @@ public class ReviewResponseDTO {
         private String field;
         private Float rating;
         private String phone;
-        private String division;
         private String district;
         private String upazila;
         private String city;

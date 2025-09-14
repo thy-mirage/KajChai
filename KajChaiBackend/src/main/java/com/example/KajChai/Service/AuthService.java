@@ -94,10 +94,12 @@ public class AuthService {
                         .photo(request.getPhoto()) // Add photo support
                         .phone(request.getPhone())
                         .gender(request.getGender())
+                        .latitude(request.getLatitude())
+                        .longitude(request.getLongitude())
                         .city(request.getCity())
                         .upazila(request.getUpazila())
                         .district(request.getDistrict())
-                        .division(request.getDivision())
+                        .fullAddress(request.getFullAddress())
                         .build();
                 customerRepository.save(customer);
             } else if (request.getRole() == UserRole.WORKER) {
@@ -108,10 +110,12 @@ public class AuthService {
                         .photo(request.getPhoto()) // Add photo support
                         .phone(request.getPhone())
                         .gender(request.getGender())
+                        .latitude(request.getLatitude())
+                        .longitude(request.getLongitude())
                         .city(request.getCity())
                         .upazila(request.getUpazila())
                         .district(request.getDistrict())
-                        .division(request.getDivision())
+                        .fullAddress(request.getFullAddress())
                         .field(request.getField())
                         .experience(request.getExperience() != null ? request.getExperience() : 0.0f)
                         .rating(0.0f)

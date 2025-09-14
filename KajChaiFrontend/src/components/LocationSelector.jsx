@@ -1,0 +1,255 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import locationService from '../services/locationService';
+import 'leaflet/dist/leaflet.css';
+import './LocationSelector.css';
+
+// Fix for default markers in react-leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const LocationSelector = ({ 
+  onLocationSelect, 
+  initialLocation = null, 
+  showCurrentLocationButton = true,
+  isEditMode = false  // New prop to distinguish edit mode
+}) => {
+  // Safely initialize position with default Dhaka coordinates
+  const getInitialPosition = () => {
+    if (initialLocation && 
+        initialLocation.latitude && 
+        initialLocation.longitude &&
+        typeof initialLocation.latitude === 'number' &&
+        typeof initialLocation.longitude === 'number') {
+      return [initialLocation.latitude, initialLocation.longitude];
+    }
+    return [23.8103, 90.4125]; // Default to Dhaka
+  };
+
+  const [position, setPosition] = useState(getInitialPosition());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [addressInfo, setAddressInfo] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false); // Prevent infinite loops
+  const mapRef = useRef();
+
+  // Component to handle map clicks
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        const newPosition = [e.latlng.lat, e.latlng.lng];
+        setPosition(newPosition);
+        handleLocationChange(e.latlng.lat, e.latlng.lng);
+      },
+    });
+
+    return (position && position.length === 2 && position[0] && position[1]) ? 
+      <Marker position={position}></Marker> : null;
+  }
+
+  const handleLocationChange = async (lat, lng) => {
+    if (isUpdating) return; // Prevent infinite loops
+    
+    try {
+      setIsUpdating(true);
+      setLoading(true);
+      setError('');
+      
+      // Call reverse geocoding API using service
+      const data = await locationService.reverseGeocode(lat, lng);
+      
+      if (data.success) {
+        setAddressInfo(data.data);
+        if (onLocationSelect) {
+          onLocationSelect(data.data);
+        }
+      } else {
+        // Handle graceful error response from service
+        setError(data.message || 'Could not determine address for this location');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while getting location details');
+    } finally {
+      setLoading(false);
+      setIsUpdating(false);
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const newPosition = [lat, lng];
+        
+        setPosition(newPosition);
+        handleLocationChange(lat, lng);
+        
+        // Center map on new position
+        if (mapRef.current) {
+          mapRef.current.setView(newPosition, 15);
+        }
+      },
+      (error) => {
+        setError('Error getting current location: ' + error.message);
+        setLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const searchLocation = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const data = await locationService.geocodeAddress(searchQuery);
+
+      if (data.success) {
+        const lat = data.data.latitude;
+        const lng = data.data.longitude;
+        const newPosition = [lat, lng];
+        
+        setPosition(newPosition);
+        handleLocationChange(lat, lng);
+        
+        // Center map on searched location
+        if (mapRef.current) {
+          mapRef.current.setView(newPosition, 15);
+        }
+      } else {
+        // Handle graceful error response from service
+        setError(data.message || 'Sorry, the location could not be found. Please try a different search term.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize with provided location
+  useEffect(() => {
+    if (initialLocation && 
+        initialLocation.latitude && 
+        initialLocation.longitude &&
+        typeof initialLocation.latitude === 'number' &&
+        typeof initialLocation.longitude === 'number') {
+      const newPosition = [initialLocation.latitude, initialLocation.longitude];
+      setPosition(newPosition);
+      
+      // In edit mode, pre-populate address info without API call to prevent loops
+      if (isEditMode && initialLocation.city) {
+        setAddressInfo({
+          city: initialLocation.city || '',
+          upazila: initialLocation.upazila || '',
+          district: initialLocation.district || '',
+          fullAddress: [initialLocation.city, initialLocation.upazila, initialLocation.district].filter(Boolean).join(', '),
+          latitude: initialLocation.latitude,
+          longitude: initialLocation.longitude
+        });
+      } else if (!isEditMode) {
+        // Only call API in registration mode
+        handleLocationChange(initialLocation.latitude, initialLocation.longitude);
+      }
+    }
+  }, [initialLocation?.latitude, initialLocation?.longitude, isEditMode]); // More specific dependencies
+
+  return (
+    <div className="location-selector">
+      <div className="location-controls">
+        <div className="search-section">
+          <div className="search-input-group">
+            <input
+              type="text"
+              placeholder="Search for a location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && searchLocation()}
+              className="location-search"
+            />
+            <button 
+              onClick={searchLocation}
+              disabled={(loading || isUpdating) || !searchQuery.trim()}
+              className="search-btn"
+            >
+              🔍
+            </button>
+          </div>
+        </div>
+
+        {showCurrentLocationButton && (
+          <button 
+            onClick={getCurrentLocation}
+            disabled={loading || isUpdating}
+            className="current-location-btn"
+          >
+            📍 Use Current Location
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+      <div className="map-container">
+        <MapContainer
+          center={position && position.length === 2 && position[0] && position[1] ? position : [23.8103, 90.4125]}
+          zoom={13}
+          style={{ height: '400px', width: '100%' }}
+          ref={mapRef}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <LocationMarker />
+        </MapContainer>
+      </div>
+
+      {(loading || isUpdating) && (
+        <div className="loading-message">
+          Getting location information...
+        </div>
+      )}
+
+      {addressInfo && (
+        <div className="address-info">
+          <h4>Selected Location:</h4>
+          <div className="address-details">
+            <p><strong>City:</strong> {addressInfo.city}</p>
+            <p><strong>Area:</strong> {addressInfo.upazila}</p>
+            <p><strong>District:</strong> {addressInfo.district}</p>
+            <p><strong>Full Address:</strong> {addressInfo.fullAddress}</p>
+            <p><strong>Coordinates:</strong> {addressInfo.latitude?.toFixed(6)}, {addressInfo.longitude?.toFixed(6)}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="instructions">
+        <p>📍 Click on the map to select a precise location</p>
+        <p>🔍 Search for an address using the search box</p>
+        <p>📱 Use "Current Location" to get your GPS position</p>
+      </div>
+    </div>
+  );
+};
+
+export default LocationSelector;

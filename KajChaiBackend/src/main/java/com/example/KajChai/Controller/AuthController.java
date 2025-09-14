@@ -83,7 +83,6 @@ public class AuthController {
             request.setCity(city);
             request.setUpazila(upazila);
             request.setDistrict(district);
-            request.setDivision(division);
             request.setPhoto(photoUrl);
             request.setField(field);
             request.setExperience(experience);
@@ -146,7 +145,6 @@ public class AuthController {
             request.setCity(city);
             request.setUpazila(upazila);
             request.setDistrict(district);
-            request.setDivision(division);
             request.setPhoto(photoUrl);
             request.setField(field);
             request.setExperience(experience);

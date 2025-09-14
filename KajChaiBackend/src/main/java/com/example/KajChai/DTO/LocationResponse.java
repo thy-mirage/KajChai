@@ -9,19 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerProfileResponse {
-    private Integer customerId;
-    private String customerName;
-    private String photo;
-    private String gmail;
-    private String phone;
-    private String gender;
-    
-    // Location data
+public class LocationResponse {
     private Double latitude;
     private Double longitude;
     private String city;
     private String upazila;
     private String district;
     private String fullAddress;
+    private Double distanceFromUser; // For nearby results
 }

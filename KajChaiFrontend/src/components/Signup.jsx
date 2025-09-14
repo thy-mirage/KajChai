@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import LocationSelector from './LocationSelector';
 import './Auth.css';
 
 const Signup = () => {
@@ -13,10 +14,13 @@ const Signup = () => {
     name: '',
     phone: '',
     gender: '',
+    // Location data
+    latitude: null,
+    longitude: null,
     city: '',
     upazila: '',
     district: '',
-    division: '',
+    fullAddress: '',
     // Worker specific fields
     field: '',
     experience: '',
@@ -24,6 +28,7 @@ const Signup = () => {
     photo: null
   });
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [locationSelected, setLocationSelected] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -72,10 +77,30 @@ const Signup = () => {
     setPhotoPreview(null);
   };
 
+  const handleLocationSelect = (locationData) => {
+    setFormData({
+      ...formData,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      city: locationData.city,
+      upazila: locationData.upazila,
+      district: locationData.district,
+      fullAddress: locationData.fullAddress
+    });
+    setLocationSelected(true);
+    if (error) setError('');
+  };
+
   const validateForm = () => {
     if (!formData.email || !formData.password || !formData.name || !formData.phone || 
-        !formData.gender || !formData.city || !formData.upazila || !formData.district || !formData.division) {
+        !formData.gender) {
       setError('Please fill in all required fields');
+      return false;
+    }
+
+    // Location is required for new signups
+    if (!formData.latitude || !formData.longitude || !formData.city || !formData.district) {
+      setError('Please select your location on the map');
       return false;
     }
 
@@ -117,10 +142,16 @@ const Signup = () => {
         uploadFormData.append('name', formData.name);
         uploadFormData.append('phone', formData.phone);
         uploadFormData.append('gender', formData.gender);
-        uploadFormData.append('city', formData.city);
-        uploadFormData.append('upazila', formData.upazila);
-        uploadFormData.append('district', formData.district);
-        uploadFormData.append('division', formData.division);
+        
+        // Add location data only if provided
+        if (formData.latitude && formData.longitude) {
+          uploadFormData.append('latitude', formData.latitude);
+          uploadFormData.append('longitude', formData.longitude);
+          uploadFormData.append('city', formData.city);
+          uploadFormData.append('upazila', formData.upazila);
+          uploadFormData.append('district', formData.district);
+          uploadFormData.append('fullAddress', formData.fullAddress);
+        }
         uploadFormData.append('photo', formData.photo);
         
         // Add worker-specific fields if role is WORKER
@@ -138,12 +169,18 @@ const Signup = () => {
           role: formData.role,
           name: formData.name,
           phone: formData.phone,
-          gender: formData.gender,
-          city: formData.city,
-          upazila: formData.upazila,
-          district: formData.district,
-          division: formData.division
+          gender: formData.gender
         };
+
+        // Add location data only if provided
+        if (formData.latitude && formData.longitude) {
+          signupPayload.latitude = formData.latitude;
+          signupPayload.longitude = formData.longitude;
+          signupPayload.city = formData.city;
+          signupPayload.upazila = formData.upazila;
+          signupPayload.district = formData.district;
+          signupPayload.fullAddress = formData.fullAddress;
+        }
 
         // Add worker-specific fields if role is WORKER
         if (formData.role === 'WORKER') {
@@ -194,7 +231,6 @@ const Signup = () => {
         uploadFormData.append('city', formData.city);
         uploadFormData.append('upazila', formData.upazila);
         uploadFormData.append('district', formData.district);
-        uploadFormData.append('division', formData.division);
         uploadFormData.append('photo', formData.photo);
         
         if (formData.role === 'WORKER') {
@@ -214,8 +250,7 @@ const Signup = () => {
           gender: formData.gender,
           city: formData.city,
           upazila: formData.upazila,
-          district: formData.district,
-          division: formData.division
+          district: formData.district
         };
 
         if (formData.role === 'WORKER') {
@@ -433,61 +468,18 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Address Information */}
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="city">City *</label>
-              <input
-                type="text"
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-                placeholder="Enter your city"
-                disabled={loading}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="upazila">Upazila *</label>
-              <input
-                type="text"
-                id="upazila"
-                name="upazila"
-                value={formData.upazila}
-                onChange={handleChange}
-                required
-                placeholder="Enter your upazila"
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="district">District *</label>
-            <input
-              type="text"
-              id="district"
-              name="district"
-              value={formData.district}
-              onChange={handleChange}
-              required
-              placeholder="Enter your district"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="division">Division *</label>
-            <input
-              type="text"
-              id="division"
-              name="division"
-              value={formData.division}
-              onChange={handleChange}
-              required
-              placeholder="Enter your division"
-              disabled={loading}
+          {/* Location Selection */}
+          <div className="form-group location-section">
+            <label>Select Your Location *</label>
+            <p className="location-helper">
+              {locationSelected ? 
+                `📍 Location selected: ${formData.city}, ${formData.district}` : 
+                "Please select your precise location on the map below"
+              }
+            </p>
+            <LocationSelector 
+              onLocationSelect={handleLocationSelect}
+              showCurrentLocationButton={true}
             />
           </div>
 

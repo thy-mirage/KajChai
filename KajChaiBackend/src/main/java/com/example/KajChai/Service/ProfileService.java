@@ -39,10 +39,12 @@ public class ProfileService {
                 .gmail(customer.getGmail())
                 .phone(customer.getPhone())
                 .gender(customer.getGender())
+                .latitude(customer.getLatitude())
+                .longitude(customer.getLongitude())
                 .city(customer.getCity())
                 .upazila(customer.getUpazila())
                 .district(customer.getDistrict())
-                .division(customer.getDivision())
+                .fullAddress(customer.getFullAddress())
                 .build();
     }
 
@@ -60,10 +62,12 @@ public class ProfileService {
                 .gmail(worker.getGmail())
                 .phone(worker.getPhone())
                 .gender(worker.getGender())
+                .latitude(worker.getLatitude())
+                .longitude(worker.getLongitude())
                 .city(worker.getCity())
                 .upazila(worker.getUpazila())
                 .district(worker.getDistrict())
-                .division(worker.getDivision())
+                .fullAddress(worker.getFullAddress())
                 .field(worker.getField())
                 .rating(worker.getRating())
                 .experience(worker.getExperience())
@@ -85,10 +89,18 @@ public class ProfileService {
         }
         customer.setPhone(request.getPhone());
         customer.setGender(request.getGender());
+        
+        // Update location data
+        customer.setLatitude(request.getLatitude());
+        customer.setLongitude(request.getLongitude());
         customer.setCity(request.getCity());
         customer.setUpazila(request.getUpazila());
         customer.setDistrict(request.getDistrict());
-        customer.setDivision(request.getDivision());
+        
+        // Update full address if provided
+        if (request.getFullAddress() != null) {
+            customer.setFullAddress(request.getFullAddress());
+        }
         
         Customer updatedCustomer = customerRepository.save(customer);
         
@@ -99,10 +111,12 @@ public class ProfileService {
                 .gmail(updatedCustomer.getGmail())
                 .phone(updatedCustomer.getPhone())
                 .gender(updatedCustomer.getGender())
+                .latitude(updatedCustomer.getLatitude())
+                .longitude(updatedCustomer.getLongitude())
                 .city(updatedCustomer.getCity())
                 .upazila(updatedCustomer.getUpazila())
                 .district(updatedCustomer.getDistrict())
-                .division(updatedCustomer.getDivision())
+                .fullAddress(updatedCustomer.getFullAddress())
                 .build();
     }
 
@@ -121,10 +135,19 @@ public class ProfileService {
         }
         worker.setPhone(request.getPhone());
         worker.setGender(request.getGender());
+        
+        // Update location data
+        worker.setLatitude(request.getLatitude());
+        worker.setLongitude(request.getLongitude());
         worker.setCity(request.getCity());
         worker.setUpazila(request.getUpazila());
         worker.setDistrict(request.getDistrict());
-        worker.setDivision(request.getDivision());
+        
+        // Update full address if provided
+        if (request.getFullAddress() != null) {
+            worker.setFullAddress(request.getFullAddress());
+        }
+        
         worker.setField(request.getField());
         if (request.getExperience() != null) {
             worker.setExperience(request.getExperience());
@@ -139,10 +162,12 @@ public class ProfileService {
                 .gmail(updatedWorker.getGmail())
                 .phone(updatedWorker.getPhone())
                 .gender(updatedWorker.getGender())
+                .latitude(updatedWorker.getLatitude())
+                .longitude(updatedWorker.getLongitude())
                 .city(updatedWorker.getCity())
                 .upazila(updatedWorker.getUpazila())
                 .district(updatedWorker.getDistrict())
-                .division(updatedWorker.getDivision())
+                .fullAddress(updatedWorker.getFullAddress())
                 .field(updatedWorker.getField())
                 .rating(updatedWorker.getRating())
                 .experience(updatedWorker.getExperience())

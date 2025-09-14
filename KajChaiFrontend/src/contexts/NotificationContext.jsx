@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import NotificationPopup from '../components/NotificationPopup';
 import hirePostService from '../services/hirePostService';
+import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
@@ -13,6 +14,7 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [popups, setPopups] = useState([]);
   const [lastNotificationCount, setLastNotificationCount] = useState(-1); // Start with -1 to indicate uninitialized
   const [unreadCount, setUnreadCount] = useState(0);
@@ -40,6 +42,12 @@ export const NotificationProvider = ({ children }) => {
 
   // Poll for new notifications and show popup when count increases
   useEffect(() => {
+    // Only check notifications if user is authenticated
+    if (!isAuthenticated) {
+      console.log('NotificationContext: User not authenticated, skipping notification check');
+      return;
+    }
+
     console.log('NotificationContext: Setting up polling effect');
     
     const checkForNewNotifications = async () => {
@@ -94,7 +102,7 @@ export const NotificationProvider = ({ children }) => {
       console.log('NotificationContext: Cleaning up polling interval');
       clearInterval(interval);
     };
-  }, [lastNotificationCount, isInitialized]);
+  }, [lastNotificationCount, isInitialized, isAuthenticated]); // Add isAuthenticated as dependency
 
   const value = {
     showNotification,

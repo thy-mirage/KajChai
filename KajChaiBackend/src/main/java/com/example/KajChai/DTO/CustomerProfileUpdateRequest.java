@@ -1,7 +1,7 @@
 package com.example.KajChai.DTO;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,6 +23,13 @@ public class CustomerProfileUpdateRequest {
     @NotBlank(message = "Gender is required")
     private String gender;
     
+    // Location coordinates (required)
+    @NotNull(message = "Latitude is required")
+    private Double latitude;
+
+    @NotNull(message = "Longitude is required")
+    private Double longitude;
+    
     @NotBlank(message = "City is required")
     private String city;
     
@@ -32,6 +39,6 @@ public class CustomerProfileUpdateRequest {
     @NotBlank(message = "District is required")
     private String district;
     
-    @NotBlank(message = "Division is required")
-    private String division;
+    // Full address for display
+    private String fullAddress;
 }

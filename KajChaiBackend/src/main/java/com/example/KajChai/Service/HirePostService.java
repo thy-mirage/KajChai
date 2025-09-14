@@ -323,7 +323,6 @@ public class HirePostService {
                 .workerCity(worker.getCity())
                 .workerUpazila(worker.getUpazila())
                 .workerDistrict(worker.getDistrict())
-                .workerDivision(worker.getDivision())
                 .workerField(worker.getField())
                 .workerRating(worker.getRating())
                 .workerExperience(worker.getExperience())

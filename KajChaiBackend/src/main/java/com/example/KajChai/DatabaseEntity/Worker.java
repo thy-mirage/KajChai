@@ -34,17 +34,20 @@ public class Worker {
     @Column(nullable = false)
     private String gender;
 
-    @Column(nullable = false)
+    // Precise location coordinates
+    private Double latitude;
+
+    private Double longitude;
+
+    // Address components extracted from coordinates
     private String city;
 
-    @Column(nullable = false)
-    private String upazila;
+    private String upazila; // Can be upazila or ward or city corporation
 
-    @Column(nullable = false)
     private String district;
 
-    @Column(nullable = false)
-    private String division;
+    // Full formatted address for display
+    private String fullAddress;
 
     @Column(nullable = false)
     private String field;

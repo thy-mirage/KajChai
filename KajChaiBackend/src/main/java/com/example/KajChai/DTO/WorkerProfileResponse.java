@@ -16,10 +16,15 @@ public class WorkerProfileResponse {
     private String gmail;
     private String phone;
     private String gender;
+    
+    // Location data
+    private Double latitude;
+    private Double longitude;
     private String city;
     private String upazila;
     private String district;
-    private String division;
+    private String fullAddress;
+    
     private String field;
     private Float rating;
     private Float experience;

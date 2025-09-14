@@ -24,7 +24,6 @@ public class WorkerApplicationResponse {
     private String workerCity;
     private String workerUpazila;
     private String workerDistrict;
-    private String workerDivision;
     private String workerField;
     private Float workerRating;
     private Float workerExperience;

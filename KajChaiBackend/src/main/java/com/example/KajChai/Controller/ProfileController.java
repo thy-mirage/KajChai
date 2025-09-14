@@ -155,10 +155,12 @@ public class ProfileController {
             @RequestParam("customerName") String customerName,
             @RequestParam("phone") String phone,
             @RequestParam("gender") String gender,
+            @RequestParam("latitude") Double latitude,
+            @RequestParam("longitude") Double longitude,
             @RequestParam("city") String city,
             @RequestParam("upazila") String upazila,
             @RequestParam("district") String district,
-            @RequestParam("division") String division,
+            @RequestParam(value = "fullAddress", required = false) String fullAddress,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {
         
         try {
@@ -186,10 +188,12 @@ public class ProfileController {
                     .photo(photoUrl) // This will be null if no photo uploaded, which is fine
                     .phone(phone)
                     .gender(gender)
+                    .latitude(latitude)
+                    .longitude(longitude)
                     .city(city)
                     .upazila(upazila)
                     .district(district)
-                    .division(division)
+                    .fullAddress(fullAddress)
                     .build();
             
             CustomerProfileResponse profileData = profileService.updateCustomerProfile(user.getEmail(), request);
@@ -247,10 +251,12 @@ public class ProfileController {
             @RequestParam("name") String name,
             @RequestParam("phone") String phone,
             @RequestParam("gender") String gender,
+            @RequestParam("latitude") Double latitude,
+            @RequestParam("longitude") Double longitude,
             @RequestParam("city") String city,
             @RequestParam("upazila") String upazila,
             @RequestParam("district") String district,
-            @RequestParam("division") String division,
+            @RequestParam(value = "fullAddress", required = false) String fullAddress,
             @RequestParam("field") String field,
             @RequestParam(value = "experience", required = false) Float experience,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {
@@ -280,10 +286,12 @@ public class ProfileController {
                     .photo(photoUrl)
                     .phone(phone)
                     .gender(gender)
+                    .latitude(latitude)
+                    .longitude(longitude)
                     .city(city)
                     .upazila(upazila)
                     .district(district)
-                    .division(division)
+                    .fullAddress(fullAddress)
                     .field(field)
                     .experience(experience)
                     .build();

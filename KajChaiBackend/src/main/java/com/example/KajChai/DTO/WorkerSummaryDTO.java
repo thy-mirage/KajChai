@@ -20,7 +20,6 @@ public class WorkerSummaryDTO {
     private Long totalReviews;
     private String phoneNumber;
     private String phone;
-    private String division;
     private String district;
     private String upazila;
     private String city;

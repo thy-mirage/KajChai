@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/authService';
+import LocationSelector from './LocationSelector';
 import './Profile.css';
 
 const WorkerProfile = () => {
@@ -18,7 +19,8 @@ const WorkerProfile = () => {
     city: '',
     upazila: '',
     district: '',
-    division: '',
+    latitude: null,
+    longitude: null,
     field: '',
     experience: ''
   });
@@ -54,7 +56,8 @@ const WorkerProfile = () => {
           city: response.data.city || '',
           upazila: response.data.upazila || '',
           district: response.data.district || '',
-          division: response.data.division || '',
+          latitude: response.data.latitude || null,
+          longitude: response.data.longitude || null,
           field: response.data.field || '',
           experience: response.data.experience ? response.data.experience.toString() : ''
         });
@@ -72,6 +75,17 @@ const WorkerProfile = () => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleLocationSelect = (locationData) => {
+    setFormData(prev => ({
+      ...prev,
+      city: locationData.city || '',
+      upazila: locationData.upazila || '',
+      district: locationData.district || '',
+      latitude: locationData.latitude,
+      longitude: locationData.longitude
     }));
   };
 
@@ -103,6 +117,13 @@ const WorkerProfile = () => {
     setError('');
     setSuccess('');
 
+    // Validation for location
+    if (!formData.latitude || !formData.longitude) {
+      setError('Please select a valid location on the map');
+      setLoading(false);
+      return;
+    }
+
     try {
       let response;
       
@@ -115,7 +136,8 @@ const WorkerProfile = () => {
         uploadFormData.append('city', formData.city);
         uploadFormData.append('upazila', formData.upazila);
         uploadFormData.append('district', formData.district);
-        uploadFormData.append('division', formData.division);
+        uploadFormData.append('latitude', formData.latitude);
+        uploadFormData.append('longitude', formData.longitude);
         uploadFormData.append('field', formData.field);
         if (formData.experience) {
           uploadFormData.append('experience', parseFloat(formData.experience));
@@ -126,7 +148,15 @@ const WorkerProfile = () => {
       } else {
         // Use regular JSON payload if no photo
         const submitData = {
-          ...formData,
+          name: formData.name,
+          phone: formData.phone,
+          gender: formData.gender,
+          city: formData.city,
+          upazila: formData.upazila,
+          district: formData.district,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          field: formData.field,
           experience: formData.experience ? parseFloat(formData.experience) : null
         };
         response = await authService.updateWorkerProfile(submitData);
@@ -167,7 +197,8 @@ const WorkerProfile = () => {
         city: profile.city || '',
         upazila: profile.upazila || '',
         district: profile.district || '',
-        division: profile.division || '',
+        latitude: profile.latitude || null,
+        longitude: profile.longitude || null,
         field: profile.field || '',
         experience: profile.experience ? profile.experience.toString() : ''
       });
@@ -223,20 +254,8 @@ const WorkerProfile = () => {
                 <span>{profile.gender}</span>
               </div>
               <div className="info-group">
-                <label>City:</label>
-                <span>{profile.city}</span>
-              </div>
-              <div className="info-group">
-                <label>Upazila:</label>
-                <span>{profile.upazila}</span>
-              </div>
-              <div className="info-group">
-                <label>District:</label>
-                <span>{profile.district}</span>
-              </div>
-              <div className="info-group">
-                <label>Division:</label>
-                <span>{profile.division}</span>
+                <label>Location:</label>
+                <span>{[profile.city, profile.upazila, profile.district].filter(Boolean).join(', ')}</span>
               </div>
               <div className="info-group">
                 <label>Field of Work:</label>
@@ -341,55 +360,21 @@ const WorkerProfile = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="city">City *</label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
+                <label>Update Location *</label>
+                <LocationSelector
+                  onLocationSelect={handleLocationSelect}
+                  isEditMode={true}
+                  initialLocation={{
+                    city: formData.city,
+                    upazila: formData.upazila,
+                    district: formData.district,
+                    latitude: formData.latitude && typeof formData.latitude === 'number' ? formData.latitude : null,
+                    longitude: formData.longitude && typeof formData.longitude === 'number' ? formData.longitude : null
+                  }}
                 />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="upazila">Upazila *</label>
-                <input
-                  type="text"
-                  id="upazila"
-                  name="upazila"
-                  value={formData.upazila}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="district">District *</label>
-                <input
-                  type="text"
-                  id="district"
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="division">Division *</label>
-                <input
-                  type="text"
-                  id="division"
-                  name="division"
-                  value={formData.division}
-                  onChange={handleChange}
-                  required
-                  disabled={loading}
-                />
+                <small className="location-help">
+                  Click on the map to select your location. This will auto-fill your address details.
+                </small>
               </div>
 
               <div className="form-group">
