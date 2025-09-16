@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import forumAPI from '../services/forumService';
 import CommentSection from './CommentSection';
 import './PostCard.css';
 
 const PostCard = ({ post, onUpdate }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [showComments, setShowComments] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [localPost, setLocalPost] = useState(post);
@@ -119,6 +121,21 @@ const PostCard = ({ post, onUpdate }) => {
 
   return (
     <div className="post-card">
+      {/* Post Status Banner (for pending/rejected posts) */}
+      {localPost.status && localPost.status !== 'APPROVED' && (
+        <div className={`post-status-banner ${localPost.status.toLowerCase()}`}>
+          {localPost.status === 'PENDING_REVIEW' && (
+            <span>⏳ Post is under review - it will appear publicly once approved</span>
+          )}
+          {localPost.status === 'REJECTED_SPAM' && (
+            <span>❌ Post rejected as spam: {localPost.moderationReason}</span>
+          )}
+          {localPost.status === 'REJECTED_IRRELEVANT' && (
+            <span>❌ Post rejected as irrelevant: {localPost.moderationReason}</span>
+          )}
+        </div>
+      )}
+
       {/* Post Header */}
       <div className="post-header">
         <div className="post-author">
@@ -227,9 +244,9 @@ const PostCard = ({ post, onUpdate }) => {
           <button 
             className="comments-btn"
             onClick={() => setShowComments(!showComments)}
-            title="View comments"
+            title={t('forum.viewComments')}
           >
-            💬 {localPost.commentsCount} {localPost.commentsCount === 1 ? 'Comment' : 'Comments'}
+            💬 {localPost.commentsCount} {localPost.commentsCount === 1 ? t('forum.comment') : t('forum.comments')}
           </button>
         </div>
 
@@ -239,7 +256,7 @@ const PostCard = ({ post, onUpdate }) => {
               className="comment-toggle-btn"
               onClick={() => setShowComments(!showComments)}
             >
-              {showComments ? 'Hide Comments' : 'Add Comment'}
+              {showComments ? t('forum.hideComments') : t('forum.addComment')}
             </button>
           </div>
         )}

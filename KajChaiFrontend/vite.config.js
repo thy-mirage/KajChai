@@ -8,6 +8,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   server: {
+    port: 5173,
     proxy: {
       '/ws': {
         target: 'http://localhost:8080',

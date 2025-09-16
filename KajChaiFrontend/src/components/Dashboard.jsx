@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const getWelcomeMessage = () => {
     const hour = new Date().getHours();
@@ -14,26 +16,26 @@ const Dashboard = () => {
   };
 
   const customerStats = [
-    { label: 'Active Posts', value: '3', icon: '📝', color: '#3498db' },
-    { label: 'Completed Jobs', value: '12', icon: '✅', color: '#27ae60' },
-    { label: 'Total Spent', value: '$1,250', icon: '💰', color: '#f39c12' },
-    { label: 'Reviews Given', value: '8', icon: '⭐', color: '#e74c3c' },
+    { label: t('dashboard.activePosts', 'Active Posts'), value: '3', icon: '📝', color: '#3498db' },
+    { label: t('dashboard.completedJobs', 'Completed Jobs'), value: '12', icon: '✅', color: '#27ae60' },
+    { label: t('dashboard.totalSpent', 'Total Spent'), value: '$1,250', icon: '💰', color: '#f39c12' },
+    { label: t('dashboard.reviewsGiven', 'Reviews Given'), value: '8', icon: '⭐', color: '#e74c3c' },
   ];
 
   const workerStats = [
-    { label: 'Jobs Completed', value: '27', icon: '🔧', color: '#27ae60' },
-    { label: 'Current Rating', value: '4.8', icon: '⭐', color: '#f39c12' },
-    { label: 'Total Earned', value: '$3,450', icon: '💰', color: '#3498db' },
-    { label: 'Active Bids', value: '5', icon: '📋', color: '#9b59b6' },
+    { label: t('dashboard.jobsCompleted', 'Jobs Completed'), value: '27', icon: '🔧', color: '#27ae60' },
+    { label: t('dashboard.currentRating', 'Current Rating'), value: '4.8', icon: '⭐', color: '#f39c12' },
+    { label: t('dashboard.totalEarned', 'Total Earned'), value: '$3,450', icon: '💰', color: '#3498db' },
+    { label: t('dashboard.activeBids', 'Active Bids'), value: '5', icon: '📋', color: '#9b59b6' },
   ];
 
   const stats = user?.role === 'CUSTOMER' ? customerStats : workerStats;
 
   const recentActivities = [
-    { id: 1, action: 'New job application received', time: '2 hours ago', icon: '📩' },
-    { id: 2, action: 'Payment completed for plumbing work', time: '1 day ago', icon: '💳' },
-    { id: 3, action: 'Review submitted', time: '3 days ago', icon: '⭐' },
-    { id: 4, action: 'Profile updated', time: '5 days ago', icon: '👤' },
+    { id: 1, action: t('dashboard.newJobApplication', 'New job application received'), time: t('dashboard.hoursAgo', '2 hours ago'), icon: '📩' },
+    { id: 2, action: t('dashboard.paymentCompleted', 'Payment completed for plumbing work'), time: t('dashboard.dayAgo', '1 day ago'), icon: '💳' },
+    { id: 3, action: t('dashboard.reviewSubmitted', 'Review submitted'), time: t('dashboard.daysAgo', '3 days ago'), icon: '⭐' },
+    { id: 4, action: t('dashboard.profileUpdated', 'Profile updated'), time: t('dashboard.daysAgo5', '5 days ago'), icon: '👤' },
   ];
 
   return (
@@ -41,10 +43,10 @@ const Dashboard = () => {
       <div className="dashboard-header">
         <div className="welcome-section">
           <h1 className="welcome-title">
-            {getWelcomeMessage()}, {user?.role === 'CUSTOMER' ? 'Customer' : 'Worker'}!
+            {getWelcomeMessage()}, {user?.role === 'CUSTOMER' ? t('auth.customer') : t('auth.worker')}!
           </h1>
           <p className="welcome-subtitle">
-            Welcome back to your {user?.role === 'CUSTOMER' ? 'KajChai customer' : 'KajChai worker'} dashboard
+            {t('dashboard.welcomeBack')} {user?.role === 'CUSTOMER' ? t('dashboard.customerDashboard') : t('dashboard.workerDashboard')}
           </p>
         </div>
         <div className="user-badge">
@@ -71,48 +73,48 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="quick-actions">
-        <h2 className="section-title">Quick Actions</h2>
+        <h2 className="section-title">{t('dashboard.quickActions')}</h2>
         <div className="actions-grid">
           {user?.role === 'CUSTOMER' ? (
             <>
               <Link to="/create-post" className="action-card">
                 <div className="action-icon">📝</div>
-                <h3>Post a Job</h3>
-                <p>Create a new job posting and find skilled workers</p>
-                <button className="action-btn">Create Post</button>
+                <h3>{t('dashboard.postJob', 'Post a Job')}</h3>
+                <p>{t('dashboard.postJobDesc', 'Create a new job posting and find skilled workers')}</p>
+                <button className="action-btn">{t('jobs.createJob')}</button>
               </Link>
               <Link to="/jobs" className="action-card">
                 <div className="action-icon">👥</div>
-                <h3>Browse Workers</h3>
-                <p>Find and hire professional workers for your needs</p>
-                <button className="action-btn">Browse</button>
+                <h3>{t('dashboard.browseWorkers', 'Browse Workers')}</h3>
+                <p>{t('dashboard.browseWorkersDesc', 'Find and hire professional workers for your needs')}</p>
+                <button className="action-btn">{t('common.browse', 'Browse')}</button>
               </Link>
               <Link to="/my-profile" className="action-card">
                 <div className="action-icon">📋</div>
-                <h3>View Profile</h3>
-                <p>Check your profile and account information</p>
-                <button className="action-btn">View Profile</button>
+                <h3>{t('workers.viewProfile')}</h3>
+                <p>{t('dashboard.viewProfileDesc', 'Check your profile and account information')}</p>
+                <button className="action-btn">{t('workers.viewProfile')}</button>
               </Link>
             </>
           ) : (
             <>
               <Link to="/jobs" className="action-card">
                 <div className="action-icon">🔍</div>
-                <h3>Find Jobs</h3>
-                <p>Browse available jobs that match your skills</p>
-                <button className="action-btn">Find Jobs</button>
+                <h3>{t('dashboard.findJobs', 'Find Jobs')}</h3>
+                <p>{t('dashboard.findJobsDesc', 'Browse available jobs that match your skills')}</p>
+                <button className="action-btn">{t('dashboard.findJobs')}</button>
               </Link>
               <Link to="/my-profile" className="action-card">
                 <div className="action-icon">📊</div>
-                <h3>My Profile</h3>
-                <p>Track your ratings, earnings and job completion</p>
-                <button className="action-btn">View Profile</button>
+                <h3>{t('navigation.profile')}</h3>
+                <p>{t('dashboard.myProfileDesc', 'Track your ratings, earnings and job completion')}</p>
+                <button className="action-btn">{t('workers.viewProfile')}</button>
               </Link>
               <Link to="/notifications" className="action-card">
                 <div className="action-icon">💼</div>
-                <h3>Notifications</h3>
-                <p>View your latest notifications and updates</p>
-                <button className="action-btn">View Notifications</button>
+                <h3>{t('navigation.notifications')}</h3>
+                <p>{t('dashboard.notificationsDesc', 'View your latest notifications and updates')}</p>
+                <button className="action-btn">{t('dashboard.viewNotifications', 'View Notifications')}</button>
               </Link>
             </>
           )}
@@ -121,7 +123,7 @@ const Dashboard = () => {
 
       {/* Recent Activity */}
       <div className="recent-activity">
-        <h2 className="section-title">Recent Activity</h2>
+        <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
         <div className="activity-list">
           {recentActivities.map((activity) => (
             <div key={activity.id} className="activity-item">

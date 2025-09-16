@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import forumAPI from '../services/forumService';
 import './CreatePostModal.css';
 
 const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -15,19 +17,27 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
   const [uploadingImages, setUploadingImages] = useState(false);
 
   const formatCategory = (category) => {
-    return category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    const categoryKey = category.toLowerCase().replace(/_/g, '');
+    // Try to get translation, fallback to formatted string if not found
+    const translationKey = `forum.categories.${categoryKey}`;
+    const translated = t(translationKey);
+    // If translation key is returned as-is, it means translation doesn't exist
+    if (translated === translationKey) {
+      return category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
+    return translated;
   };
 
   const getSectionTitle = () => {
     switch (section) {
       case 'CUSTOMER_QA':
-        return 'Ask a Question';
+        return t('forum.askQuestion');
       case 'WORKER_TIPS_PROJECTS':
-        return 'Share Tips or Projects';
+        return t('forum.shareTipsOrProjects');
       case 'CUSTOMER_EXPERIENCE':
-        return 'Share Your Experience';
+        return t('forum.shareExperience');
       default:
-        return 'Create Post';
+        return t('forum.createPost');
     }
   };
 
@@ -35,23 +45,23 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
     switch (section) {
       case 'CUSTOMER_QA':
         return {
-          title: 'What service-related question do you have?',
-          content: 'Describe your question in detail. Include any relevant information that might help others provide better answers...'
+          title: t('forum.questionPlaceholderTitle'),
+          content: t('forum.questionPlaceholderContent')
         };
       case 'WORKER_TIPS_PROJECTS':
         return {
-          title: 'Share your expertise or showcase your work',
-          content: 'Share useful tips, step-by-step guides, or showcase your completed projects. Help others learn from your experience...'
+          title: t('forum.tipsPlaceholderTitle'),
+          content: t('forum.tipsPlaceholderContent')
         };
       case 'CUSTOMER_EXPERIENCE':
         return {
-          title: 'What did you learn from your service experience?',
-          content: 'Share your experience to help other customers. What went well? What would you do differently? Any tips for future customers?'
+          title: t('forum.experiencePlaceholderTitle'),
+          content: t('forum.experiencePlaceholderContent')
         };
       default:
         return {
-          title: 'Enter your post title',
-          content: 'Write your post content here...'
+          title: t('forum.defaultTitlePlaceholder'),
+          content: t('forum.defaultContentPlaceholder')
         };
     }
   };
@@ -60,17 +70,17 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
     const newErrors = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = t('forum.titleRequired');
     } else if (formData.title.length < 10) {
-      newErrors.title = 'Title must be at least 10 characters long';
+      newErrors.title = t('forum.titleMinLength');
     }
 
     if (!formData.content.trim()) {
-      newErrors.content = 'Content is required';
+      newErrors.content = t('forum.contentRequired');
     }
 
     if (!formData.category) {
-      newErrors.category = 'Please select a category';
+      newErrors.category = t('forum.categoryRequired');
     }
 
     setErrors(newErrors);
@@ -95,10 +105,14 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
       };
 
       await forumAPI.createPost(postData);
+      
+      // Show success message about review process
+      alert(t('forum.postSubmittedSuccess'));
+      
       onSuccess();
     } catch (error) {
       console.error('Error creating post:', error);
-      setErrors({ submit: 'Failed to create post. Please try again.' });
+      setErrors({ submit: t('forum.postSubmitError') });
     } finally {
       setLoading(false);
     }
@@ -128,12 +142,12 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
       const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
       
       if (!isValidType) {
-        setErrors(prev => ({ ...prev, images: 'Only image files are allowed' }));
+        setErrors(prev => ({ ...prev, images: t('forum.onlyImagesAllowed') }));
         return false;
       }
       
       if (!isValidSize) {
-        setErrors(prev => ({ ...prev, images: 'Image size must be less than 5MB' }));
+        setErrors(prev => ({ ...prev, images: t('forum.imageSizeLimit') }));
         return false;
       }
       
@@ -145,7 +159,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
     // Limit total images to 5
     const totalImages = formData.photoUrls.length + validFiles.length;
     if (totalImages > 5) {
-      setErrors(prev => ({ ...prev, images: 'Maximum 5 images allowed' }));
+      setErrors(prev => ({ ...prev, images: t('forum.maxImagesAllowed') }));
       return;
     }
 
@@ -164,7 +178,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
 
       setSelectedFiles(prev => [...prev, ...validFiles]);
     } catch (error) {
-      setErrors(prev => ({ ...prev, images: 'Failed to process images' }));
+      setErrors(prev => ({ ...prev, images: t('forum.imageProcessError') }));
     } finally {
       setUploadingImages(false);
     }
@@ -200,14 +214,14 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
         <form onSubmit={handleSubmit} className="post-form">
           {/* Category Selection */}
           <div className="form-group">
-            <label htmlFor="category">Category *</label>
+            <label htmlFor="category">{t('forum.category')} *</label>
             <select
               id="category"
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
               className={errors.category ? 'error' : ''}
             >
-              <option value="">Select a category</option>
+              <option value="">{t('forum.selectCategory')}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {formatCategory(category)}
@@ -219,7 +233,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
 
           {/* Title */}
           <div className="form-group">
-            <label htmlFor="title">Title *</label>
+            <label htmlFor="title">{t('forum.postTitle')} *</label>
             <input
               type="text"
               id="title"
@@ -235,7 +249,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
 
           {/* Content */}
           <div className="form-group">
-            <label htmlFor="content">Content *</label>
+            <label htmlFor="content">{t('forum.postContent')} *</label>
             <textarea
               id="content"
               value={formData.content}
@@ -251,7 +265,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
 
           {/* Image Upload */}
           <div className="form-group">
-            <label>Images (Optional)</label>
+            <label>{t('forum.imagesOptional')}</label>
             <div className="image-input-section">
               <div className="file-input-container">
                 <input
@@ -267,17 +281,17 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
                   {uploadingImages ? (
                     <>
                       <span className="upload-spinner">⏳</span>
-                      Uploading...
+                      {t('forum.uploading')}
                     </>
                   ) : (
                     <>
                       <span className="upload-icon">📁</span>
-                      Choose Images
+                      {t('forum.chooseImages')}
                     </>
                   )}
                 </label>
                 <div className="file-input-info">
-                  {formData.photoUrls.length}/5 images • Max 5MB each
+                  {formData.photoUrls.length}/5 {t('forum.images')} • {t('forum.maxSize')}
                 </div>
               </div>
               
@@ -292,7 +306,7 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
                         type="button"
                         onClick={() => removeImage(index)}
                         className="remove-image-btn"
-                        title="Remove image"
+                        title={t('forum.removeImage')}
                       >
                         ×
                       </button>
@@ -318,14 +332,14 @@ const CreatePostModal = ({ section, categories, onClose, onSuccess }) => {
               className="cancel-btn"
               disabled={loading}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button 
               type="submit" 
               className="submit-btn"
               disabled={loading}
             >
-              {loading ? 'Creating...' : 'Create Post'}
+              {loading ? t('forum.creating') : t('forum.createPost')}
             </button>
           </div>
         </form>

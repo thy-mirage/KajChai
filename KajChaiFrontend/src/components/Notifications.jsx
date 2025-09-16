@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import hirePostService from '../services/hirePostService';
 import './Notifications.css';
 
 const Notifications = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,7 +29,7 @@ const Notifications = () => {
       }
       setNotifications(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load notifications');
+      setError(err.response?.data?.message || t('notifications.failedToLoadNotifications'));
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,7 @@ const Notifications = () => {
       await hirePostService.markNotificationAsRead(notificationId);
       loadNotifications(); // Refresh the list
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to mark notification as read');
+      alert(err.response?.data?.message || t('notifications.failedToMarkAsRead'));
     }
   };
 
@@ -47,17 +49,17 @@ const Notifications = () => {
       await hirePostService.markAllNotificationsAsRead();
       loadNotifications(); // Refresh the list
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to mark all notifications as read');
+      alert(err.response?.data?.message || t('notifications.failedToMarkAllAsRead'));
     }
   };
 
   const handleDeleteNotification = async (notificationId) => {
-    if (window.confirm('Are you sure you want to delete this notification?')) {
+    if (window.confirm(t('notifications.confirmDeleteNotification'))) {
       try {
         await hirePostService.deleteNotification(notificationId);
         loadNotifications(); // Refresh the list
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete notification');
+        alert(err.response?.data?.message || t('notifications.failedToDeleteNotification'));
       }
     }
   };
@@ -73,17 +75,17 @@ const Notifications = () => {
     const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
     if (diffMinutes < 1) {
-      return `Just now • ${timeStr}`;
+      return `${t('notifications.justNow')} • ${timeStr}`;
     } else if (diffMinutes < 60) {
-      return `${diffMinutes}m ago • ${timeStr}`;
+      return `${diffMinutes}${t('notifications.minutesAgo')} • ${timeStr}`;
     } else if (diffHours < 24) {
-      return `${diffHours}h ago • ${timeStr}`;
+      return `${diffHours}${t('notifications.hoursAgo')} • ${timeStr}`;
     } else if (diffDays === 1) {
-      return `Today • ${timeStr}`;
+      return `${t('notifications.today')} • ${timeStr}`;
     } else if (diffDays === 2) {
-      return `Yesterday • ${timeStr}`;
+      return `${t('notifications.yesterday')} • ${timeStr}`;
     } else if (diffDays <= 7) {
-      return `${diffDays - 1} days ago • ${timeStr}`;
+      return `${diffDays - 1} ${t('notifications.daysAgo')} • ${timeStr}`;
     } else {
       return `${date.toLocaleDateString()} • ${timeStr}`;
     }
@@ -92,19 +94,19 @@ const Notifications = () => {
   if (!user || (user.role !== 'CUSTOMER' && user.role !== 'WORKER')) {
     return (
       <div className="access-denied">
-        <p>Please log in to view notifications.</p>
+        <p>{t('notifications.pleaseLoginToView')}</p>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="loading">Loading notifications...</div>;
+    return <div className="loading">{t('notifications.loadingNotifications')}</div>;
   }
 
   return (
     <div className="notifications">
       <div className="notifications-header">
-        <h2>Your Notifications</h2>
+        <h2>{t('notifications.yourNotifications')}</h2>
         
         <div className="notifications-actions">
           <div className="filter-tabs">
@@ -112,13 +114,13 @@ const Notifications = () => {
               className={`tab ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              All
+              {t('notifications.all')}
             </button>
             <button 
               className={`tab ${filter === 'unread' ? 'active' : ''}`}
               onClick={() => setFilter('unread')}
             >
-              Unread
+              {t('notifications.unread')}
             </button>
           </div>
           
@@ -127,7 +129,7 @@ const Notifications = () => {
               className="mark-all-read-btn"
               onClick={handleMarkAllAsRead}
             >
-              Mark All as Read
+              {t('notifications.markAllAsRead')}
             </button>
           )}
         </div>
@@ -138,8 +140,8 @@ const Notifications = () => {
       {notifications.length === 0 ? (
         <div className="no-notifications">
           <div className="no-notifications-icon">🔔</div>
-          <h3>{filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}</h3>
-          <p>You're all caught up! New notifications will appear here.</p>
+          <h3>{filter === 'unread' ? t('notifications.noUnreadNotifications') : t('notifications.noNotificationsYet')}</h3>
+          <p>{t('notifications.allCaughtUp')}</p>
         </div>
       ) : (
         <div className="notifications-list">
@@ -162,7 +164,7 @@ const Notifications = () => {
                   <button 
                     className="mark-read-btn"
                     onClick={() => handleMarkAsRead(notification.notificationId)}
-                    title="Mark as read"
+                    title={t('notifications.markAsRead')}
                   >
                     ✓
                   </button>
@@ -171,7 +173,7 @@ const Notifications = () => {
                 <button 
                   className="delete-btn"
                   onClick={() => handleDeleteNotification(notification.notificationId)}
-                  title="Delete notification"
+                  title={t('notifications.deleteNotification')}
                 >
                   ✕
                 </button>

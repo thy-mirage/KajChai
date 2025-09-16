@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import chatService from '../services/chatService';
 import webSocketService from '../services/websocketService';
 import './Chat.css';
 
 const Chat = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const location = useLocation();
     const [chatRooms, setChatRooms] = useState([]);
@@ -361,7 +363,7 @@ const Chat = () => {
     if (loading) {
         return (
             <div className="chat-container">
-                <div className="loading">Loading chats...</div>
+                <div className="loading">{t('chat.loadingChats')}</div>
             </div>
         );
     }
@@ -371,16 +373,16 @@ const Chat = () => {
         {/* Sidebar */}
         <div className="chat-sidebar">
             <div className="sidebar-header">
-                <h3>Messages</h3>
+                <h3>{t('chat.messages')}</h3>
                 <div className="header-actions">
                         <div className={`connection-status ${wsConnected ? 'connected' : 'disconnected'}`} 
-                             title={wsConnected ? 'Real-time messaging active' : 'Real-time messaging offline'}>
+                             title={wsConnected ? t('chat.realtimeActive') : t('chat.realtimeOffline')}>
                             <span className="status-dot"></span>
                         </div>
                         <button 
                             className="new-chat-btn"
                             onClick={() => setShowUserList(!showUserList)}
-                            title="Start new chat"
+                            title={t('chat.startNewChat')}
                         >
                             +
                         </button>
@@ -391,7 +393,7 @@ const Chat = () => {
                 {showUserList && (
                     <div className="user-list-modal">
                         <div className="user-list-header">
-                            <h4>Start New Chat</h4>
+                            <h4>{t('chat.startNewChat')}</h4>
                             <button onClick={() => setShowUserList(false)}>×</button>
                         </div>
                         <div className="user-list">
@@ -431,8 +433,8 @@ const Chat = () => {
                 <div className="chat-rooms-list">
                     {chatRooms.length === 0 ? (
                         <div className="no-chats">
-                            <p>No conversations yet</p>
-                            <p>Click + to start a new chat</p>
+                            <p>{t('chat.noConversations')}</p>
+                            <p>{t('chat.clickToStartChat')}</p>
                         </div>
                     ) : (
                         chatRooms.map(room => (
@@ -455,7 +457,7 @@ const Chat = () => {
                                         {user.role === 'CUSTOMER' ? room.workerName : room.customerName}
                                     </div>
                                     <div className="last-message">
-                                        {room.lastMessage || 'No messages yet'}
+                                        {room.lastMessage || t('chat.noMessages')}
                                     </div>
                                 </div>
                                 <div className="room-meta">
@@ -493,7 +495,7 @@ const Chat = () => {
                                 <div>
                                     <h3>{user.role === 'CUSTOMER' ? selectedRoom.workerName : selectedRoom.customerName}</h3>
                                     <p className="user-role-text">
-                                        {user.role === 'CUSTOMER' ? 'Worker' : 'Customer'}
+                                        {user.role === 'CUSTOMER' ? t('auth.worker') : t('auth.customer')}
                                     </p>
                                 </div>
                             </div>
@@ -526,7 +528,7 @@ const Chat = () => {
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Type a message..."
+                                    placeholder={t('chat.typeMessage')}
                                     className="message-input"
                                     disabled={sendingMessage}
                                 />
@@ -543,8 +545,8 @@ const Chat = () => {
                 ) : (
                     <div className="no-chat-selected">
                         <div className="welcome-message">
-                            <h2>Welcome to KajChai Chat</h2>
-                            <p>Select a conversation from the sidebar or start a new chat</p>
+                            <h2>{t('chat.welcomeToChat')}</h2>
+                            <p>{t('chat.selectConversation')}</p>
                         </div>
                     </div>
                 )}

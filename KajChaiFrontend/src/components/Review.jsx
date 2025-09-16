@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import './Review.css';
 import reviewService from '../services/reviewService';
 
 const Review = () => {
     const { user } = useAuth();
+    const { t } = useTranslation();
     const [searchType, setSearchType] = useState('field');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedField, setSelectedField] = useState('');
@@ -330,8 +332,8 @@ const Review = () => {
     return (
         <div className="review-container">
             <div className="review-header">
-                <h1>Worker Reviews</h1>
-                <p>Search and review workers based on their services</p>
+                <h1>{t('reviews.title')}</h1>
+                <p>{t('reviews.description')}</p>
             </div>
 
             {/* Search Controls */}
@@ -341,19 +343,19 @@ const Review = () => {
                         className={`tab ${searchType === 'field' ? 'active' : ''}`}
                         onClick={() => setSearchType('field')}
                     >
-                        By Field
+                        {t('reviews.byField')}
                     </button>
                     <button
                         className={`tab ${searchType === 'completed' ? 'active' : ''}`}
                         onClick={() => setSearchType('completed')}
                     >
-                        Completed Tasks
+                        {t('reviews.completedTasks')}
                     </button>
                     <button
                         className={`tab ${searchType === 'name' ? 'active' : ''}`}
                         onClick={() => setSearchType('name')}
                     >
-                        By Name
+                        {t('reviews.byName')}
                     </button>
                 </div>
 
@@ -365,9 +367,9 @@ const Review = () => {
                                 onChange={(e) => setSelectedField(e.target.value)}
                                 className="field-select"
                             >
-                                <option value="">Select a field</option>
+                                <option value="">{t('reviews.selectField')}</option>
                                 {(Array.isArray(workerFields) ? workerFields : []).map(field => (
-                                    <option key={field} value={field}>{field}</option>
+                                    <option key={field} value={field}>{t(`workers.${field.toLowerCase()}`)}</option>
                                 ))}
                             </select>
                             <button 
@@ -375,7 +377,7 @@ const Review = () => {
                                 disabled={!selectedField}
                                 className="search-btn"
                             >
-                                Search Workers
+                                {t('reviews.searchWorkers')}
                             </button>
                         </div>
                     )}
@@ -385,7 +387,7 @@ const Review = () => {
                             <div className="autocomplete-container">
                                 <input
                                     type="text"
-                                    placeholder="Enter worker's name"
+                                    placeholder={t('reviews.enterWorkerName')}
                                     value={searchQuery}
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
@@ -449,7 +451,7 @@ const Review = () => {
             {/* Workers List */}
             <div className="workers-section">
                 {loading ? (
-                    <div className="loading">Loading workers...</div>
+                    <div className="loading">{t('reviews.loadingWorkers')}</div>
                 ) : (
                     <div className="workers-grid">
                         {(Array.isArray(workers) ? workers : []).map(worker => (
@@ -495,7 +497,7 @@ const Review = () => {
                                                     className="add-review-btn"
                                                     onClick={() => setShowAddReview(true)}
                                                 >
-                                                    Add Review
+                                                    {t('reviews.addReview')}
                                                 </button>
                                             )}
                                         </div>
@@ -503,15 +505,15 @@ const Review = () => {
                                         {/* Add Review Form */}
                                         {showAddReview && (
                                             <div className="add-review-form">
-                                                <h5>Add Your Review</h5>
+                                                <h5>{t('reviews.addYourReview')}</h5>
                                                 <div className="rating-input">
-                                                    <label>Rating:</label>
+                                                    <label>{t('reviews.rating')}:</label>
                                                     {renderStars(newReview.rating, true, (rating) => 
                                                         setNewReview(prev => ({ ...prev, rating }))
                                                     )}
                                                 </div>
                                                 <textarea
-                                                    placeholder="Write your review..."
+                                                    placeholder={t('reviews.writeReviewPlaceholder')}
                                                     value={newReview.message}
                                                     onChange={(e) => setNewReview(prev => ({ ...prev, message: e.target.value }))}
                                                     className="review-textarea"
@@ -519,7 +521,7 @@ const Review = () => {
                                                 />
                                                 <div className="image-upload-section">
                                                     <label htmlFor="review-images" className="upload-label">
-                                                        📷 Add Photos (Optional)
+                                                        📷 {t('reviews.addPhotosOptional')}
                                                     </label>
                                                     <input
                                                         id="review-images"
@@ -551,14 +553,14 @@ const Review = () => {
                                                         onClick={() => setShowAddReview(false)}
                                                         className="cancel-btn"
                                                     >
-                                                        Cancel
+                                                        {t('reviews.cancel')}
                                                     </button>
                                                     <button
                                                         onClick={submitReview}
                                                         className="submit-btn"
                                                         disabled={!newReview.message.trim() || newReview.rating === 0}
                                                     >
-                                                        Submit Review
+                                                        {t('reviews.submitReview')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -567,7 +569,7 @@ const Review = () => {
                                         {/* Reviews List */}
                                         <div className="reviews-list">
                                             {(!Array.isArray(reviews) || reviews.length === 0) ? (
-                                                <p className="no-reviews">No reviews yet</p>
+                                                <p className="no-reviews">{t('reviews.noReviewsYet')}</p>
                                             ) : (
                                                 (Array.isArray(reviews) ? reviews : []).map(review => (
                                                     <div key={review.reviewId} className="review-item">

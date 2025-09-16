@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import hirePostService from '../services/hirePostService';
 import './HirePost.css';
 
 const CreateHirePost = ({ onPostCreated }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     description: '',
     field: '',
@@ -30,7 +32,7 @@ const CreateHirePost = ({ onPostCreated }) => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 5) {
-      setError('You can upload maximum 5 images');
+      setError(t('jobs.maxImagesError'));
       return;
     }
     
@@ -74,7 +76,7 @@ const CreateHirePost = ({ onPostCreated }) => {
       };
 
       await hirePostService.createHirePost(postData);
-      setSuccess('Hire post created successfully!');
+      setSuccess(t('jobs.hirePostCreatedSuccessfully'));
       setFormData({
         description: '',
         field: '',
@@ -92,7 +94,7 @@ const CreateHirePost = ({ onPostCreated }) => {
         navigate('/jobs');
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create hire post');
+      setError(err.response?.data?.message || t('jobs.failedToCreateHirePost'));
     } finally {
       setLoading(false);
     }
@@ -101,21 +103,21 @@ const CreateHirePost = ({ onPostCreated }) => {
   if (user?.role !== 'CUSTOMER') {
     return (
       <div className="access-denied">
-        <p>Only customers can create hire posts.</p>
+        <p>{t('jobs.onlyCustomersCanCreate')}</p>
       </div>
     );
   }
 
   return (
     <div className="create-hire-post">
-      <h3>Create New Hire Post</h3>
+      <h3>{t('jobs.createNewHirePost')}</h3>
       
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
       <form onSubmit={handleSubmit} className="hire-post-form">
         <div className="form-group">
-          <label htmlFor="field">Job Field *</label>
+          <label htmlFor="field">{t('jobs.jobField')} *</label>
           <select
             id="field"
             name="field"
@@ -123,35 +125,35 @@ const CreateHirePost = ({ onPostCreated }) => {
             onChange={handleChange}
             required
           >
-            <option value="">Select a job field</option>
+            <option value="">{t('jobs.selectJobField')}</option>
             {hirePostService.JOB_FIELDS.map(field => (
-              <option key={field} value={field}>{field}</option>
+              <option key={field} value={field}>{t(`workers.${field.toLowerCase()}`)}</option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="description">Job Description *</label>
+          <label htmlFor="description">{t('jobs.jobDescription')} *</label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="Describe your job requirements in detail..."
+            placeholder={t('jobs.descriptionPlaceholder')}
             rows={4}
             required
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="estimatedPayment">Estimated Payment (BDT) *</label>
+          <label htmlFor="estimatedPayment">{t('jobs.estimatedPayment')} *</label>
           <input
             type="number"
             id="estimatedPayment"
             name="estimatedPayment"
             value={formData.estimatedPayment}
             onChange={handleChange}
-            placeholder="Enter estimated payment"
+            placeholder={t('jobs.paymentPlaceholder')}
             min="0"
             step="0.01"
             required
@@ -159,7 +161,7 @@ const CreateHirePost = ({ onPostCreated }) => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="deadline">Deadline (Optional)</label>
+          <label htmlFor="deadline">{t('jobs.deadline')}</label>
           <input
             type="date"
             id="deadline"
@@ -171,7 +173,7 @@ const CreateHirePost = ({ onPostCreated }) => {
         </div>
 
         <div className="form-group">
-          <label>Upload Images (Optional)</label>
+          <label>{t('jobs.uploadImages')}</label>
           <div className="image-upload-section">
             <div className="file-input-container">
               <input
@@ -186,20 +188,20 @@ const CreateHirePost = ({ onPostCreated }) => {
               />
               <label htmlFor="images" className="file-upload-button">
                 <span className="upload-icon">📁</span>
-                Choose Images
+                {t('jobs.chooseImages')}
               </label>
               <div className="file-input-info">
-                {formData.images.length}/5 images • Max 5MB each
+                {formData.images.length}/5 {t('jobs.images')} • {t('jobs.maxFileSize')}
               </div>
             </div>
           </div>
-          <small className="help-text">You can upload up to 5 images to help describe your job</small>
+          <small className="help-text">{t('jobs.imageUploadHelp')}</small>
           
           {formData.images.length > 0 && (
             <div className="image-preview">
               {formData.images.map((image, index) => (
                 <div key={index} className="image-preview-item">
-                  <img src={image} alt={`Preview ${index + 1}`} />
+                  <img src={image} alt={`${t('jobs.preview')} ${index + 1}`} />
                   <button
                     type="button"
                     className="remove-image-btn"
@@ -218,7 +220,7 @@ const CreateHirePost = ({ onPostCreated }) => {
           className="submit-btn"
           disabled={loading}
         >
-          {loading ? 'Creating...' : 'Create Hire Post'}
+          {loading ? t('jobs.creating') : t('jobs.createHirePost')}
         </button>
       </form>
     </div>

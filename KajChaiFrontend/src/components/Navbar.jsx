@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import LanguageSwitcher from './LanguageSwitcher';
 import hirePostService from '../services/hirePostService';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { getUnreadCount } = useNotification();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -56,21 +59,21 @@ const Navbar = () => {
   if (!user) return null;
 
   const customerNavItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠', description: 'Overview & Stats' },
-    { path: '/create-post', label: 'Create Job', icon: '➕', description: 'Post a new job' },
-    { path: '/jobs', label: 'Find Workers', icon: '🔍', description: 'Browse available workers' },
-    { path: '/forum', label: 'Community', icon: '👥', description: 'Community forum' },
-    { path: '/notifications', label: 'Notifications', icon: '🔔', description: 'View your notifications' },
-    { path: '/chat', label: 'Messages', icon: '💬', description: 'Chat with workers' },
-    { path: '/reviews', label: 'Reviews', icon: '⭐', description: 'View and manage reviews' },
+    { path: '/dashboard', label: t('navigation.dashboard'), icon: '🏠', description: 'Overview & Stats' },
+    { path: '/create-post', label: t('navigation.createJob'), icon: '➕', description: 'Post a new job' },
+    { path: '/jobs', label: t('navigation.findWorkers'), icon: '🔍', description: 'Browse available workers' },
+    { path: '/forum', label: t('navigation.forum'), icon: '👥', description: 'Community forum' },
+    { path: '/notifications', label: t('navigation.notifications'), icon: '🔔', description: 'View your notifications' },
+    { path: '/chat', label: t('navigation.messages'), icon: '💬', description: 'Chat with workers' },
+    { path: '/reviews', label: t('navigation.reviews'), icon: '⭐', description: 'View and manage reviews' },
   ];
 
   const workerNavItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠', description: 'Overview & Stats' },
-    { path: '/jobs', label: 'Available Jobs', icon: '💼', description: 'Find work opportunities' },
-    { path: '/forum', label: 'Community', icon: '👥', description: 'Community forum' },
-    { path: '/notifications', label: 'Notifications', icon: '🔔', description: 'View your notifications' },
-    { path: '/chat', label: 'Messages', icon: '💬', description: 'Chat with customers' },
+    { path: '/dashboard', label: t('navigation.dashboard'), icon: '🏠', description: 'Overview & Stats' },
+    { path: '/jobs', label: t('navigation.jobs'), icon: '💼', description: 'Find work opportunities' },
+    { path: '/forum', label: t('navigation.forum'), icon: '👥', description: 'Community forum' },
+    { path: '/notifications', label: t('navigation.notifications'), icon: '🔔', description: 'View your notifications' },
+    { path: '/chat', label: t('navigation.messages'), icon: '💬', description: 'Chat with customers' },
   ];
 
   const navItems = user.role === 'CUSTOMER' ? customerNavItems : workerNavItems;
@@ -107,8 +110,9 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* User Profile & Logout */}
+        {/* User Profile & Language Switcher & Logout */}
         <div className="navbar-user">
+          <LanguageSwitcher />
           <div className="user-info" onClick={() => setShowUserMenu(!showUserMenu)}>
             <div className="user-avatar">
               {user.photo ? (
@@ -145,11 +149,11 @@ const Navbar = () => {
               <div className="dropdown-divider"></div>
               <Link to="/my-profile" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
                 <span className="dropdown-icon">👤</span>
-                <span>My Profile</span>
+                <span>{t('navigation.profile')}</span>
               </Link>
               <button className="dropdown-item logout-item" onClick={handleLogout}>
                 <span className="dropdown-icon">🚪</span>
-                <span>Sign Out</span>
+                <span>{t('navigation.logout')}</span>
               </button>
             </div>
           )}

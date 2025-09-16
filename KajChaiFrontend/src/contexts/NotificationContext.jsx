@@ -25,7 +25,6 @@ export const NotificationProvider = ({ children }) => {
     const id = Date.now();
     const popup = { id, message, type, duration };
     
-    console.log('NotificationContext: Showing popup:', popup);
     setPopups(prev => [...prev, popup]);
   };
 
@@ -36,7 +35,6 @@ export const NotificationProvider = ({ children }) => {
 
   // Function to get unread count (for navbar)
   const getUnreadCount = () => {
-    console.log('NotificationContext: Getting unread count:', unreadCount);
     return unreadCount;
   };
 
@@ -47,31 +45,24 @@ export const NotificationProvider = ({ children }) => {
       console.log('NotificationContext: User not authenticated, skipping notification check');
       return;
     }
-
-    console.log('NotificationContext: Setting up polling effect');
     
     const checkForNewNotifications = async () => {
       try {
-        console.log('NotificationContext: Starting notification check...');
     
     // Get unread count using hirePostService
     const countResponse = await hirePostService.getUnreadNotificationsCount();
-    console.log('NotificationContext: API Response:', countResponse);
     
     // Extract count from the response object
     const currentCount = (countResponse && typeof countResponse.count !== 'undefined') 
       ? countResponse.count 
       : 0;
-    
-    console.log('NotificationContext: Current count:', currentCount, 'Last count:', lastNotificationCount, 'Is initialized:', isInitialized);
-        
+            
         // Update unread count
         setUnreadCount(currentCount);
         
         // Only show popup if we have established a baseline and count has increased
         if (isInitialized && currentCount > lastNotificationCount && lastNotificationCount >= 0) {
           const newNotificationsCount = currentCount - lastNotificationCount;
-          console.log('NotificationContext: Detected new notifications:', newNotificationsCount);
           
           showNotification(
             `You have ${newNotificationsCount} new notification${newNotificationsCount > 1 ? 's' : ''}!`,
@@ -99,7 +90,6 @@ export const NotificationProvider = ({ children }) => {
     const interval = setInterval(checkForNewNotifications, 5000);
 
     return () => {
-      console.log('NotificationContext: Cleaning up polling interval');
       clearInterval(interval);
     };
   }, [lastNotificationCount, isInitialized, isAuthenticated]); // Add isAuthenticated as dependency

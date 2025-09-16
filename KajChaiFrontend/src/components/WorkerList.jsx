@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import profileService from '../services/profileService';
 import chatService from '../services/chatService';
@@ -8,6 +9,7 @@ import './HirePost.css'; // Use the same CSS as HirePostList
 const WorkerList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,6 +29,12 @@ const WorkerList = () => {
     'Photographer'
   ];
 
+  // Function to get translated field names
+  const getFieldTranslation = (field) => {
+    const fieldKey = field.toLowerCase();
+    return t(`workers.${fieldKey}`, field); // Fallback to original if no translation
+  };
+
   useEffect(() => {
     if (user?.role === 'CUSTOMER') {
       loadWorkers();
@@ -41,19 +49,19 @@ const WorkerList = () => {
       const data = await profileService.getAllWorkers(selectedField || null, sortByLocation);
       setWorkers(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load workers');
+      setError(err.response?.data?.message || t('common.error'));
     } finally {
       setLoading(false);
     }
   };
 
   const formatRating = (rating) => {
-    if (rating === null || rating === undefined) return 'Not rated';
+    if (rating === null || rating === undefined) return t('workers.notRated');
     return `${rating.toFixed(1)} ⭐`;
   };
 
   const formatLocation = (upazila, district) => {
-    if (!upazila && !district) return 'Location not specified';
+    if (!upazila && !district) return t('location.locationNotSpecified');
     if (!upazila) return district;
     if (!district) return upazila;
     if (upazila === district) return upazila;
@@ -80,7 +88,7 @@ const WorkerList = () => {
       }
     } catch (error) {
       console.error('Error creating chat room:', error);
-      alert('Failed to start chat with worker. Please try again.');
+      alert(t('common.error'));
     } finally {
       setContactingWorker(null);
     }
@@ -89,20 +97,20 @@ const WorkerList = () => {
   if (user?.role !== 'CUSTOMER') {
     return (
       <div className="access-denied">
-        <h3>Access Denied</h3>
+        <h3>{t('common.error')}</h3>
         <p>Only customers can view this page.</p>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="loading">Loading workers...</div>;
+    return <div className="loading">{t('common.loading')}</div>;
   }
 
   return (
     <div className="hire-post-list">
       <div className="list-header">
-        <h3>Find Workers</h3>
+        <h3>{t('workers.findWorkers')}</h3>
         
         <div className="filter-section">
           <select
@@ -110,9 +118,9 @@ const WorkerList = () => {
             onChange={(e) => setSelectedField(e.target.value)}
             className="field-filter"
           >
-            <option value="">All Fields</option>
+            <option value="">{t('workers.allFields')}</option>
             {JOB_FIELDS.map(field => (
-              <option key={field} value={field}>{field}</option>
+              <option key={field} value={field}>{getFieldTranslation(field)}</option>
             ))}
           </select>
           
@@ -125,7 +133,7 @@ const WorkerList = () => {
                 className="location-checkbox"
               />
               <span className="checkmark">📍</span>
-              Sort by nearest location
+              {t('jobs.sortByLocation')}
             </label>
           </div>
         </div>
@@ -135,7 +143,7 @@ const WorkerList = () => {
 
       {workers.length === 0 ? (
         <div className="no-posts">
-          No workers found matching your criteria.
+          {t('workers.noWorkers')}
         </div>
       ) : (
         <div className="posts-grid">
@@ -174,15 +182,15 @@ const WorkerList = () => {
                   
                   <div className="post-details">
                     <div className="detail-item">
-                      <strong>Experience:</strong> {worker.experience || 'Not specified'}
+                      <strong>{t('workers.experience')}:</strong> {worker.experience || t('common.noData')}
                     </div>
                     
                     <div className="detail-item">
-                      <strong>Location:</strong> {formatLocation(worker.upazila, worker.district)}
+                      <strong>{t('jobs.location')}:</strong> {formatLocation(worker.upazila, worker.district)}
                     </div>
                     
                     <div className="detail-item">
-                      <strong>Contact:</strong> {worker.phone}
+                      <strong>{t('profile.phone')}:</strong> {worker.phone}
                     </div>
                   </div>
                 </div>
@@ -194,7 +202,7 @@ const WorkerList = () => {
                   onClick={() => handleContactWorker(worker)}
                   disabled={contactingWorker === worker.workerId}
                 >
-                  {contactingWorker === worker.workerId ? 'Starting Chat...' : 'Contact Worker'}
+                  {contactingWorker === worker.workerId ? t('workers.startingChat') : t('workers.contactWorker')}
                 </button>
               </div>
             </div>

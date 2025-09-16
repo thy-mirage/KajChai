@@ -1,6 +1,0 @@
-@echo off
-echo Setting up Groq API Key environment variable...
-set GROQ_API_KEY=your-groq-api-key-here
-echo Groq API Key has been set for this session.
-echo You can now run your Spring Boot application.
-pause

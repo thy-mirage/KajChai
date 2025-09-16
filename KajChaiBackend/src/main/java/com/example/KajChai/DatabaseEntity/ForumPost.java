@@ -2,6 +2,7 @@ package com.example.KajChai.DatabaseEntity;
 
 import com.example.KajChai.Enum.ForumSection;
 import com.example.KajChai.Enum.ForumCategory;
+import com.example.KajChai.Enum.PostStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,6 +63,18 @@ public class ForumPost {
     @Builder.Default
     @Column(nullable = false)
     private Integer commentsCount = 0;
+
+    // Moderation fields
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(nullable = true) // Allow null for existing records
+    private PostStatus status = PostStatus.PENDING_REVIEW;
+
+    @Column(columnDefinition = "TEXT")
+    private String moderationReason;
+
+    @Column
+    private LocalDateTime moderatedAt;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

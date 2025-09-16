@@ -35,4 +35,8 @@ public class ForumPostResponse {
     private Boolean isLikedByCurrentUser;
     private Boolean isDislikedByCurrentUser;
     private Boolean canEdit; // true if current user is the author
+    
+    // Moderation fields
+    private String status; // PENDING_REVIEW, APPROVED, REJECTED_SPAM, REJECTED_IRRELEVANT
+    private String moderationReason;
 }

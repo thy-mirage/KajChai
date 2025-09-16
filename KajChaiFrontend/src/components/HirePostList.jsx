@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import hirePostService from '../services/hirePostService';
 import './HirePost.css';
 
 const HirePostList = ({ viewMode }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,7 +41,7 @@ const HirePostList = ({ viewMode }) => {
       }
       setPosts(data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load hire posts');
+      setError(err.response?.data?.message || t('jobs.failedToLoadPosts'));
     } finally {
       setLoading(false);
     }
@@ -64,22 +66,22 @@ const HirePostList = ({ viewMode }) => {
   const handleApplyToPost = async (postId) => {
     try {
       await hirePostService.applyToHirePost(postId);
-      alert('Successfully applied to the job!');
+      alert(t('jobs.successfullyApplied'));
       // Update application status for this post
       setApplicationStatus(prev => ({ ...prev, [postId]: true }));
       loadPosts(); // Refresh the list
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to apply to job');
+      alert(err.response?.data?.message || t('jobs.failedToApply'));
     }
   };
 
   const handleDeletePost = async (postId) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
+    if (window.confirm(t('jobs.confirmDeletePost'))) {
       try {
         await hirePostService.deleteHirePost(postId);
         loadPosts(); // Refresh the list
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to delete post');
+        alert(err.response?.data?.message || t('jobs.failedToDeletePost'));
       }
     }
   };
@@ -90,7 +92,12 @@ const HirePostList = ({ viewMode }) => {
       'BOOKED': 'status-booked',
       'COMPLETED': 'status-completed'
     };
-    return <span className={`status-badge ${statusClass[status]}`}>{status}</span>;
+    const statusText = {
+      'AVAILABLE': t('jobs.status.available'),
+      'BOOKED': t('jobs.status.booked'),
+      'COMPLETED': t('jobs.status.completed')
+    };
+    return <span className={`status-badge ${statusClass[status]}`}>{statusText[status]}</span>;
   };
 
   const formatDate = (dateString) => {
@@ -114,15 +121,15 @@ const HirePostList = ({ viewMode }) => {
   };
 
   if (loading) {
-    return <div className="loading">Loading hire posts...</div>;
+    return <div className="loading">{t('jobs.loadingPosts')}</div>;
   }
 
   return (
     <div className="hire-post-list">
       <div className="list-header">
         <h3>
-          {effectiveViewMode === 'customer' ? 'My Hire Posts' : 
-           effectiveViewMode === 'worker' ? 'Available Jobs' : 'All Available Jobs'}
+          {effectiveViewMode === 'customer' ? t('jobs.myHirePosts') : 
+           effectiveViewMode === 'worker' ? t('jobs.availableJobs') : t('jobs.allAvailableJobs')}
         </h3>
         
         {effectiveViewMode === 'worker' && (
@@ -132,9 +139,9 @@ const HirePostList = ({ viewMode }) => {
               onChange={(e) => setSelectedField(e.target.value)}
               className="field-filter"
             >
-              <option value="">All Fields</option>
+              <option value="">{t('jobs.allFields')}</option>
               {hirePostService.JOB_FIELDS.map(field => (
-                <option key={field} value={field}>{field}</option>
+                <option key={field} value={field}>{t(`workers.${field.toLowerCase()}`)}</option>
               ))}
             </select>
             
@@ -147,7 +154,7 @@ const HirePostList = ({ viewMode }) => {
                   className="location-checkbox"
                 />
                 <span className="checkmark">📍</span>
-                Sort by nearest location
+                {t('jobs.sortByNearestLocation')}
               </label>
             </div>
           </div>
@@ -159,8 +166,8 @@ const HirePostList = ({ viewMode }) => {
       {posts.length === 0 ? (
         <div className="no-posts">
           {viewMode === 'customer' ? 
-            'You haven\'t created any hire posts yet.' : 
-            'No available jobs found.'}
+            t('jobs.noHirePostsCreated') : 
+            t('jobs.noAvailableJobs')}
         </div>
       ) : (
         <div className="posts-grid">
@@ -187,7 +194,7 @@ const HirePostList = ({ viewMode }) => {
                     ))}
                     {post.images.length > 3 && (
                       <div className="more-images">
-                        +{post.images.length - 3} more
+                        +{post.images.length - 3} {t('jobs.moreImages')}
                       </div>
                     )}
                   </div>
@@ -205,8 +212,8 @@ const HirePostList = ({ viewMode }) => {
                           onClick={() => handleToggleDescription(post.postId)}
                         >
                           {expandedPosts.has(post.postId) 
-                            ? ' See Less' 
-                            : ' See More'}
+                            ? t('jobs.seeLess') 
+                            : t('jobs.seeMore')}
                         </button>
                       </>
                     ) : (
@@ -217,28 +224,28 @@ const HirePostList = ({ viewMode }) => {
                 
                 <div className="post-details">
                   <div className="detail-item">
-                    <strong>Payment:</strong> {formatCurrency(post.estimatedPayment)}
+                    <strong>{t('jobs.payment')}:</strong> {formatCurrency(post.estimatedPayment)}
                   </div>
                   
                   {post.deadline && (
                     <div className="detail-item">
-                      <strong>Deadline:</strong> {formatDate(post.deadline)}
+                      <strong>{t('jobs.deadline')}:</strong> {formatDate(post.deadline)}
                     </div>
                   )}
                   
                   <div className="detail-item">
-                    <strong>Posted:</strong> {formatDate(post.postTime)}
+                    <strong>{t('jobs.posted')}:</strong> {formatDate(post.postTime)}
                   </div>
                   
                   {effectiveViewMode !== 'customer' && (
                     <div className="customer-info">
-                      <strong>Customer:</strong> {post.customerName} ({post.customerUpazila})
+                      <strong>{t('jobs.customer')}:</strong> {post.customerName} ({post.customerUpazila})
                     </div>
                   )}
                   
                   {effectiveViewMode === 'customer' && (
                     <div className="detail-item">
-                      <strong>Applications:</strong> {post.applicationsCount}
+                      <strong>{t('jobs.applications')}:</strong> {post.applicationsCount}
                     </div>
                   )}
                 </div>
@@ -252,7 +259,7 @@ const HirePostList = ({ viewMode }) => {
                         className="btn-primary"
                         onClick={() => navigate(`/my-posts/${post.postId}/applications`)}
                       >
-                        View Applications ({post.applicationsCount})
+                        {t('jobs.viewApplications')} ({post.applicationsCount})
                       </button>
                     )}
                     
@@ -261,7 +268,7 @@ const HirePostList = ({ viewMode }) => {
                         className="btn-danger"
                         onClick={() => handleDeletePost(post.postId)}
                       >
-                        Delete
+                        {t('jobs.delete')}
                       </button>
                     )}
                     
@@ -272,10 +279,10 @@ const HirePostList = ({ viewMode }) => {
                           // Mark as completed
                           hirePostService.markPostAsCompleted(post.postId)
                             .then(() => loadPosts())
-                            .catch(err => alert(err.response?.data?.message || 'Failed to mark as completed'));
+                            .catch(err => alert(err.response?.data?.message || t('jobs.failedToMarkCompleted')));
                         }}
                       >
-                        Mark as Completed
+                        {t('jobs.markAsCompleted')}
                       </button>
                     )}
                   </>
@@ -283,15 +290,15 @@ const HirePostList = ({ viewMode }) => {
                   effectiveViewMode === 'worker' && post.status === 'AVAILABLE' && (
                     applicationStatus[post.postId] ? (
                       <div className="application-status">
-                        <span className="applied-badge">✓ Already Applied</span>
-                        <small className="applied-text">Your application has been submitted</small>
+                        <span className="applied-badge">✓ {t('jobs.alreadyApplied')}</span>
+                        <small className="applied-text">{t('jobs.applicationSubmitted')}</small>
                       </div>
                     ) : (
                       <button 
                         className="btn-primary"
                         onClick={() => handleApplyToPost(post.postId)}
                       >
-                        Apply for this Job
+                        {t('jobs.applyForJob')}
                       </button>
                     )
                   )

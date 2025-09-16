@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import hirePostService from '../services/hirePostService';
 import './HirePost.css';
@@ -7,6 +8,7 @@ import './HirePost.css';
 const HirePostApplications = () => {
   const { postId } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [applications, setApplications] = useState([]);
@@ -168,11 +170,11 @@ const HirePostApplications = () => {
                   </div>
                   <div className="stat">
                     <span className="stat-value">{application.averageRating.toFixed(1)}</span>
-                    <span className="stat-label">Average Rating</span>
+                    <span className="stat-label">{t('jobs.averageRating')}</span>
                   </div>
                   <div className="stat">
                     <span className="stat-value">{application.workerExperience}</span>
-                    <span className="stat-label">Years Experience</span>
+                    <span className="stat-label">{t('jobs.yearsExperience')}</span>
                   </div>
                 </div>
 

@@ -4,19 +4,23 @@ import com.example.KajChai.DatabaseEntity.*;
 import com.example.KajChai.DTO.*;
 import com.example.KajChai.Enum.ForumSection;
 import com.example.KajChai.Enum.ForumCategory;
+import com.example.KajChai.Enum.PostStatus;
 import com.example.KajChai.Enum.UserRole;
 import com.example.KajChai.Repository.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ForumService {
     
     private final ForumPostRepository forumPostRepository;
@@ -33,6 +38,7 @@ public class ForumService {
     private final WorkerRepository workerRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final ContentModerationService contentModerationService;
     private final ObjectMapper objectMapper;
 
     // Create a new forum post
@@ -83,10 +89,14 @@ public class ForumService {
                 .build();
 
         ForumPost savedPost = forumPostRepository.save(post);
+        
+        // Start async moderation process
+        moderatePostAsync(savedPost.getPostId());
+        
         return convertToPostResponse(savedPost, userId);
     }
 
-    // Get posts with filtering and sorting
+    // Get posts with filtering and sorting (only show approved posts)
     public Page<ForumPostResponse> getPosts(ForumSection section, ForumCategory category, 
             String sortBy, Integer userId, Boolean myPosts, int page, int size) {
         
@@ -98,15 +108,15 @@ public class ForumService {
             pageable = PageRequest.of(page, size);
             if (myPosts != null && myPosts) {
                 if (category != null) {
-                    posts = forumPostRepository.findByAuthorIdAndSectionAndCategoryOrderByPopularity(userId, section, category, pageable);
+                    posts = forumPostRepository.findByAuthorIdAndSectionAndCategoryAndStatusOrderByPopularity(userId, section, category, PostStatus.APPROVED, pageable);
                 } else {
-                    posts = forumPostRepository.findByAuthorIdAndSectionOrderByPopularity(userId, section, pageable);
+                    posts = forumPostRepository.findByAuthorIdAndSectionAndStatusOrderByPopularity(userId, section, PostStatus.APPROVED, pageable);
                 }
             } else {
                 if (category != null) {
-                    posts = forumPostRepository.findBySectionAndCategoryOrderByPopularity(section, category, pageable);
+                    posts = forumPostRepository.findBySectionAndCategoryAndStatusOrderByPopularity(section, category, PostStatus.APPROVED, pageable);
                 } else {
-                    posts = forumPostRepository.findBySectionOrderByPopularity(section, pageable);
+                    posts = forumPostRepository.findBySectionAndStatusOrderByPopularity(section, PostStatus.APPROVED, pageable);
                 }
             }
         } else {
@@ -114,16 +124,43 @@ public class ForumService {
             pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
             if (myPosts != null && myPosts) {
                 if (category != null) {
-                    posts = forumPostRepository.findByAuthorIdAndSectionAndCategory(userId, section, category, pageable);
+                    posts = forumPostRepository.findByAuthorIdAndSectionAndCategoryAndStatus(userId, section, category, PostStatus.APPROVED, pageable);
                 } else {
-                    posts = forumPostRepository.findByAuthorIdAndSection(userId, section, pageable);
+                    posts = forumPostRepository.findByAuthorIdAndSectionAndStatus(userId, section, PostStatus.APPROVED, pageable);
                 }
             } else {
                 if (category != null) {
-                    posts = forumPostRepository.findBySectionAndCategory(section, category, pageable);
+                    posts = forumPostRepository.findBySectionAndCategoryAndStatus(section, category, PostStatus.APPROVED, pageable);
                 } else {
-                    posts = forumPostRepository.findBySection(section, pageable);
+                    posts = forumPostRepository.findBySectionAndStatus(section, PostStatus.APPROVED, pageable);
                 }
+            }
+        }
+
+        return posts.map(post -> convertToPostResponse(post, userId));
+    }
+
+    // Get user's own posts including pending ones
+    public Page<ForumPostResponse> getMyPosts(ForumSection section, ForumCategory category, 
+            String sortBy, Integer userId, int page, int size) {
+        
+        Pageable pageable;
+        Page<ForumPost> posts;
+        
+        // For user's own posts, show all statuses
+        if ("popular".equals(sortBy)) {
+            pageable = PageRequest.of(page, size);
+            if (category != null) {
+                posts = forumPostRepository.findByAuthorIdAndSectionAndCategoryOrderByPopularity(userId, section, category, pageable);
+            } else {
+                posts = forumPostRepository.findByAuthorIdAndSectionOrderByPopularity(userId, section, pageable);
+            }
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            if (category != null) {
+                posts = forumPostRepository.findByAuthorIdAndSectionAndCategory(userId, section, category, pageable);
+            } else {
+                posts = forumPostRepository.findByAuthorIdAndSection(userId, section, pageable);
             }
         }
 
@@ -401,6 +438,8 @@ public class ForumService {
                 .isLikedByCurrentUser(isLikedByCurrentUser)
                 .isDislikedByCurrentUser(isDislikedByCurrentUser)
                 .canEdit(canEdit)
+                .status(post.getStatus().toString())
+                .moderationReason(post.getModerationReason())
                 .build();
     }
 
@@ -414,5 +453,123 @@ public class ForumService {
                 .authorPhoto(comment.getAuthorPhoto())
                 .createdAt(comment.getCreatedAt())
                 .build();
+    }
+    
+    // Async moderation method
+    @Async
+    public void moderatePostAsync(Long postId) {
+        log.info("Starting async moderation for post ID: {}", postId);
+        
+        try {
+            ForumPost post = forumPostRepository.findById(postId).orElse(null);
+            if (post == null) {
+                log.error("Post not found for moderation: {}", postId);
+                return;
+            }
+            
+            // Analyze content using Groq LLM
+            ModerationResult result = contentModerationService.analyzeContent(post.getTitle(), post.getContent());
+            
+            log.info("Moderation result for post {}: {}", postId, result);
+            
+            // Update post status based on result
+            updatePostStatus(post, result);
+            
+        } catch (Exception e) {
+            log.error("Error during moderation for post {}: ", postId, e);
+            // On error, approve the post to avoid blocking users
+            approvePostOnError(postId, "Moderation service error: " + e.getMessage());
+        }
+    }
+    
+    private void updatePostStatus(ForumPost post, ModerationResult result) {
+        PostStatus newStatus;
+        String reason = result.getReason();
+        
+        switch (result.getAction()) {
+            case "APPROVE":
+                newStatus = PostStatus.APPROVED;
+                sendApprovalNotification(post);
+                break;
+            case "REJECT_SPAM":
+                newStatus = PostStatus.REJECTED_SPAM;
+                sendRejectionNotification(post, "Your post was identified as spam. " + reason);
+                break;
+            case "REJECT_IRRELEVANT":
+                newStatus = PostStatus.REJECTED_IRRELEVANT;
+                sendRejectionNotification(post, "Your post is not relevant to our home services platform. " + reason);
+                break;
+            default:
+                newStatus = PostStatus.APPROVED; // Default to approve if uncertain
+                reason = "Approved by default - " + reason;
+                sendApprovalNotification(post);
+        }
+        
+        // Update post
+        post.setStatus(newStatus);
+        post.setModerationReason(reason);
+        post.setModeratedAt(LocalDateTime.now());
+        forumPostRepository.save(post);
+        
+        log.info("Post {} updated with status: {}", post.getPostId(), newStatus);
+    }
+    
+    private void approvePostOnError(Long postId, String errorMessage) {
+        forumPostRepository.findById(postId).ifPresent(post -> {
+            post.setStatus(PostStatus.APPROVED);
+            post.setModerationReason("Auto-approved due to moderation error: " + errorMessage);
+            post.setModeratedAt(LocalDateTime.now());
+            forumPostRepository.save(post);
+            
+            sendApprovalNotification(post);
+        });
+    }
+    
+    private void sendApprovalNotification(ForumPost post) {
+        try {
+            User author = userRepository.findById(post.getAuthorId()).orElse(null);
+            if (author == null) return;
+            
+            String message = String.format("Great news! Your post \"%s\" has been approved and is now live in the forum.", 
+                post.getTitle().length() > 50 ? post.getTitle().substring(0, 50) + "..." : post.getTitle());
+            
+            if (author.getRole() == UserRole.CUSTOMER) {
+                Customer customer = customerRepository.findByGmail(author.getEmail()).orElse(null);
+                if (customer != null) {
+                    notificationService.createCustomerNotification(customer, message);
+                }
+            } else if (author.getRole() == UserRole.WORKER) {
+                Worker worker = workerRepository.findByGmail(author.getEmail()).orElse(null);
+                if (worker != null) {
+                    notificationService.createWorkerNotification(worker, message);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to send approval notification for post {}: ", post.getPostId(), e);
+        }
+    }
+    
+    private void sendRejectionNotification(ForumPost post, String reason) {
+        try {
+            User author = userRepository.findById(post.getAuthorId()).orElse(null);
+            if (author == null) return;
+            
+            String message = String.format("Your post \"%s\" was not approved. Reason: %s. Please review our community guidelines and try again.", 
+                post.getTitle().length() > 50 ? post.getTitle().substring(0, 50) + "..." : post.getTitle(), reason);
+            
+            if (author.getRole() == UserRole.CUSTOMER) {
+                Customer customer = customerRepository.findByGmail(author.getEmail()).orElse(null);
+                if (customer != null) {
+                    notificationService.createCustomerNotification(customer, message);
+                }
+            } else if (author.getRole() == UserRole.WORKER) {
+                Worker worker = workerRepository.findByGmail(author.getEmail()).orElse(null);
+                if (worker != null) {
+                    notificationService.createWorkerNotification(worker, message);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to send rejection notification for post {}: ", post.getPostId(), e);
+        }
     }
 }

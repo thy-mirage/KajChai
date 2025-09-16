@@ -33,18 +33,31 @@ public class ForumController {
         return ResponseEntity.ok(response);
     }
 
-    // Get posts with filtering and sorting
+    // Get posts with filtering and sorting (only approved posts for public view)
     @GetMapping("/posts")
     public ResponseEntity<Page<ForumPostResponse>> getPosts(
             @RequestParam ForumSection section,
             @RequestParam(required = false) ForumCategory category,
             @RequestParam(defaultValue = "recent") String sortBy, // "recent" or "popular"
-            @RequestParam(defaultValue = "false") Boolean myPosts,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
         Integer userId = getCurrentUserId();
-        Page<ForumPostResponse> posts = forumService.getPosts(section, category, sortBy, userId, myPosts, page, size);
+        Page<ForumPostResponse> posts = forumService.getPosts(section, category, sortBy, userId, false, page, size);
+        return ResponseEntity.ok(posts);
+    }
+
+    // Get user's own posts including pending ones
+    @GetMapping("/my-posts")
+    public ResponseEntity<Page<ForumPostResponse>> getMyPosts(
+            @RequestParam ForumSection section,
+            @RequestParam(required = false) ForumCategory category,
+            @RequestParam(defaultValue = "recent") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Integer userId = getCurrentUserId();
+        Page<ForumPostResponse> posts = forumService.getMyPosts(section, category, sortBy, userId, page, size);
         return ResponseEntity.ok(posts);
     }
 

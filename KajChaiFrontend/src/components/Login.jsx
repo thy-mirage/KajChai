@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import LanguageSwitcher from './LanguageSwitcher';
 import './Auth.css';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -42,8 +45,13 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Welcome Back to KajChai</h1>
-          <p>Sign in to your account</p>
+          <div className="auth-header-content">
+            <h1>{t('dashboard.welcome')}</h1>
+            <p>{t('auth.loginDescription', 'Sign in to your account')}</p>
+          </div>
+          <div className="auth-language-switcher">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -54,7 +62,7 @@ const Login = () => {
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">{t('auth.email')}</label>
             <input
               type="email"
               id="email"
@@ -62,13 +70,13 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               required
-              placeholder="Enter your email"
+              placeholder={t('auth.emailPlaceholder', 'Enter your email')}
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password')}</label>
             <input
               type="password"
               id="password"
@@ -76,7 +84,7 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="Enter your password"
+              placeholder={t('auth.passwordPlaceholder', 'Enter your password')}
               disabled={loading}
             />
           </div>
@@ -86,20 +94,20 @@ const Login = () => {
             className={`auth-button ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? t('auth.signingIn', 'Signing In...') : t('auth.login')}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
             <Link to="/forgot-password" className="auth-link">
-              Forgot your password?
+              {t('auth.forgotPassword')}
             </Link>
           </p>
           <p>
-            Don't have an account?{' '}
+            {t('auth.noAccount', "Don't have an account?")}{' '}
             <Link to="/signup" className="auth-link">
-              Sign up here
+              {t('auth.signupHere', 'Sign up here')}
             </Link>
           </p>
         </div>

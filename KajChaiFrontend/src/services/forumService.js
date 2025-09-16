@@ -62,12 +62,11 @@ export const forumAPI = {
     return apiClient.post('/forum/posts', postData);
   },
 
-  // Get posts with filtering and sorting
-  getPosts: (section, category = null, sortBy = 'recent', myPosts = false, page = 0, size = 10) => {
+  // Get posts with filtering and sorting (public approved posts)
+  getPosts: (section, category = null, sortBy = 'recent', page = 0, size = 10) => {
     const params = new URLSearchParams({
       section,
       sortBy,
-      myPosts: myPosts.toString(),
       page: page.toString(),
       size: size.toString(),
     });
@@ -77,6 +76,22 @@ export const forumAPI = {
     }
     
     return apiClient.get(`/forum/posts?${params}`);
+  },
+
+  // Get user's own posts including pending ones
+  getMyPosts: (section, category = null, sortBy = 'recent', page = 0, size = 10) => {
+    const params = new URLSearchParams({
+      section,
+      sortBy,
+      page: page.toString(),
+      size: size.toString(),
+    });
+    
+    if (category) {
+      params.append('category', category);
+    }
+    
+    return apiClient.get(`/forum/my-posts?${params}`);
   },
 
   // Get single post by ID

@@ -1,10 +1,12 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from './Layout';
 
 const ProtectedRoute = ({ children, requiredRole = null, showBackButton = true, title = null }) => {
   const { isAuthenticated, user, loading } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
 
   if (loading) {
@@ -56,10 +58,10 @@ const ProtectedRoute = ({ children, requiredRole = null, showBackButton = true, 
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
         }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚫</div>
-          <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>Access Denied</h2>
-          <p style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>You don't have permission to access this page.</p>
-          <p style={{ marginBottom: '0.5rem', color: '#666' }}>Required role: <strong>{requiredRole}</strong></p>
-          <p style={{ color: '#666' }}>Your role: <strong>{user?.role}</strong></p>
+          <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>{t('auth.accessDenied')}</h2>
+          <p style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>{t('auth.noPermission')}</p>
+          <p style={{ marginBottom: '0.5rem', color: '#666' }}>{t('auth.requiredRole')}: <strong>{requiredRole}</strong></p>
+          <p style={{ color: '#666' }}>{t('auth.yourRole')}: <strong>{user?.role}</strong></p>
         </div>
       </Layout>
     );

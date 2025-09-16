@@ -1,5 +1,0 @@
-# PowerShell script to set up environment variables
-Write-Host "Setting up Groq API Key environment variable..." -ForegroundColor Green
-$env:GROQ_API_KEY="your-groq-api-key-here"
-Write-Host "Groq API Key has been set for this session." -ForegroundColor Green
-Write-Host "You can now run your Spring Boot application." -ForegroundColor Yellow

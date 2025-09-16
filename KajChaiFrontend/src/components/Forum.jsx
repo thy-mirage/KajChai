@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import forumAPI from '../services/forumService';
 import PostCard from './PostCard';
@@ -7,6 +8,20 @@ import './Forum.css';
 
 const Forum = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  // Helper function to translate category names
+  const translateCategory = (category) => {
+    const categoryKey = category.toLowerCase().replace(/_/g, '');
+    // Try to get translation, fallback to formatted string if not found
+    const translationKey = `forum.categories.${categoryKey}`;
+    const translated = t(translationKey);
+    // If translation key is returned as-is, it means translation doesn't exist
+    if (translated === translationKey) {
+      return category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
+    return translated;
+  };
   const [currentSection, setCurrentSection] = useState('CUSTOMER_QA');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [sortBy, setSortBy] = useState('recent');
@@ -21,9 +36,9 @@ const Forum = () => {
   // Forum sections based on user role
   const getAvailableSections = () => {
     const sections = [
-      { key: 'CUSTOMER_QA', name: 'Customer Q&A', description: 'Ask service-related questions' },
-      { key: 'WORKER_TIPS_PROJECTS', name: 'Worker Tips & Projects', description: 'Share expertise and showcase work' },
-      { key: 'CUSTOMER_EXPERIENCE', name: 'Customer Experience', description: 'Share your service experiences' }
+      { key: 'CUSTOMER_QA', name: t('forum.customerQA'), description: t('forum.customerQADesc') },
+      { key: 'WORKER_TIPS_PROJECTS', name: t('forum.workerTips'), description: t('forum.workerTipsDesc') },
+      { key: 'CUSTOMER_EXPERIENCE', name: t('forum.customerExperience'), description: t('forum.customerExperienceDesc') }
     ];
 
     return sections;
@@ -52,14 +67,25 @@ const Forum = () => {
     setLoading(true);
     try {
       const currentPage = reset ? 0 : page;
-      const response = await forumAPI.getPosts(
-        currentSection,
-        selectedCategory,
-        sortBy,
-        showMyPosts,
-        currentPage,
-        10
-      );
+      let response;
+      
+      if (showMyPosts) {
+        response = await forumAPI.getMyPosts(
+          currentSection,
+          selectedCategory,
+          sortBy,
+          currentPage,
+          10
+        );
+      } else {
+        response = await forumAPI.getPosts(
+          currentSection,
+          selectedCategory,
+          sortBy,
+          currentPage,
+          10
+        );
+      }
 
       if (reset) {
         setPosts(response.content);
@@ -123,8 +149,8 @@ const Forum = () => {
 
   const getSortOptions = () => {
     const options = [
-      { key: 'recent', name: 'Recent' },
-      { key: 'popular', name: 'Most Popular' }
+      { key: 'recent', name: t('forum.recent') },
+      { key: 'popular', name: t('forum.mostPopular') }
     ];
 
     if (canShowMyPosts()) {
@@ -142,8 +168,8 @@ const Forum = () => {
     <div className="forum-container">
       {/* Header */}
       <div className="forum-header">
-        <h1>🗨️ KajChai Forum</h1>
-        <p>Connect, share knowledge, and learn from the community</p>
+        <h1>🗨️ {t('forum.kajChaiForum')}</h1>
+        <p>{t('forum.forumDescription')}</p>
       </div>
 
       {/* Section Tabs */}
@@ -165,15 +191,15 @@ const Forum = () => {
         <div className="controls-left">
           {/* Category Filter */}
           <div className="category-filter">
-            <label>Category:</label>
+            <label>{t('forum.category')}:</label>
             <select 
               value={selectedCategory || ''} 
               onChange={(e) => handleCategoryChange(e.target.value || null)}
             >
-              <option value="">All Categories</option>
+              <option value="">{t('forum.allCategories')}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
-                  {category.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                  {translateCategory(category)}
                 </option>
               ))}
             </select>
@@ -181,7 +207,7 @@ const Forum = () => {
 
           {/* Sort Options */}
           <div className="sort-filter">
-            <label>Sort by:</label>
+            <label>{t('forum.sortBy')}:</label>
             <select value={sortBy} onChange={(e) => handleSortChange(e.target.value)}>
               {getSortOptions().map((option) => (
                 <option key={option.key} value={option.key}>
@@ -200,9 +226,9 @@ const Forum = () => {
                   checked={showMyPosts}
                   onChange={handleMyPostsToggle}
                 />
-                My {currentSection === 'CUSTOMER_QA' ? 'Q&As' : 
-                     currentSection === 'CUSTOMER_EXPERIENCE' ? 'Experiences' : 
-                     'Tips & Projects'}
+                {t('forum.myPosts')} {currentSection === 'CUSTOMER_QA' ? t('forum.qAndA') : 
+                     currentSection === 'CUSTOMER_EXPERIENCE' ? t('forum.experiences') : 
+                     t('forum.tipsAndProjects')}
               </label>
             </div>
           )}
@@ -214,7 +240,7 @@ const Forum = () => {
               className="create-post-btn"
               onClick={() => setShowCreateModal(true)}
             >
-              + Create Post
+              + {t('forum.createPost')}
             </button>
           )}
         </div>
@@ -223,16 +249,16 @@ const Forum = () => {
       {/* Posts */}
       <div className="forum-posts">
         {loading && posts.length === 0 ? (
-          <div className="loading">Loading posts...</div>
+          <div className="loading">{t('common.loading')}</div>
         ) : posts.length === 0 ? (
           <div className="no-posts">
-            <p>No posts found in this section.</p>
+            <p>{t('forum.noPostsFound')}</p>
             {canCreatePost() && (
               <button 
                 className="create-first-post-btn"
                 onClick={() => setShowCreateModal(true)}
               >
-                Create the first post!
+                {t('forum.createFirstPost')}
               </button>
             )}
           </div>
@@ -253,7 +279,7 @@ const Forum = () => {
                   disabled={loading}
                   className="load-more-btn"
                 >
-                  {loading ? 'Loading...' : 'Load More'}
+                  {loading ? t('common.loading') : t('forum.loadMore')}
                 </button>
               </div>
             )}

@@ -3,6 +3,7 @@ package com.example.KajChai.Repository;
 import com.example.KajChai.DatabaseEntity.ForumPost;
 import com.example.KajChai.Enum.ForumSection;
 import com.example.KajChai.Enum.ForumCategory;
+import com.example.KajChai.Enum.PostStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -49,4 +50,26 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     // Search posts by title or content
     @Query("SELECT p FROM ForumPost p WHERE p.section = :section AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<ForumPost> searchPostsByKeyword(@Param("section") ForumSection section, @Param("keyword") String keyword, Pageable pageable);
+    
+    // Methods with status filtering (for moderation)
+    Page<ForumPost> findBySectionAndStatus(ForumSection section, PostStatus status, Pageable pageable);
+    Page<ForumPost> findBySectionAndCategoryAndStatus(ForumSection section, ForumCategory category, PostStatus status, Pageable pageable);
+    Page<ForumPost> findByAuthorIdAndSectionAndStatus(Integer authorId, ForumSection section, PostStatus status, Pageable pageable);
+    Page<ForumPost> findByAuthorIdAndSectionAndCategoryAndStatus(Integer authorId, ForumSection section, ForumCategory category, PostStatus status, Pageable pageable);
+    
+    // Custom queries with status filtering and popularity ordering
+    @Query("SELECT p FROM ForumPost p WHERE p.section = :section AND p.status = :status ORDER BY p.likesCount DESC")
+    Page<ForumPost> findBySectionAndStatusOrderByPopularity(@Param("section") ForumSection section, @Param("status") PostStatus status, Pageable pageable);
+    
+    @Query("SELECT p FROM ForumPost p WHERE p.section = :section AND p.category = :category AND p.status = :status ORDER BY p.likesCount DESC")
+    Page<ForumPost> findBySectionAndCategoryAndStatusOrderByPopularity(@Param("section") ForumSection section, @Param("category") ForumCategory category, @Param("status") PostStatus status, Pageable pageable);
+    
+    @Query("SELECT p FROM ForumPost p WHERE p.authorId = :authorId AND p.section = :section AND p.status = :status ORDER BY p.likesCount DESC")
+    Page<ForumPost> findByAuthorIdAndSectionAndStatusOrderByPopularity(@Param("authorId") Integer authorId, @Param("section") ForumSection section, @Param("status") PostStatus status, Pageable pageable);
+    
+    @Query("SELECT p FROM ForumPost p WHERE p.authorId = :authorId AND p.section = :section AND p.category = :category AND p.status = :status ORDER BY p.likesCount DESC")
+    Page<ForumPost> findByAuthorIdAndSectionAndCategoryAndStatusOrderByPopularity(@Param("authorId") Integer authorId, @Param("section") ForumSection section, @Param("category") ForumCategory category, @Param("status") PostStatus status, Pageable pageable);
+    
+    // Migration helper method
+    List<ForumPost> findByStatusIsNull();
 }

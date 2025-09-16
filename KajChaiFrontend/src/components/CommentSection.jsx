@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import forumAPI from '../services/forumService';
 import './CommentSection.css';
 
 const CommentSection = ({ postId, onCommentAdded }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,19 +61,19 @@ const CommentSection = ({ postId, onCommentAdded }) => {
 
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-      return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+      return `${diffInMinutes} ${diffInMinutes === 1 ? t('forum.minute') : t('forum.minutes')} ${t('forum.ago')}`;
     } else if (diffInHours < 24) {
       const hours = Math.floor(diffInHours);
-      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+      return `${hours} ${hours === 1 ? t('forum.hour') : t('forum.hours')} ${t('forum.ago')}`;
     } else {
-      return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString() + ' ' + t('forum.at') + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
   };
 
   return (
     <div className="comment-section">
       <div className="comments-header">
-        <h4>Comments ({comments.length})</h4>
+        <h4>{t('forum.comments')} ({comments.length})</h4>
       </div>
 
       {/* Add Comment Form */}
@@ -89,7 +91,7 @@ const CommentSection = ({ postId, onCommentAdded }) => {
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
+                placeholder={t('forum.writeComment')}
                 className="comment-input"
                 rows={3}
                 maxLength={500}
@@ -102,7 +104,7 @@ const CommentSection = ({ postId, onCommentAdded }) => {
                   className="submit-comment-btn"
                   disabled={!newComment.trim() || submitting}
                 >
-                  {submitting ? 'Posting...' : 'Post Comment'}
+                  {submitting ? t('forum.posting') : t('forum.postComment')}
                 </button>
               </div>
             </div>
@@ -113,11 +115,11 @@ const CommentSection = ({ postId, onCommentAdded }) => {
       {/* Comments List */}
       <div className="comments-list">
         {loading ? (
-          <div className="loading-comments">Loading comments...</div>
+          <div className="loading-comments">{t('forum.loadingComments')}</div>
         ) : comments.length === 0 ? (
           <div className="no-comments">
-            <p>No comments yet.</p>
-            {user && <p>Be the first to comment!</p>}
+            <p>{t('forum.noCommentsYet')}</p>
+            {user && <p>{t('forum.beFirstToComment')}</p>}
           </div>
         ) : (
           comments.map((comment) => (
@@ -148,7 +150,7 @@ const CommentSection = ({ postId, onCommentAdded }) => {
 
       {!user && (
         <div className="login-prompt">
-          <p>Please log in to add comments.</p>
+          <p>{t('forum.pleaseLoginToComment')}</p>
         </div>
       )}
     </div>

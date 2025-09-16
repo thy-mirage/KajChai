@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import LocationSelector from './LocationSelector';
+import LanguageSwitcher from './LanguageSwitcher';
 import './Auth.css';
 
 const Signup = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1); // 1: signup form, 2: verification
   const [formData, setFormData] = useState({
     email: '',
@@ -296,8 +299,13 @@ const Signup = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Verify Your Email</h1>
-            <p>Enter the 6-digit code sent to {formData.email}</p>
+            <div className="auth-header-content">
+              <h1>{t('auth.verifyEmail')}</h1>
+              <p>{t('auth.verifyEmailDescription', { email: formData.email })}</p>
+            </div>
+            <div className="auth-language-switcher">
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <form onSubmit={handleVerification} className="auth-form">
@@ -305,7 +313,7 @@ const Signup = () => {
             {success && <div className="success-message">{success}</div>}
 
             <div className="form-group">
-              <label htmlFor="verificationCode">Verification Code</label>
+              <label htmlFor="verificationCode">{t('auth.verificationCode')}</label>
               <input
                 type="text"
                 id="verificationCode"
@@ -313,7 +321,7 @@ const Signup = () => {
                 onChange={(e) => setVerificationCode(e.target.value)}
                 required
                 maxLength="6"
-                placeholder="Enter 6-digit code"
+                placeholder={t('auth.verificationCodePlaceholder')}
                 disabled={loading}
                 className="verification-input"
               />
@@ -354,8 +362,13 @@ const Signup = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Join KajChai</h1>
-          <p>Create your account to get started</p>
+          <div className="auth-header-content">
+            <h1>{t('auth.joinKajChai')}</h1>
+            <p>{t('auth.signupDescription')}</p>
+          </div>
+          <div className="auth-language-switcher">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <form onSubmit={handleSignup} className="auth-form">
@@ -364,7 +377,7 @@ const Signup = () => {
 
           {/* Role Selection */}
           <div className="form-group">
-            <label htmlFor="role">Account Type</label>
+            <label htmlFor="role">{t('auth.accountType')}</label>
             <select
               id="role"
               name="role"
@@ -372,15 +385,15 @@ const Signup = () => {
               onChange={handleChange}
               disabled={loading}
             >
-              <option value="CUSTOMER">Customer</option>
-              <option value="WORKER">Worker</option>
+              <option value="CUSTOMER">{t('auth.customer')}</option>
+              <option value="WORKER">{t('auth.worker')}</option>
             </select>
           </div>
 
           {/* Basic Information */}
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="name">Full Name *</label>
+              <label htmlFor="name">{t('auth.fullName')} *</label>
               <input
                 type="text"
                 id="name"
@@ -388,12 +401,12 @@ const Signup = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="Enter your full name"
+                placeholder={t('auth.fullNamePlaceholder')}
                 disabled={loading}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="email">Email Address *</label>
+              <label htmlFor="email">{t('auth.emailAddress')} *</label>
               <input
                 type="email"
                 id="email"
@@ -401,7 +414,7 @@ const Signup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="Enter your email"
+                placeholder={t('auth.emailPlaceholder')}
                 disabled={loading}
               />
             </div>
@@ -409,7 +422,7 @@ const Signup = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="password">Password *</label>
+              <label htmlFor="password">{t('auth.password')} *</label>
               <input
                 type="password"
                 id="password"
@@ -417,12 +430,12 @@ const Signup = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                placeholder="Enter password (min 6 chars)"
+                placeholder={t('auth.passwordPlaceholder')}
                 disabled={loading}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password *</label>
+              <label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -430,7 +443,7 @@ const Signup = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                placeholder="Confirm your password"
+                placeholder={t('auth.confirmPasswordPlaceholder')}
                 disabled={loading}
               />
             </div>
@@ -438,7 +451,7 @@ const Signup = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="phone">Phone Number *</label>
+              <label htmlFor="phone">{t('auth.phoneNumber')} *</label>
               <input
                 type="tel"
                 id="phone"
@@ -446,12 +459,12 @@ const Signup = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                placeholder="+8801234567890"
+                placeholder={t('auth.phonePlaceholder')}
                 disabled={loading}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="gender">Gender *</label>
+              <label htmlFor="gender">{t('auth.gender')} *</label>
               <select
                 id="gender"
                 name="gender"
@@ -460,10 +473,10 @@ const Signup = () => {
                 required
                 disabled={loading}
               >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">{t('auth.selectGender')}</option>
+                <option value="Male">{t('auth.male')}</option>
+                <option value="Female">{t('auth.female')}</option>
+                <option value="Other">{t('auth.other')}</option>
               </select>
             </div>
           </div>

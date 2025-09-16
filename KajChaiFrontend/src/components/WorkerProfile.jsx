@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import authService from '../services/authService';
 import LocationSelector from './LocationSelector';
 import './Profile.css';
 
 const WorkerProfile = () => {
   const { user, checkAuthStatus } = useAuth();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ const WorkerProfile = () => {
         });
       }
     } catch (err) {
-      setError('Failed to load profile');
+      setError(t('profile.failedToLoadProfile'));
       console.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
@@ -121,7 +123,7 @@ const WorkerProfile = () => {
 
     // Validation for location
     if (!formData.latitude || !formData.longitude) {
-      setError('Please select a valid location on the map');
+      setError(t('profile.selectValidLocation'));
       setLoading(false);
       return;
     }
@@ -166,7 +168,7 @@ const WorkerProfile = () => {
       
       if (response.success) {
         setProfile(response.data);
-        setSuccess('Profile updated successfully!');
+        setSuccess(t('profile.profileUpdatedSuccessfully'));
         setIsEditing(false);
         // Clear photo states
         setPhotoFile(null);
@@ -175,7 +177,7 @@ const WorkerProfile = () => {
         await checkAuthStatus();
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to update profile';
+      const errorMessage = err.response?.data?.message || t('profile.failedToUpdateProfile');
       setError(errorMessage);
       console.error('Error updating profile:', err);
     } finally {
@@ -208,18 +210,18 @@ const WorkerProfile = () => {
   };
 
   if (loading && !profile) {
-    return <div className="loading">Loading profile...</div>;
+    return <div className="loading">{t('profile.loadingProfile')}</div>;
   }
 
   if (!profile) {
-    return <div className="error">Profile not found</div>;
+    return <div className="error">{t('profile.profileNotFound')}</div>;
   }
 
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1>My Profile</h1>
-        <div className="user-type-badge worker">Worker</div>
+        <h1>{t('profile.myProfile')}</h1>
+        <div className="user-type-badge worker">{t('profile.worker')}</div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -240,37 +242,37 @@ const WorkerProfile = () => {
 
             <div className="profile-info">
               <div className="info-group">
-                <label>Name:</label>
+                <label>{t('profile.name')}:</label>
                 <span>{profile.name}</span>
               </div>
               <div className="info-group">
-                <label>Email:</label>
+                <label>{t('profile.email')}:</label>
                 <span>{profile.gmail}</span>
               </div>
               <div className="info-group">
-                <label>Phone:</label>
+                <label>{t('profile.phone')}:</label>
                 <span>{profile.phone}</span>
               </div>
               <div className="info-group">
-                <label>Gender:</label>
+                <label>{t('profile.gender')}:</label>
                 <span>{profile.gender}</span>
               </div>
               <div className="info-group">
-                <label>Location:</label>
+                <label>{t('profile.location')}:</label>
                 <span>{[profile.city, profile.upazila, profile.district].filter(Boolean).join(', ')}</span>
               </div>
               <div className="info-group">
-                <label>Field of Work:</label>
+                <label>{t('profile.fieldOfWork')}:</label>
                 <span>{profile.field}</span>
               </div>
               <div className="info-group">
-                <label>Experience:</label>
-                <span>{profile.experience} years</span>
+                <label>{t('profile.experience')}:</label>
+                <span>{profile.experience} {t('profile.years')}</span>
               </div>
               <div className="info-group">
-                <label>Rating:</label>
+                <label>{t('profile.rating')}:</label>
                 <span className="rating">
-                  {profile.rating ? `${profile.rating}/5 ⭐` : 'Not rated yet'}
+                  {profile.rating ? `${profile.rating}/5 ⭐` : t('profile.notRatedYet')}
                 </span>
               </div>
             </div>
@@ -279,14 +281,14 @@ const WorkerProfile = () => {
               className="edit-btn" 
               onClick={() => setIsEditing(true)}
             >
-              Edit Profile
+              {t('profile.editProfile')}
             </button>
           </div>
         ) : (
           <div className="profile-edit">
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="name">Name *</label>
+                <label htmlFor="name">{t('profile.name')} *</label>
                 <input
                   type="text"
                   id="name"
@@ -299,7 +301,7 @@ const WorkerProfile = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="photo">Profile Photo</label>
+                <label htmlFor="photo">{t('profile.profilePhoto')}</label>
                 <input
                   type="file"
                   id="photo"
@@ -322,17 +324,17 @@ const WorkerProfile = () => {
                       className="remove-photo-btn"
                       disabled={loading}
                     >
-                      Remove Photo
+                      {t('profile.removePhoto')}
                     </button>
                   </div>
                 )}
                 <small className="photo-help">
-                  Upload a new profile photo (JPG, PNG, GIF) - Optional
+                  {t('profile.uploadPhotoHelp')}
                 </small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">Phone *</label>
+                <label htmlFor="phone">{t('profile.phone')} *</label>
                 <input
                   type="tel"
                   id="phone"
@@ -345,7 +347,7 @@ const WorkerProfile = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="gender">Gender *</label>
+                <label htmlFor="gender">{t('profile.gender')} *</label>
                 <select
                   id="gender"
                   name="gender"
@@ -354,15 +356,15 @@ const WorkerProfile = () => {
                   required
                   disabled={loading}
                 >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="">{t('profile.selectGender')}</option>
+                  <option value="Male">{t('profile.male')}</option>
+                  <option value="Female">{t('profile.female')}</option>
+                  <option value="Other">{t('profile.other')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Update Location *</label>
+                <label>{t('profile.updateLocation')} *</label>
                 <LocationSelector
                   onLocationSelect={handleLocationSelect}
                   isEditMode={true}
@@ -375,12 +377,12 @@ const WorkerProfile = () => {
                   }}
                 />
                 <small className="location-help">
-                  Click on the map to select your location. This will auto-fill your address details.
+                  {t('profile.locationHelp')}
                 </small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="field">Field of Work *</label>
+                <label htmlFor="field">{t('profile.fieldOfWork')} *</label>
                 <select
                   id="field"
                   name="field"
@@ -389,7 +391,7 @@ const WorkerProfile = () => {
                   required
                   disabled={loading}
                 >
-                  <option value="">Select Field</option>
+                  <option value="">{t('profile.selectField')}</option>
                   {jobFields.map(field => (
                     <option key={field} value={field}>{field}</option>
                   ))}
@@ -397,7 +399,7 @@ const WorkerProfile = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="experience">Experience (years)</label>
+                <label htmlFor="experience">{t('profile.experience')} ({t('profile.years')})</label>
                 <input
                   type="number"
                   id="experience"
@@ -416,7 +418,7 @@ const WorkerProfile = () => {
                   className="save-btn" 
                   disabled={loading}
                 >
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  {loading ? t('profile.saving') : t('profile.saveChanges')}
                 </button>
                 <button 
                   type="button" 
@@ -424,7 +426,7 @@ const WorkerProfile = () => {
                   onClick={handleCancel}
                   disabled={loading}
                 >
-                  Cancel
+                  {t('profile.cancel')}
                 </button>
               </div>
             </form>
