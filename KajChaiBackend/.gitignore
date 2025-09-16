@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Application Properties with Sensitive Data ###
+src/main/resources/application.properties
+
+### Environment Setup Scripts with API Keys ###
+set-env.bat
+set-env.ps1

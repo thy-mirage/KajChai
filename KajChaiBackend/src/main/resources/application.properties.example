@@ -1,9 +1,9 @@
 spring.application.name=KajChai
 
 # PostgreSQL connection (Supabase)
-spring.datasource.url=jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
-spring.datasource.username=postgres.ltaogogxcmdxsukzyrlv
-spring.datasource.password=Kajchai$2025
+spring.datasource.url=jdbc:postgresql://your-supabase-url:6543/postgres?sslmode=require&prepareThreshold=0
+spring.datasource.username=your-supabase-username
+spring.datasource.password=your-supabase-password
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 # HikariCP Configuration (optimized for Supabase)
@@ -22,10 +22,10 @@ spring.jpa.show-sql=false
 
 # Amazon AWS Bucket
 # AWS S3 configuration
-aws.access.key = AKIA4DMVQ32UXSZRKTJ7
-aws.secret.key = ePOFEmAiuWPig52HDE81X2DfltDQqLBrXzsLxwRK
+aws.access.key = your-aws-access-key
+aws.secret.key = your-aws-secret-key
 aws.region = us-east-2
-aws.s3.bucket-name = project-bustopia
+aws.s3.bucket-name = your-s3-bucket-name
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=10MB
 
@@ -36,8 +36,8 @@ jwt.expiration=1800000
 # Email Configuration
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=kajchai.team@gmail.com
-spring.mail.password=yyea rppp djvy qcgx
+spring.mail.username=your-email@gmail.com
+spring.mail.password=your-app-password
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 
@@ -45,6 +45,11 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 app.verification.code.expiry=300000
 
 # Cloudinary credentials
-cloudinary.cloud-name=dikggnplq
-cloudinary.api-key=676922377642131
-cloudinary.api-secret=gWF81m04AnEWWYss799k4jjwLE4
+cloudinary.cloud-name=your-cloudinary-cloud-name
+cloudinary.api-key=your-cloudinary-api-key
+cloudinary.api-secret=your-cloudinary-api-secret
+
+# Groq LLM API Configuration
+groq.api.key=${GROQ_API_KEY:your-groq-api-key-here}
+groq.api.url=https://api.groq.com/openai/v1/chat/completions
+groq.model=llama-3.3-70b-versatile
