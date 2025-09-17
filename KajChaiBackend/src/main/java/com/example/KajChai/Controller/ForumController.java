@@ -125,6 +125,17 @@ public class ForumController {
         return ResponseEntity.ok(categories);
     }
 
+    // Search questions for real-time suggestions (Customer Q&A only)
+    @GetMapping("/search-questions")
+    public ResponseEntity<List<QuestionSearchResult>> searchQuestions(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) ForumCategory category) {
+        
+        List<QuestionSearchResult> results = forumService.searchQuestions(query, limit, category);
+        return ResponseEntity.ok(results);
+    }
+
     // Helper method to get current user ID from authentication context
     private Integer getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

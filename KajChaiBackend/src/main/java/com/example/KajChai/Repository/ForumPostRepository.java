@@ -51,6 +51,18 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     @Query("SELECT p FROM ForumPost p WHERE p.section = :section AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<ForumPost> searchPostsByKeyword(@Param("section") ForumSection section, @Param("keyword") String keyword, Pageable pageable);
     
+    // Search posts by title or content with status filtering
+    @Query("SELECT p FROM ForumPost p WHERE p.section = :section AND p.status = :status AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<ForumPost> searchPostsByKeywordAndStatus(@Param("section") ForumSection section, @Param("keyword") String keyword, @Param("status") PostStatus status, Pageable pageable);
+    
+    // Search questions for real-time suggestions (limited results)
+    @Query("SELECT p FROM ForumPost p WHERE p.section = 'CUSTOMER_QA' AND p.status = 'APPROVED' AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))) ORDER BY p.likesCount DESC, p.createdAt DESC")
+    List<ForumPost> searchQuestionSuggestions(@Param("keyword") String keyword, Pageable pageable);
+    
+    // Search questions with category filter for real-time suggestions
+    @Query("SELECT p FROM ForumPost p WHERE p.section = 'CUSTOMER_QA' AND p.status = 'APPROVED' AND p.category = :category AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))) ORDER BY p.likesCount DESC, p.createdAt DESC")
+    List<ForumPost> searchQuestionSuggestionsWithCategory(@Param("keyword") String keyword, @Param("category") ForumCategory category, Pageable pageable);
+    
     // Methods with status filtering (for moderation)
     Page<ForumPost> findBySectionAndStatus(ForumSection section, PostStatus status, Pageable pageable);
     Page<ForumPost> findBySectionAndCategoryAndStatus(ForumSection section, ForumCategory category, PostStatus status, Pageable pageable);

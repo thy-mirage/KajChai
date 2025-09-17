@@ -120,7 +120,7 @@ const PostCard = ({ post, onUpdate }) => {
   };
 
   return (
-    <div className="post-card">
+    <div className="post-card" data-post-id={localPost.postId}>
       {/* Post Status Banner (for pending/rejected posts) */}
       {localPost.status && localPost.status !== 'APPROVED' && (
         <div className={`post-status-banner ${localPost.status.toLowerCase()}`}>

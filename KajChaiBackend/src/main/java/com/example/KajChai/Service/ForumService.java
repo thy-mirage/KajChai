@@ -265,6 +265,34 @@ public class ForumService {
                 .collect(Collectors.toList());
     }
 
+    // Search questions for real-time suggestions - Customer Q&A only
+    public List<QuestionSearchResult> searchQuestions(String query, int limit, ForumCategory category) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Clean and prepare the search query
+        String cleanQuery = query.trim();
+        
+        // Use PageRequest to limit results
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        // Search for questions in Customer Q&A section only
+        List<ForumPost> searchResults;
+        if (category != null) {
+            // Search with category filter
+            searchResults = forumPostRepository.searchQuestionSuggestionsWithCategory(cleanQuery, category, pageable);
+        } else {
+            // Search across all categories
+            searchResults = forumPostRepository.searchQuestionSuggestions(cleanQuery, pageable);
+        }
+        
+        // Convert to search result DTOs
+        return searchResults.stream()
+                .map(this::convertToQuestionSearchResult)
+                .collect(Collectors.toList());
+    }
+
     // Helper method to validate post permissions
     private void validatePostPermissions(ForumSection section, UserRole userRole) {
         switch (section) {
@@ -452,6 +480,19 @@ public class ForumService {
                 .authorName(comment.getAuthorName())
                 .authorPhoto(comment.getAuthorPhoto())
                 .createdAt(comment.getCreatedAt())
+                .build();
+    }
+    
+    // Helper method to convert ForumPost to QuestionSearchResult
+    private QuestionSearchResult convertToQuestionSearchResult(ForumPost post) {
+        return QuestionSearchResult.builder()
+                .postId(post.getPostId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .authorName(post.getAuthorName())
+                .createdAt(post.getCreatedAt())
+                .commentsCount(post.getCommentsCount())
+                .likesCount(post.getLikesCount())
                 .build();
     }
     

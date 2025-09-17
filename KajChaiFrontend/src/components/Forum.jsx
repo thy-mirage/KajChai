@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import forumAPI from '../services/forumService';
 import PostCard from './PostCard';
 import CreatePostModal from './CreatePostModal';
+import QuestionSearch from './QuestionSearch';
 import './Forum.css';
 
 const Forum = () => {
@@ -32,6 +33,8 @@ const Forum = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [selectedPost, setSelectedPost] = useState(null); // For showing specific post
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
 
   // Forum sections based on user role
   const getAvailableSections = () => {
@@ -108,21 +111,25 @@ const Forum = () => {
     setSelectedCategory(null);
     setShowMyPosts(false);
     setPage(0);
+    setSelectedPost(null); // Clear selected post when switching sections
   };
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category === selectedCategory ? null : category);
     setPage(0);
+    setSelectedPost(null); // Clear selected post when changing category
   };
 
   const handleSortChange = (newSortBy) => {
     setSortBy(newSortBy);
     setPage(0);
+    setSelectedPost(null); // Clear selected post when changing sort
   };
 
   const handleMyPostsToggle = () => {
     setShowMyPosts(!showMyPosts);
     setPage(0);
+    setSelectedPost(null); // Clear selected post when toggling my posts
   };
 
   const canCreatePost = () => {
@@ -162,6 +169,39 @@ const Forum = () => {
 
   const refreshPosts = () => {
     fetchPosts(true);
+  };
+
+  // Handle question selection from search
+  const handleQuestionSelect = async (question) => {
+    console.log('Selected question:', question);
+    
+    try {
+      setIsLoadingPost(true);
+      
+      // Fetch the complete post details
+      const postDetails = await forumAPI.getPost(question.postId);
+      
+      // Set the selected post to show only this post
+      setSelectedPost(postDetails);
+      
+      // Ensure we're in the Customer Q&A section for context
+      if (currentSection !== 'CUSTOMER_QA') {
+        setCurrentSection('CUSTOMER_QA');
+      }
+      
+    } catch (error) {
+      console.error('Error fetching selected question:', error);
+      // Fallback to original behavior if there's an error
+      alert('Could not load the selected question. Please try again.');
+    } finally {
+      setIsLoadingPost(false);
+    }
+  };
+
+  // Handle going back to full forum view
+  const handleBackToForum = () => {
+    setSelectedPost(null);
+    refreshPosts(); // Refresh the posts when going back
   };
 
   return (
@@ -246,9 +286,44 @@ const Forum = () => {
         </div>
       </div>
 
+      {/* Question Search - Only for Customer Q&A section */}
+      {currentSection === 'CUSTOMER_QA' && (
+        <div className="question-search-section">
+          <div className="search-header">
+            <h3>{t('forum.searchSimilarQuestions', 'Search Similar Questions')}</h3>
+            <p>{t('forum.searchDescription', 'Find answers from previous questions before asking a new one')}</p>
+          </div>
+          <QuestionSearch 
+            onQuestionSelect={handleQuestionSelect} 
+            selectedCategory={selectedCategory}
+          />
+        </div>
+      )}
+
       {/* Posts */}
       <div className="forum-posts">
-        {loading && posts.length === 0 ? (
+        {/* Show selected post if one is selected */}
+        {selectedPost ? (
+          <div className="selected-post-view">
+            <div className="back-to-forum">
+              <button onClick={handleBackToForum} className="back-btn">
+                ← {t('common.back', 'Back to Forum')}
+              </button>
+              <p className="selected-post-info">
+                {t('forum.viewingSelectedQuestion', 'Viewing selected question')}
+              </p>
+            </div>
+            <PostCard 
+              post={selectedPost} 
+              onUpdate={() => {
+                // Refresh the selected post
+                handleQuestionSelect({ postId: selectedPost.postId });
+              }}
+            />
+          </div>
+        ) : isLoadingPost ? (
+          <div className="loading">{t('common.loading')}</div>
+        ) : loading && posts.length === 0 ? (
           <div className="loading">{t('common.loading')}</div>
         ) : posts.length === 0 ? (
           <div className="no-posts">
