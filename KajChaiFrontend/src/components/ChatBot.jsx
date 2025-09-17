@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../contexts/AuthContext';
+import { API_CONFIG } from '../config/api.js';
 import './ChatBot.css';
 
 const ChatBot = () => {
@@ -80,7 +81,7 @@ const ChatBot = () => {
                 : {
                     question: inputMessage,
                     userId: user?.id
-                };            const response = await fetch(`http://localhost:8080${endpoint}`, {
+                };            const response = await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
