@@ -1,2 +1,2 @@
 #!/bin/bash
-java -Dserver.port=$PORT -Dspring.profiles.active=production -jar target/*.jar
+java -jar target/KajChai-0.0.1-SNAPSHOT.jar
