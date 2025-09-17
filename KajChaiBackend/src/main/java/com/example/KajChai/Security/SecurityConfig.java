@@ -44,6 +44,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/location/**").permitAll()
                 .requestMatchers("/api/review/fields").permitAll()
+                .requestMatchers("/api/test/public").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
