@@ -98,24 +98,24 @@ public class TestController {
                     .enabled(true)
                     .build();
                 userRepository.save(customer);
-                
-                // Create corresponding customer profile
-                if (!customerRepository.existsByGmail("customer@kajchai.com")) {
-                    Customer customerProfile = Customer.builder()
-                        .customerName("Test Customer")
-                        .gmail("customer@kajchai.com")
-                        .password(passwordEncoder.encode("password123"))
-                        .phone("01712345678")
-                        .gender("Male")
-                        .latitude(23.8103)
-                        .longitude(90.4125)
-                        .city("Dhaka")
-                        .upazila("Dhanmondi")
-                        .district("Dhaka")
-                        .fullAddress("Dhanmondi, Dhaka, Bangladesh")
-                        .build();
-                    customerRepository.save(customerProfile);
-                }
+            }
+            
+            // Create corresponding customer profile (check separately)
+            if (!customerRepository.existsByGmail("customer@kajchai.com")) {
+                Customer customerProfile = Customer.builder()
+                    .customerName("Test Customer")
+                    .gmail("customer@kajchai.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .phone("01712345678")
+                    .gender("Male")
+                    .latitude(23.8103)
+                    .longitude(90.4125)
+                    .city("Dhaka")
+                    .upazila("Dhanmondi")
+                    .district("Dhaka")
+                    .fullAddress("Dhanmondi, Dhaka, Bangladesh")
+                    .build();
+                customerRepository.save(customerProfile);
             }
 
             // Create test worker user and profile
@@ -127,27 +127,27 @@ public class TestController {
                     .enabled(true)
                     .build();
                 userRepository.save(worker);
-                
-                // Create corresponding worker profile
-                if (!workerRepository.existsByGmail("worker@kajchai.com")) {
-                    Worker workerProfile = Worker.builder()
-                        .name("Test Worker")
-                        .gmail("worker@kajchai.com")
-                        .password(passwordEncoder.encode("password123"))
-                        .phone("01787654321")
-                        .gender("Female")
-                        .latitude(23.7947)
-                        .longitude(90.4056)
-                        .city("Dhaka")
-                        .upazila("Gulshan")
-                        .district("Dhaka")
-                        .fullAddress("Gulshan, Dhaka, Bangladesh")
-                        .field("Electrician")
-                        .rating(4.5f)
-                        .experience(3.0f)
-                        .build();
-                    workerRepository.save(workerProfile);
-                }
+            }
+            
+            // Create corresponding worker profile (check separately)
+            if (!workerRepository.existsByGmail("worker@kajchai.com")) {
+                Worker workerProfile = Worker.builder()
+                    .name("Test Worker")
+                    .gmail("worker@kajchai.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .phone("01787654321")
+                    .gender("Female")
+                    .latitude(23.7947)
+                    .longitude(90.4056)
+                    .city("Dhaka")
+                    .upazila("Gulshan")
+                    .district("Dhaka")
+                    .fullAddress("Gulshan, Dhaka, Bangladesh")
+                    .field("Electrician")
+                    .rating(4.5f)
+                    .experience(3.0f)
+                    .build();
+                workerRepository.save(workerProfile);
             }
 
             return ResponseEntity.ok(AuthResponse.builder()
