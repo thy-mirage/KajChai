@@ -26,4 +26,4 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-CMD ["java", "-Dserver.port=${PORT:-8080}", "-Dspring.profiles.active=production", "-jar", "app.jar"]
+CMD ["java", "-Dserver.port=${PORT:-8080}", "-Dserver.address=0.0.0.0", "-Dspring.profiles.active=production", "-jar", "app.jar"]
