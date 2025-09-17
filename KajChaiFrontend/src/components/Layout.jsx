@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
+import ChatBot from './ChatBot';
 import './Layout.css';
 
 const Layout = ({ children, showBackButton = true, title = null }) => {
@@ -54,6 +55,7 @@ const Layout = ({ children, showBackButton = true, title = null }) => {
           </div>
         </div>
       </main>
+      <ChatBot />
     </div>
   );
 };
