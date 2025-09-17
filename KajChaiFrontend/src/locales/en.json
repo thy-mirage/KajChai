@@ -483,7 +483,8 @@
     "startConversation": "Start a conversation",
     "startNewChat": "Start a new chat",
     "welcomeToChat": "Welcome to KajChai Chat!",
-    "selectConversation": "Select a user to start chatting"
+    "selectConversation": "Select a user to start chatting",
+    "loadingChats": "Loading chats..."
   },
   "notifications": {
     "notifications": "Notifications",
@@ -561,5 +562,25 @@
     "clickMapInstruction": "Click on the map to select a precise location",
     "searchInstruction": "Search for an address using the search box",
     "currentLocationInstruction": "Use \"Current Location\" to get your GPS position"
+  },
+  "chatbot": {
+    "title": "KajChai Assistant",
+    "welcome": "Hello! I'm your KajChai assistant. I can help you with household service questions, find workers, estimate costs, and guide you through using our platform. How can I help you today?",
+    "online": "Online",
+    "inputPlaceholder": "Type your message here...",
+    "clearChat": "Clear Chat",
+    "close": "Close",
+    "error": "Sorry, I encountered an error while processing your request.",
+    "networkError": "Network error. Please check your connection and try again.",
+    "disclaimer": "AI-powered assistant for KajChai services",
+    "suggestionsTitle": "Quick questions you can ask:",
+    "suggestions": {
+      "howToPost": "How do I post a job?",
+      "findWorker": "How to find a good worker?",
+      "contactWorker": "How to contact a worker?",
+      "estimateCost": "Estimate cost for cleaning service",
+      "nearbyJobs": "Show me nearby jobs",
+      "writeReview": "How to write a review?"
+    }
   }
 }
