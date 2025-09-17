@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import authService from '../services/authService';
+import LanguageSwitcher from './LanguageSwitcher';
 import './Auth.css';
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
@@ -41,13 +44,13 @@ const ResetPassword = () => {
     e.preventDefault();
     
     if (!formData.resetCode) {
-      setMessage('Please enter the reset code');
+      setMessage(t('auth.enterResetCode'));
       setIsSuccess(false);
       return;
     }
 
     if (formData.resetCode.length !== 6) {
-      setMessage('Reset code must be 6 digits');
+      setMessage(t('auth.resetCode6Digits'));
       setIsSuccess(false);
       return;
     }
@@ -58,7 +61,7 @@ const ResetPassword = () => {
       const response = await authService.verifyResetCode(formData.email, formData.resetCode);
       
       if (response.success) {
-        setMessage('Code verified successfully!');
+        setMessage(t('auth.codeVerifiedSuccessfully'));
         setIsSuccess(true);
         setTimeout(() => {
           setCurrentStep(2);
@@ -66,12 +69,12 @@ const ResetPassword = () => {
           setIsSuccess(false);
         }, 1500);
       } else {
-        setMessage(response.message || 'Invalid reset code');
+        setMessage(response.message || t('auth.invalidResetCode'));
         setIsSuccess(false);
       }
     } catch (error) {
       console.error('Verify code error:', error);
-      setMessage('Network error. Please try again.');
+      setMessage(t('auth.networkError'));
       setIsSuccess(false);
     } finally {
       setLoading(false);
@@ -82,25 +85,25 @@ const ResetPassword = () => {
     e.preventDefault();
     
     if (!formData.newPassword) {
-      setMessage('Please enter a new password');
+      setMessage(t('auth.enterNewPassword'));
       setIsSuccess(false);
       return;
     }
 
     if (formData.newPassword.length < 6) {
-      setMessage('Password must be at least 6 characters long');
+      setMessage(t('auth.passwordMinLength'));
       setIsSuccess(false);
       return;
     }
 
     if (!formData.confirmPassword) {
-      setMessage('Please confirm your password');
+      setMessage(t('auth.pleaseConfirmPassword'));
       setIsSuccess(false);
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setMessage('Passwords do not match');
+      setMessage(t('auth.passwordsDoNotMatch'));
       setIsSuccess(false);
       return;
     }
@@ -116,18 +119,18 @@ const ResetPassword = () => {
       });
       
       if (response.success) {
-        setMessage('Password reset successfully! Redirecting to login...');
+        setMessage(t('auth.passwordResetSuccess'));
         setIsSuccess(true);
         setTimeout(() => {
           navigate('/login');
         }, 2000);
       } else {
-        setMessage(response.message || 'Failed to reset password');
+        setMessage(response.message || t('auth.failedToResetPassword'));
         setIsSuccess(false);
       }
     } catch (error) {
       console.error('Reset password error:', error);
-      setMessage('Network error. Please try again.');
+      setMessage(t('auth.networkError'));
       setIsSuccess(false);
     } finally {
       setLoading(false);
@@ -145,14 +148,14 @@ const ResetPassword = () => {
     try {
       const response = await authService.forgotPassword(formData.email);
       if (response.success) {
-        setMessage('New reset code sent to your email');
+        setMessage(t('auth.newResetCodeSent'));
         setIsSuccess(true);
       } else {
-        setMessage('Failed to resend code. Please try again.');
+        setMessage(t('auth.failedToResendCode'));
         setIsSuccess(false);
       }
     } catch (error) {
-      setMessage('Failed to resend code. Please try again.');
+      setMessage(t('auth.failedToResendCode'));
       setIsSuccess(false);
     } finally {
       setLoading(false);
@@ -164,20 +167,25 @@ const ResetPassword = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Enter Reset Code</h1>
-            <p>We sent a 6-digit code to {formData.email}</p>
+            <div className="auth-header-content">
+              <h1>{t('auth.enterResetCode')}</h1>
+              <p>{t('auth.resetCodeSentTo', { email: formData.email })}</p>
+            </div>
+            <div className="auth-language-switcher">
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <form onSubmit={handleVerifyCode} className="auth-form">
             <div className="form-group">
-              <label htmlFor="resetCode">Reset Code *</label>
+              <label htmlFor="resetCode">{t('auth.resetCode')} *</label>
               <input
                 type="text"
                 id="resetCode"
                 name="resetCode"
                 value={formData.resetCode}
                 onChange={handleChange}
-                placeholder="Enter 6-digit code"
+                placeholder={t('auth.enter6DigitCode')}
                 disabled={loading}
                 maxLength="6"
                 className="verification-input"
@@ -196,7 +204,7 @@ const ResetPassword = () => {
               className={`auth-button ${loading ? 'loading' : ''}`}
               disabled={loading}
             >
-              {loading ? 'Verifying...' : 'Verify Code'}
+              {loading ? t('auth.verifying') : t('auth.verifyCode')}
             </button>
 
             <button
@@ -205,16 +213,16 @@ const ResetPassword = () => {
               onClick={handleResendCode}
               disabled={loading}
             >
-              Resend Code
+              {t('auth.resendCode')}
             </button>
           </form>
 
           <div className="auth-footer">
             <p>
-              <Link to="/forgot-password" className="auth-link">Back to email entry</Link>
+              <Link to="/forgot-password" className="auth-link">{t('auth.backToEmailEntry')}</Link>
             </p>
             <p>
-              Remember your password? <Link to="/login" className="auth-link">Sign in here</Link>
+              {t('auth.rememberPassword')} <Link to="/login" className="auth-link">{t('auth.signInHere')}</Link>
             </p>
           </div>
         </div>
@@ -226,34 +234,39 @@ const ResetPassword = () => {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>Set New Password</h1>
-          <p>Enter your new password for {formData.email}</p>
+          <div className="auth-header-content">
+            <h1>{t('auth.setNewPassword')}</h1>
+            <p>{t('auth.enterNewPasswordFor', { email: formData.email })}</p>
+          </div>
+          <div className="auth-language-switcher">
+            <LanguageSwitcher />
+          </div>
         </div>
 
         <form onSubmit={handleResetPassword} className="auth-form">
           <div className="form-group">
-            <label htmlFor="newPassword">New Password *</label>
+            <label htmlFor="newPassword">{t('auth.newPassword')} *</label>
             <input
               type="password"
               id="newPassword"
               name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
-              placeholder="Enter new password (min 6 characters)"
+              placeholder={t('auth.newPasswordPlaceholder')}
               disabled={loading}
               autoComplete="new-password"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password *</label>
+            <label htmlFor="confirmPassword">{t('auth.confirmPassword')} *</label>
             <input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Confirm your new password"
+              placeholder={t('auth.confirmNewPasswordPlaceholder')}
               disabled={loading}
               autoComplete="new-password"
             />
@@ -270,7 +283,7 @@ const ResetPassword = () => {
             className={`auth-button ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
+            {loading ? t('auth.resetting') : t('auth.resetPassword')}
           </button>
 
           <button
@@ -279,13 +292,13 @@ const ResetPassword = () => {
             onClick={handleBackToCode}
             disabled={loading}
           >
-            ← Back to Code Entry
+            ← {t('auth.backToCodeEntry')}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Remember your password? <Link to="/login" className="auth-link">Sign in here</Link>
+            {t('auth.rememberPassword')} <Link to="/login" className="auth-link">{t('auth.signInHere')}</Link>
           </p>
         </div>
       </div>

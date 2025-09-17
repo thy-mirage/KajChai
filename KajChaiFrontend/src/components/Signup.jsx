@@ -6,6 +6,18 @@ import LocationSelector from './LocationSelector';
 import LanguageSwitcher from './LanguageSwitcher';
 import './Auth.css';
 
+// Job fields list
+const JOB_FIELDS = [
+  'Electrician',
+  'Plumber',
+  'Carpenter',
+  'Painter',
+  'Maid',
+  'Chef',
+  'Driver',
+  'Photographer'
+];
+
 const Signup = () => {
   const { t } = useTranslation();
   const [step, setStep] = useState(1); // 1: signup form, 2: verification
@@ -39,6 +51,12 @@ const Signup = () => {
 
   const { initiateSignup, initiateSignupWithPhoto, completeSignup, completeSignupWithPhoto, resendVerificationCode } = useAuth();
   const navigate = useNavigate();
+
+  // Function to get translated field names
+  const getFieldTranslation = (field) => {
+    const fieldKey = field.toLowerCase();
+    return t(`workers.${fieldKey}`, field); // Fallback to original if no translation
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -483,11 +501,11 @@ const Signup = () => {
 
           {/* Location Selection */}
           <div className="form-group location-section">
-            <label>Select Your Location *</label>
+            <label>{t('auth.selectLocation')} *</label>
             <p className="location-helper">
               {locationSelected ? 
-                `📍 Location selected: ${formData.city}, ${formData.district}` : 
-                "Please select your precise location on the map below"
+                `📍 ${t('auth.locationselected')}: ${formData.city}, ${formData.district}` : 
+                `${t('auth.selectLocationMessage')}`
               }
             </p>
             <LocationSelector 
@@ -498,7 +516,7 @@ const Signup = () => {
 
           {/* Profile Photo Upload */}
           <div className="form-group">
-            <label htmlFor="photo">Profile Photo (Optional)</label>
+            <label htmlFor="photo">{t('auth.profilePhoto')}</label>
             <input
               type="file"
               id="photo"
@@ -517,12 +535,12 @@ const Signup = () => {
                   className="remove-photo-btn"
                   disabled={loading}
                 >
-                  Remove Photo
+                  {t('auth.removePhoto')}
                 </button>
               </div>
             )}
             <small className="photo-help">
-              Upload a profile photo (JPG, PNG, GIF) - Optional
+              {t('auth.uploadPhotoHelp')}
             </small>
           </div>
 
@@ -530,23 +548,28 @@ const Signup = () => {
           {formData.role === 'WORKER' && (
             <>
               <div className="worker-section">
-                <h3>Worker Information</h3>
+                <h3>{t('auth.workerInfo')}</h3>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="field">Field of Work *</label>
-                    <input
-                      type="text"
+                    <label htmlFor="field">{t('auth.fieldOfWork')} *</label>
+                    <select
                       id="field"
                       name="field"
                       value={formData.field}
                       onChange={handleChange}
                       required={formData.role === 'WORKER'}
-                      placeholder="e.g., Plumbing, Electrical, Carpentry"
                       disabled={loading}
-                    />
+                    >
+                      <option value="">{t('auth.selectField')}</option>
+                      {JOB_FIELDS.map((field) => (
+                        <option key={field} value={field}>
+                          {getFieldTranslation(field)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="experience">Experience (Years) *</label>
+                    <label htmlFor="experience">{t('auth.experience')} *</label>
                     <input
                       type="number"
                       id="experience"
@@ -554,7 +577,7 @@ const Signup = () => {
                       value={formData.experience}
                       onChange={handleChange}
                       required={formData.role === 'WORKER'}
-                      placeholder="Years of experience"
+                      placeholder={t('auth.experiencePlaceholder')}
                       min="0"
                       step="0.5"
                       disabled={loading}
@@ -570,15 +593,15 @@ const Signup = () => {
             className={`auth-button ${loading ? 'loading' : ''}`}
             disabled={loading}
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account?{' '}
+            {t('auth.alreadyHaveAccount')}{' '}
             <Link to="/login" className="auth-link">
-              Sign in here
+              {t('auth.signInHere')}
             </Link>
           </p>
         </div>

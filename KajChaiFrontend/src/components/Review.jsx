@@ -19,14 +19,14 @@ const Review = () => {
     const [canAddReview, setCanAddReview] = useState(false);
     const [workerFields, setWorkerFields] = useState([]);
     const [completedWorkers, setCompletedWorkers] = useState([]);
-    
+
     // Autocomplete states
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
     const [isSearching, setIsSearching] = useState(false);
 
-    
+
     // New review form state
     const [newReview, setNewReview] = useState({
         message: '',
@@ -47,7 +47,7 @@ const Review = () => {
                     console.warn('Unexpected fields response structure:', response.data);
                 }
             } catch (error) {
-                console.error('Failed to fetch worker fields:', error);     
+                console.error('Failed to fetch worker fields:', error);
             }
         };
 
@@ -163,7 +163,7 @@ const Review = () => {
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setActiveSuggestionIndex(prev => 
+                setActiveSuggestionIndex(prev =>
                     prev < suggestions.length - 1 ? prev + 1 : prev
                 );
                 break;
@@ -221,7 +221,7 @@ const Review = () => {
                 // Check if customer can add review for this worker
                 const canReviewResponse = await reviewService.canReviewWorker(workerId);
                 setCanAddReview(canReviewResponse.data.data || false);
-                
+
                 console.log('Loading reviews for worker:', workerId);
             } catch (error) {
                 console.error('API failed');
@@ -243,14 +243,14 @@ const Review = () => {
         } else {
             setExpandedWorker(worker);
             loadWorkerReviews(worker.workerId);
-            
+
             // Scroll to the worker card after a short delay to allow for expansion
             setTimeout(() => {
                 const workerCard = document.getElementById(`worker-card-${worker.workerId}`);
                 if (workerCard) {
-                    workerCard.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
+                    workerCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             }, 300);
@@ -285,7 +285,7 @@ const Review = () => {
             newReview.images.forEach((image, index) => {
                 formData.append(`images`, image);
             });
-            
+
             const response = await reviewService.submitReview(formData);
             alert('Review submitted successfully');
 
@@ -317,6 +317,11 @@ const Review = () => {
                 ))}
             </div>
         );
+    };
+
+    const getFieldTranslation = (field) => {
+        const fieldKey = field.toLowerCase();
+        return t(`workers.${fieldKey}`, field); // Fallback to original if no translation
     };
 
     const formatDate = (dateString) => {
@@ -372,7 +377,7 @@ const Review = () => {
                                     <option key={field} value={field}>{t(`workers.${field.toLowerCase()}`)}</option>
                                 ))}
                             </select>
-                            <button 
+                            <button
                                 onClick={searchWorkers}
                                 disabled={!selectedField}
                                 className="search-btn"
@@ -398,7 +403,7 @@ const Review = () => {
                                 {isSearching && (
                                     <div className="search-loading">🔍</div>
                                 )}
-                                
+
                                 {/* Autocomplete Suggestions Dropdown */}
                                 {showSuggestions && suggestions.length > 0 && (
                                     <div className="suggestions-dropdown">
@@ -430,7 +435,7 @@ const Review = () => {
                                     </div>
                                 )}
                             </div>
-                            <button 
+                            <button
                                 onClick={searchWorkers}
                                 disabled={!searchQuery.trim()}
                                 className="search-btn"
@@ -442,7 +447,7 @@ const Review = () => {
 
                     {searchType === 'completed' && (
                         <div className="completed-info">
-                            <p>Showing workers who have completed tasks for you</p>
+                            <p>{t('reviews.showingCompletedWorkers')}</p>
                         </div>
                     )}
                 </div>
@@ -456,7 +461,7 @@ const Review = () => {
                     <div className="workers-grid">
                         {(Array.isArray(workers) ? workers : []).map(worker => (
                             <div key={worker.workerId} id={`worker-card-${worker.workerId}`} className="worker-card">
-                                <div 
+                                <div
                                     className="worker-summary"
                                     onClick={() => handleWorkerClick(worker)}
                                 >
@@ -471,7 +476,7 @@ const Review = () => {
                                     </div>
                                     <div className="worker-info">
                                         <h3>{worker.name}</h3>
-                                        <p className="worker-field">{worker.field}</p>
+                                        <p className="worker-field">{getFieldTranslation(worker.field)}</p>
                                         <div className="worker-rating">
                                             {renderStars(Math.round(worker.rating))}
                                             <span className="rating-text">
@@ -491,7 +496,7 @@ const Review = () => {
                                 {expandedWorker?.workerId === worker.workerId && (
                                     <div className="reviews-section">
                                         <div className="reviews-header">
-                                            <h4>Reviews ({Array.isArray(reviews) ? reviews.length : 0})</h4>
+                                            <h4>{t('reviews.reviews')} ({Array.isArray(reviews) ? reviews.length : 0})</h4>
                                             {canAddReview && !showAddReview && (
                                                 <button
                                                     className="add-review-btn"
@@ -508,7 +513,7 @@ const Review = () => {
                                                 <h5>{t('reviews.addYourReview')}</h5>
                                                 <div className="rating-input">
                                                     <label>{t('reviews.rating')}:</label>
-                                                    {renderStars(newReview.rating, true, (rating) => 
+                                                    {renderStars(newReview.rating, true, (rating) =>
                                                         setNewReview(prev => ({ ...prev, rating }))
                                                     )}
                                                 </div>
@@ -577,8 +582,8 @@ const Review = () => {
                                                             <div className="reviewer-profile">
                                                                 <div className="reviewer-avatar">
                                                                     {review.customer.photo ? (
-                                                                        <img 
-                                                                            src={review.customer.photo} 
+                                                                        <img
+                                                                            src={review.customer.photo}
                                                                             alt={review.customer.customerName}
                                                                             className="reviewer-photo"
                                                                         />

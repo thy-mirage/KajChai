@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import locationService from '../services/locationService';
@@ -19,6 +20,8 @@ const LocationSelector = ({
   showCurrentLocationButton = true,
   isEditMode = false  // New prop to distinguish edit mode
 }) => {
+  const { t } = useTranslation();
+  
   // Safely initialize position with default Dhaka coordinates
   const getInitialPosition = () => {
     if (initialLocation && 
@@ -78,11 +81,11 @@ const LocationSelector = ({
       } else {
         // Handle graceful error response from service
         console.error('LocationSelector: Location service error:', data.message);
-        setError(data.message || 'Could not determine address for this location');
+        setError(data.message || t('location.couldNotDetermineAddress'));
       }
     } catch (err) {
       console.error('LocationSelector: Unexpected error:', err);
-      setError('An unexpected error occurred while getting location details');
+      setError(t('location.unexpectedError'));
     } finally {
       setLoading(false);
       setIsUpdating(false);
@@ -91,7 +94,7 @@ const LocationSelector = ({
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by this browser');
+      setError(t('location.geolocationNotSupported'));
       return;
     }
 
@@ -111,7 +114,7 @@ const LocationSelector = ({
         }
       },
       (error) => {
-        setError('Error getting current location: ' + error.message);
+        setError(t('location.errorGettingLocation') + ': ' + error.message);
         setLoading(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -141,10 +144,10 @@ const LocationSelector = ({
         }
       } else {
         // Handle graceful error response from service
-        setError(data.message || 'Sorry, the location could not be found. Please try a different search term.');
+        setError(data.message || t('location.locationNotFound'));
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('location.searchError'));
     } finally {
       setLoading(false);
     }
@@ -187,7 +190,7 @@ const LocationSelector = ({
           <div className="search-input-group">
             <input
               type="text"
-              placeholder="Search for a location..."
+              placeholder={t('location.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && searchLocation()}
@@ -209,7 +212,7 @@ const LocationSelector = ({
             disabled={loading || isUpdating}
             className="current-location-btn"
           >
-            📍 Use Current Location
+            📍 {t('location.useCurrentLocation')}
           </button>
         )}
       </div>
@@ -237,27 +240,27 @@ const LocationSelector = ({
 
       {(loading || isUpdating) && (
         <div className="loading-message">
-          Getting location information...
+          {t('location.gettingLocationInfo')}
         </div>
       )}
 
       {addressInfo && (
         <div className="address-info" key={`${addressInfo.latitude}-${addressInfo.longitude}`}>
-          <h4>Selected Location:</h4>
+          <h4>{t('location.selectedLocation')}:</h4>
           <div className="address-details">
-            <p><strong>City:</strong> {addressInfo.city}</p>
-            <p><strong>Area:</strong> {addressInfo.upazila}</p>
-            <p><strong>District:</strong> {addressInfo.district}</p>
-            <p><strong>Full Address:</strong> {addressInfo.fullAddress}</p>
-            <p><strong>Coordinates:</strong> {addressInfo.latitude?.toFixed(6)}, {addressInfo.longitude?.toFixed(6)}</p>
+            <p><strong>{t('location.city')}:</strong> {addressInfo.city}</p>
+            <p><strong>{t('location.area')}:</strong> {addressInfo.upazila}</p>
+            <p><strong>{t('location.district')}:</strong> {addressInfo.district}</p>
+            <p><strong>{t('location.fullAddress')}:</strong> {addressInfo.fullAddress}</p>
+            <p><strong>{t('location.coordinates')}:</strong> {addressInfo.latitude?.toFixed(6)}, {addressInfo.longitude?.toFixed(6)}</p>
           </div>
         </div>
       )}
 
       <div className="instructions">
-        <p>📍 Click on the map to select a precise location</p>
-        <p>🔍 Search for an address using the search box</p>
-        <p>📱 Use "Current Location" to get your GPS position</p>
+        <p>📍 {t('location.clickMapInstruction')}</p>
+        <p>🔍 {t('location.searchInstruction')}</p>
+        <p>📱 {t('location.currentLocationInstruction')}</p>
       </div>
     </div>
   );

@@ -120,6 +120,11 @@ const HirePostList = ({ viewMode }) => {
     });
   };
 
+  const getFieldTranslation = (field) => {
+    const fieldKey = field.toLowerCase();
+    return t(`workers.${fieldKey}`, field); // Fallback to original if no translation
+  };
+
   if (loading) {
     return <div className="loading">{t('jobs.loadingPosts')}</div>;
   }
@@ -174,7 +179,7 @@ const HirePostList = ({ viewMode }) => {
           {posts.map(post => (
             <div key={post.postId} className="hire-post-card">
               <div className="card-header">
-                <div className="field-badge">{post.field}</div>
+                <div className="field-badge">{getFieldTranslation(post.field)}</div>
                 {getStatusBadge(post.status)}
               </div>
               

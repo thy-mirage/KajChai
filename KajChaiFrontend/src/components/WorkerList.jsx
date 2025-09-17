@@ -150,7 +150,7 @@ const WorkerList = () => {
           {workers.map(worker => (
             <div key={worker.workerId} className="hire-post-card">
               <div className="card-header">
-                <div className="field-badge">{worker.field}</div>
+                <div className="field-badge">{getFieldTranslation(worker.field)}</div>
                 <div className="worker-rating">
                   {formatRating(worker.rating)}
                 </div>
