@@ -2,12 +2,19 @@ package com.example.KajChai.Controller;
 
 import com.example.KajChai.DTO.AuthResponse;
 import com.example.KajChai.Repository.UserRepository;
+import com.example.KajChai.DatabaseEntity.User;
+import com.example.KajChai.Enum.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test")
@@ -15,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/public")
     public ResponseEntity<String> publicEndpoint() {
@@ -33,6 +41,78 @@ public class TestController {
             return ResponseEntity.ok(AuthResponse.builder()
                     .success(false)
                     .message("Database connection failed: " + e.getMessage())
+                    .build());
+        }
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Map<String, Object>> getAllUsers() {
+        try {
+            var users = userRepository.findAll();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("count", users.size());
+            response.put("users", users.stream().map(user -> {
+                Map<String, Object> userInfo = new HashMap<>();
+                userInfo.put("id", user.getUserId());
+                userInfo.put("email", user.getEmail());
+                userInfo.put("role", user.getRole());
+                userInfo.put("verified", user.getEnabled());
+                return userInfo;
+            }).toList());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to fetch users: " + e.getMessage());
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    @PostMapping("/create-test-users")
+    public ResponseEntity<AuthResponse> createTestUsers() {
+        try {
+            // Create test admin user
+            if (!userRepository.existsByEmail("admin@kajchai.com")) {
+                User admin = User.builder()
+                    .email("admin@kajchai.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .role(UserRole.ADMIN)
+                    .enabled(true)
+                    .build();
+                userRepository.save(admin);
+            }
+
+            // Create test customer user
+            if (!userRepository.existsByEmail("customer@kajchai.com")) {
+                User customer = User.builder()
+                    .email("customer@kajchai.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .role(UserRole.CUSTOMER)
+                    .enabled(true)
+                    .build();
+                userRepository.save(customer);
+            }
+
+            // Create test worker user
+            if (!userRepository.existsByEmail("worker@kajchai.com")) {
+                User worker = User.builder()
+                    .email("worker@kajchai.com")
+                    .password(passwordEncoder.encode("password123"))
+                    .role(UserRole.WORKER)
+                    .enabled(true)
+                    .build();
+                userRepository.save(worker);
+            }
+
+            return ResponseEntity.ok(AuthResponse.builder()
+                    .success(true)
+                    .message("Test users created successfully! Login with: admin@kajchai.com, customer@kajchai.com, worker@kajchai.com (password: password123)")
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.ok(AuthResponse.builder()
+                    .success(false)
+                    .message("Failed to create test users: " + e.getMessage())
                     .build());
         }
     }
