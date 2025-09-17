@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { API_CONFIG } from '../config/api.js';
 
 class WebSocketService {
   constructor() {
@@ -18,8 +19,8 @@ class WebSocketService {
         // Create STOMP client
         this.client = new Client({
           webSocketFactory: () => {
-            console.log('Creating SockJS connection to http://localhost:8080/ws');
-            return new SockJS('http://localhost:8080/ws');
+            console.log(`Creating SockJS connection to ${API_CONFIG.WS_URL}/ws`);
+            return new SockJS(`${API_CONFIG.WS_URL}/ws`);
           },
           connectHeaders: {
             // Add auth headers if needed

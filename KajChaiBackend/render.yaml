@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: kajchai-backend
+    runtime: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -Dspring.profiles.active=production -jar target/KajChai-0.0.1-SNAPSHOT.jar
+    plan: free
+    env: java
+    envVars:
+      - key: DB_URL
+        value: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
+      - key: DB_USERNAME
+        value: postgres.ltaogogxcmdxsukzyrlv
+      - key: DB_PASSWORD
+        value: Kajchai$2025
+      - key: JWT_SECRET
+        value: YourVeryLongAndSecureSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm
+      - key: JWT_EXPIRATION
+        value: 1800000
+      - key: MAIL_USERNAME
+        value: kajchai.team@gmail.com
+      - key: MAIL_PASSWORD
+        value: yyea rppp djvy qcgx
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dikggnplq
+      - key: CLOUDINARY_API_KEY
+        value: 676922377642131
+      - key: CLOUDINARY_API_SECRET
+        value: gWF81m04AnEWWYss799k4jjwLE4
+      - key: GROQ_API_KEY
+        value: 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
+      - key: GROQ_API_URL
+        value: https://api.groq.com/openai/v1/chat/completions
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
