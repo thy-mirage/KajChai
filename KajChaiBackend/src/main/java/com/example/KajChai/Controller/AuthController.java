@@ -32,7 +32,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", allowCredentials = "false")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://*.vercel.app"}, allowCredentials = "true")
 public class AuthController {
 
     private final AuthService authService;
