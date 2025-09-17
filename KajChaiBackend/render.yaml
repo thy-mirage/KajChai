@@ -8,27 +8,27 @@ services:
     env: java
     envVars:
       - key: DB_URL
-        value: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
+        value: YOUR_DATABASE_URL
       - key: DB_USERNAME
-        value: postgres.ltaogogxcmdxsukzyrlv
+        value: YOUR_DB_USERNAME
       - key: DB_PASSWORD
-        value: Kajchai$2025
+        value: YOUR_DB_PASSWORD
       - key: JWT_SECRET
-        value: YourVeryLongAndSecureSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm
+        value: YOUR_JWT_SECRET
       - key: JWT_EXPIRATION
         value: 1800000
       - key: MAIL_USERNAME
-        value: kajchai.team@gmail.com
+        value: YOUR_EMAIL_USERNAME
       - key: MAIL_PASSWORD
-        value: yyea rppp djvy qcgx
+        value: YOUR_EMAIL_PASSWORD
       - key: CLOUDINARY_CLOUD_NAME
-        value: dikggnplq
+        value: YOUR_CLOUDINARY_CLOUD_NAME
       - key: CLOUDINARY_API_KEY
-        value: 676922377642131
+        value: YOUR_CLOUDINARY_API_KEY
       - key: CLOUDINARY_API_SECRET
-        value: gWF81m04AnEWWYss799k4jjwLE4
+        value: YOUR_CLOUDINARY_API_SECRET
       - key: GROQ_API_KEY
-        value: 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
+        value: YOUR_GROQ_API_KEY
       - key: GROQ_API_URL
         value: https://api.groq.com/openai/v1/chat/completions
       - key: GROQ_MODEL
