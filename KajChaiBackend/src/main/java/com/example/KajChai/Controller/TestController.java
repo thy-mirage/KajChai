@@ -187,4 +187,31 @@ public class TestController {
                 .message("This is a protected endpoint - you are authenticated!")
                 .build());
     }
+
+    @GetMapping("/debug-profiles")
+    public ResponseEntity<Map<String, Object>> debugProfiles() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // Check customer profiles
+            long customerCount = customerRepository.count();
+            result.put("customerCount", customerCount);
+            
+            // Check worker profiles  
+            long workerCount = workerRepository.count();
+            result.put("workerCount", workerCount);
+            
+            // Check if specific test profiles exist
+            boolean customerExists = customerRepository.existsByGmail("customer@kajchai.com");
+            boolean workerExists = workerRepository.existsByGmail("worker@kajchai.com");
+            
+            result.put("testCustomerExists", customerExists);
+            result.put("testWorkerExists", workerExists);
+            result.put("success", true);
+            
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+        return ResponseEntity.ok(result);
+    }
 }
