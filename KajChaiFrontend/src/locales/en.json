@@ -36,7 +36,9 @@
     "refresh": "Refresh",
     "noData": "No data available",
     "browse": "Browse",
-    "view": "View"
+    "view": "View",
+    "showing": "Showing",
+    "of": "of"
   },
   "auth": {
     "login": "Login",
@@ -276,7 +278,10 @@
     "noWorkers": "No workers found matching your criteria",
     "startingChat": "Starting Chat...",
     "notRated": "Not rated",
-    "allFields": "All Fields"
+    "allFields": "All Fields",
+    "searchWorkerPlaceholder": "Search workers by name...",
+    "noSearchResults": "No workers found matching your search",
+    "workers": "workers"
   },
   "forum": {
     "forum": "Forum",

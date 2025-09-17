@@ -117,6 +117,9 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      // Clear any expired tokens first
+      clearExpiredTokens();
+      
       // First, try to get user-specific tokens from localStorage
       let token = null;
       let userEmail = null;
@@ -141,6 +144,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       const response = await authAPI.getCurrentUser();
+      // Get detailed profile to fetch user ID and photo
+      const profileResponse = await authAPI.getProfile();
+      let userId = null;
+      let userName = null;
+      let userPhoto = null;
+      
       if (response.success) {
         // Get detailed profile to fetch user ID and photo
         const profileResponse = await authAPI.getProfile();
@@ -157,6 +166,10 @@ export const AuthProvider = ({ children }) => {
             userId = profileResponse.data.workerId;
             userName = profileResponse.data.name;
             userPhoto = profileResponse.data.photo;
+          } else if (response.role === 'ADMIN') {
+            userId = profileResponse.data.adminId;
+            userName = profileResponse.data.name;
+            userPhoto = null; // Admins don't have photos
           }
         }
         
@@ -199,7 +212,97 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const adminLogin = async (email, password) => {
+    // Clear any expired tokens first
+    clearExpiredTokens();
+    
+    try {
+      const response = await authAPI.adminLogin({ email, password });
+      if (response.success) {
+        // Clear any previous authentication state for this tab
+        clearAuthState();
+        
+        // Store JWT token with user-specific key in localStorage
+        if (response.token) {
+          localStorage.setItem(getTokenKey(response.email), response.token);
+          // Also store in sessionStorage for this specific tab
+          sessionStorage.setItem('current_user_email', response.email);
+        }
+        
+        // Get admin profile information
+        const profileResponse = await authAPI.getProfile();
+        let adminId = null;
+        let adminName = null;
+        
+        if (profileResponse.success && profileResponse.data) {
+          adminId = profileResponse.data.adminId;
+          adminName = profileResponse.data.name;
+        }
+        
+        const newUserData = {
+          email: response.email,
+          role: 'ADMIN',
+          userId: adminId,
+          name: adminName,
+          photo: null // Admins don't have photos
+        };
+        
+        setUser(newUserData);
+        setIsAuthenticated(true);
+        return { success: true, message: response.message };
+      } else {
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.message || 'Admin login failed' 
+      };
+    }
+  };
+
+  // Helper function to check if JWT token is expired
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp < currentTime;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return true;
+    }
+  };
+
+  // Helper function to clear expired tokens
+  const clearExpiredTokens = () => {
+    // Get all keys from localStorage
+    const keys = Object.keys(localStorage);
+    const tokenKeys = keys.filter(key => key.startsWith('jwt_token'));
+    
+    tokenKeys.forEach(key => {
+      const token = localStorage.getItem(key);
+      if (isTokenExpired(token)) {
+        localStorage.removeItem(key);
+        console.log(`Removed expired token: ${key}`);
+      }
+    });
+    
+    // Also clear session storage items
+    const currentUserEmail = sessionStorage.getItem('current_user_email');
+    if (currentUserEmail) {
+      const userTokenKey = `jwt_token_${currentUserEmail}`;
+      if (!localStorage.getItem(userTokenKey)) {
+        sessionStorage.removeItem('current_user_email');
+      }
+    }
+  };
+
   const login = async (email, password) => {
+    // Clear any expired tokens first
+    clearExpiredTokens();
+    
     try {
       const response = await authAPI.login({ email, password });
       if (response.success) {
@@ -228,6 +331,10 @@ export const AuthProvider = ({ children }) => {
             userId = profileResponse.data.workerId;
             userName = profileResponse.data.name;
             userPhoto = profileResponse.data.photo;
+          } else if (response.role === 'ADMIN') {
+            userId = profileResponse.data.adminId;
+            userName = profileResponse.data.name;
+            userPhoto = null; // Admins don't have photos
           }
         }
         
@@ -360,6 +467,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     loading,
     login,
+    adminLogin,
     logout,
     initiateSignup,
     initiateSignupWithPhoto,

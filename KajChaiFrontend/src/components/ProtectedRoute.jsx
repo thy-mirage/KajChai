@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from './Layout';
 
-const ProtectedRoute = ({ children, requiredRole = null, showBackButton = true, title = null }) => {
+const ProtectedRoute = ({ children, requiredRole = null, adminOnly = false, showBackButton = true, title = null }) => {
   const { isAuthenticated, user, loading } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
@@ -42,8 +42,14 @@ const ProtectedRoute = ({ children, requiredRole = null, showBackButton = true, 
   }
 
   if (!isAuthenticated) {
-    // Redirect to login page with return url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Redirect to appropriate login page
+    const redirectPath = adminOnly ? "/admin/login" : "/login";
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
+  }
+
+  // Check for admin-only routes
+  if (adminOnly && user?.role !== 'ADMIN') {
+    return <Navigate to="/admin/login" replace />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {
@@ -65,6 +71,11 @@ const ProtectedRoute = ({ children, requiredRole = null, showBackButton = true, 
         </div>
       </Layout>
     );
+  }
+
+  // Admin routes don't use the regular Layout component
+  if (adminOnly) {
+    return children;
   }
 
   return (

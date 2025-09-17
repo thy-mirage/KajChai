@@ -43,9 +43,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (jwt != null) {
             try {
                 username = jwtUtil.extractUsername(jwt);
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
+                // JWT token has expired
+                logger.warn("JWT token has expired: " + e.getMessage());
+                request.setAttribute("jwt_error", "JWT token has expired");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\":\"JWT token has expired\",\"message\":\"Please login again\"}");
+                response.setContentType("application/json");
+                return;
+            } catch (io.jsonwebtoken.MalformedJwtException e) {
+                // JWT token is malformed
+                logger.warn("Malformed JWT token: " + e.getMessage());
+                request.setAttribute("jwt_error", "Invalid JWT token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\":\"Invalid JWT token\",\"message\":\"Malformed token\"}");
+                response.setContentType("application/json");
+                return;
+            } catch (io.jsonwebtoken.security.SecurityException e) {
+                // JWT signature validation failed
+                logger.warn("JWT signature validation failed: " + e.getMessage());
+                request.setAttribute("jwt_error", "Invalid JWT token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\":\"Invalid JWT token\",\"message\":\"Signature validation failed\"}");
+                response.setContentType("application/json");
+                return;
             } catch (Exception e) {
-                // Invalid JWT token
-                logger.debug("Invalid JWT token: " + e.getMessage());
+                // Other JWT related errors
+                logger.warn("Invalid JWT token: " + e.getMessage());
+                request.setAttribute("jwt_error", "Invalid JWT token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"error\":\"Invalid JWT token\",\"message\":\"Token validation failed\"}");
+                response.setContentType("application/json");
+                return;
             }
         }
 

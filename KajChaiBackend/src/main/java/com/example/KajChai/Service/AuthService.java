@@ -3,10 +3,12 @@ package com.example.KajChai.Service;
 import com.example.KajChai.DTO.AuthResponse;
 import com.example.KajChai.DTO.LoginRequest;
 import com.example.KajChai.DTO.SignupRequest;
+import com.example.KajChai.DatabaseEntity.Admin;
 import com.example.KajChai.DatabaseEntity.Customer;
 import com.example.KajChai.DatabaseEntity.User;
 import com.example.KajChai.DatabaseEntity.Worker;
 import com.example.KajChai.Enum.UserRole;
+import com.example.KajChai.Repository.AdminRepository;
 import com.example.KajChai.Repository.CustomerRepository;
 import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.Security.JwtUtil;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ public class AuthService {
     private final UserService userService;
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final AdminRepository adminRepository;
     private final EmailVerificationService verificationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -39,7 +43,8 @@ public class AuthService {
         // Check if user already exists
         if (userService.existsByEmail(request.getEmail()) ||
             customerRepository.existsByGmail(request.getEmail()) ||
-            workerRepository.existsByGmail(request.getEmail())) {
+            workerRepository.existsByGmail(request.getEmail()) ||
+            adminRepository.existsByEmail(request.getEmail())) {
             return AuthResponse.builder()
                     .success(false)
                     .message("Email already exists")
@@ -175,6 +180,64 @@ public class AuthService {
             return AuthResponse.builder()
                     .success(false)
                     .message("Login failed: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    // Special admin login method (admins are pre-created, no signup process)
+    public AuthResponse adminLogin(LoginRequest request) {
+        try {
+            // Find admin by email
+            Optional<Admin> adminOpt = adminRepository.findByEmailAndIsActive(request.getEmail(), true);
+            if (adminOpt.isEmpty()) {
+                return AuthResponse.builder()
+                        .success(false)
+                        .message("Admin account not found or inactive")
+                        .build();
+            }
+
+            Admin admin = adminOpt.get();
+            
+            // Check password
+            if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
+                return AuthResponse.builder()
+                        .success(false)
+                        .message("Invalid email or password")
+                        .build();
+            }
+
+            // Create a User object for JWT generation (admin doesn't have User entity)
+            User adminUser = User.builder()
+                    .userId(admin.getAdminId())
+                    .email(admin.getEmail())
+                    .password(admin.getPassword())
+                    .role(UserRole.ADMIN)
+                    .enabled(true)
+                    .build();
+
+            // Generate JWT token
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("role", UserRole.ADMIN.name());
+            extraClaims.put("userId", admin.getAdminId());
+            extraClaims.put("name", admin.getName());
+
+            String token = jwtUtil.generateToken(adminUser, extraClaims);
+
+            return AuthResponse.builder()
+                    .success(true)
+                    .message("Admin login successful")
+                    .email(admin.getEmail())
+                    .role(UserRole.ADMIN)
+                    .userId(admin.getAdminId())
+                    .name(admin.getName())
+                    .photo(admin.getPhoto())
+                    .token(token)
+                    .build();
+
+        } catch (Exception e) {
+            return AuthResponse.builder()
+                    .success(false)
+                    .message("Admin login failed: " + e.getMessage())
                     .build();
         }
     }

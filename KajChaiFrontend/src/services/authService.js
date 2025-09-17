@@ -92,6 +92,16 @@ export const authAPI = {
     return apiClient.post('/auth/login', loginData);
   },
 
+  // Admin Login
+  adminLogin: (loginData) => {
+    return apiClient.post('/auth/admin/login', loginData);
+  },
+
+  // Admin Login
+  adminLogin: (loginData) => {
+    return apiClient.post('/auth/admin/login', loginData);
+  },
+
   // Logout
   logout: () => {
     return apiClient.post('/auth/logout');
@@ -179,6 +189,7 @@ export const authAPI = {
 const authService = {
   // Authentication
   login: authAPI.login,
+  adminLogin: authAPI.adminLogin,
   logout: authAPI.logout,
   getCurrentUser: authAPI.getCurrentUser,
 

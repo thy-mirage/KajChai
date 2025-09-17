@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import forumAPI from '../services/forumService';
 import CommentSection from './CommentSection';
+import ComplaintModal from './ComplaintModal';
 import './PostCard.css';
 
 const PostCard = ({ post, onUpdate }) => {
@@ -13,6 +14,7 @@ const PostCard = ({ post, onUpdate }) => {
   const [localPost, setLocalPost] = useState(post);
   const [showFullContent, setShowFullContent] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showComplaintModal, setShowComplaintModal] = useState(false);
 
   const CONTENT_PREVIEW_LENGTH = 300;
 
@@ -258,6 +260,17 @@ const PostCard = ({ post, onUpdate }) => {
             >
               {showComments ? t('forum.hideComments') : t('forum.addComment')}
             </button>
+            
+            {/* Report Button - Don't allow users to report their own posts */}
+            {user.userId !== localPost.authorId && (
+              <button 
+                className="report-btn"
+                onClick={() => setShowComplaintModal(true)}
+                title="Report this post"
+              >
+                🚩 Report
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -269,6 +282,17 @@ const PostCard = ({ post, onUpdate }) => {
           onCommentAdded={handleCommentAdded}
         />
       )}
+      
+      {/* Complaint Modal */}
+      <ComplaintModal
+        isOpen={showComplaintModal}
+        onClose={() => setShowComplaintModal(false)}
+        post={localPost}
+        onComplaintSubmitted={() => {
+          // Optionally refresh the post or show a success message
+          if (onUpdate) onUpdate();
+        }}
+      />
     </div>
   );
 };

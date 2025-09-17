@@ -110,6 +110,11 @@ const Login = () => {
               {t('auth.signupHere', 'Sign up here')}
             </Link>
           </p>
+          <p style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #e1e5e9' }}>
+            <Link to="/admin/login" className="auth-link" style={{ color: '#666', fontSize: '13px' }}>
+              Admin Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>

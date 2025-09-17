@@ -1,16 +1,24 @@
 package com.example.KajChai.Service;
 
-import com.example.KajChai.DatabaseEntity.Customer;
-import com.example.KajChai.DatabaseEntity.User;
-import com.example.KajChai.DatabaseEntity.Worker;
+import com.example.KajChai.DTO.AdminProfileResponse;
 import com.example.KajChai.DTO.CustomerProfileResponse;
 import com.example.KajChai.DTO.CustomerProfileUpdateRequest;
 import com.example.KajChai.DTO.WorkerProfileResponse;
+import com.example.KajChai.DTO.WorkerSearchRequest;
+import com.example.KajChai.DTO.WorkerSearchResult;
 import com.example.KajChai.DTO.WorkerProfileUpdateRequest;
+import com.example.KajChai.DatabaseEntity.Admin;
+import com.example.KajChai.DatabaseEntity.Customer;
+import com.example.KajChai.DatabaseEntity.User;
+import com.example.KajChai.DatabaseEntity.Worker;
 import com.example.KajChai.Enum.UserRole;
+import com.example.KajChai.Repository.AdminRepository;
 import com.example.KajChai.Repository.CustomerRepository;
 import com.example.KajChai.Repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +33,7 @@ public class ProfileService {
 
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
 
     public CustomerProfileResponse getCustomerProfile(String email) {
@@ -73,6 +82,23 @@ public class ProfileService {
                 .field(worker.getField())
                 .rating(worker.getRating())
                 .experience(worker.getExperience())
+                .build();
+    }
+
+    public AdminProfileResponse getAdminProfile(String email) {
+        Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isEmpty()) {
+            throw new RuntimeException("Admin profile not found");
+        }
+        
+        Admin admin = adminOpt.get();
+        return AdminProfileResponse.builder()
+                .adminId(admin.getAdminId())
+                .name(admin.getName())
+                .email(admin.getEmail())
+                .photo(admin.getPhoto())
+                .createdAt(admin.getCreatedAt())
+                .isActive(admin.getIsActive())
                 .build();
     }
 
@@ -181,6 +207,8 @@ public class ProfileService {
             return getCustomerProfile(user.getEmail());
         } else if (user.getRole() == UserRole.WORKER) {
             return getWorkerProfile(user.getEmail());
+        } else if (user.getRole() == UserRole.ADMIN) {
+            return getAdminProfile(user.getEmail());
         } else {
             throw new RuntimeException("Invalid user role");
         }
@@ -197,6 +225,17 @@ public class ProfileService {
         return workers.stream()
                 .map(this::convertWorkerToResponse)
                 .toList();
+    }
+
+    public Page<WorkerProfileResponse> getAllWorkersPaginated(String field, Pageable pageable) {
+        Page<Worker> workersPage;
+        if (field != null && !field.isEmpty()) {
+            workersPage = workerRepository.findByFieldIgnoreCase(field, pageable);
+        } else {
+            workersPage = workerRepository.findAll(pageable);
+        }
+
+        return workersPage.map(this::convertWorkerToResponse);
     }
 
     public List<WorkerProfileResponse> sortWorkersByLocationForCustomer(List<WorkerProfileResponse> workers, String customerEmail) {
@@ -245,5 +284,40 @@ public class ProfileService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // Distance in kilometers
+    }
+    
+    public List<WorkerSearchResult> searchWorkers(WorkerSearchRequest request) {
+        // Ensure query is not empty
+        if (request.getQuery() == null || request.getQuery().trim().isEmpty()) {
+            return List.of();
+        }
+        
+        // Create pageable for limiting results
+        Pageable pageable = PageRequest.of(0, request.getLimit() > 0 ? request.getLimit() : 5);
+        
+        // Search workers using repository
+        List<Worker> workers = workerRepository.searchWorkerSuggestions(
+            request.getQuery().trim(),
+            request.getField(),
+            pageable
+        );
+        
+        // Convert to search results
+        return workers.stream()
+                .map(this::convertWorkerToSearchResult)
+                .toList();
+    }
+    
+    private WorkerSearchResult convertWorkerToSearchResult(Worker worker) {
+        return WorkerSearchResult.builder()
+                .workerId(worker.getWorkerId())
+                .name(worker.getName())
+                .field(worker.getField())
+                .rating(worker.getRating())
+                .experience(worker.getExperience())
+                .upazila(worker.getUpazila())
+                .district(worker.getDistrict())
+                .photo(worker.getPhoto())
+                .build();
     }
 }

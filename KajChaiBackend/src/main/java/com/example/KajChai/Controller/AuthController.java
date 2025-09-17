@@ -5,9 +5,11 @@ import com.example.KajChai.Service.AuthService;
 import com.example.KajChai.Service.EmailVerificationService;
 import com.example.KajChai.CloudinaryConfiguration.CloudinaryService;
 import com.example.KajChai.Security.JwtUtil;
+import com.example.KajChai.DatabaseEntity.Admin;
 import com.example.KajChai.DatabaseEntity.User;
 import com.example.KajChai.DatabaseEntity.Customer;
 import com.example.KajChai.DatabaseEntity.Worker;
+import com.example.KajChai.Repository.AdminRepository;
 import com.example.KajChai.Repository.CustomerRepository;
 import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.Service.UserService;
@@ -40,6 +42,7 @@ public class AuthController {
     private final UserService userService;
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final AdminRepository adminRepository;
 
     @PostMapping("/signup/initiate")
     public ResponseEntity<AuthResponse> initiateSignup(@Valid @RequestBody SignupRequest request) {
@@ -218,6 +221,36 @@ public class AuthController {
                 .build());
     }
 
+    @PostMapping("/admin/login")
+    public ResponseEntity<AuthResponse> adminLogin(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response) {
+        AuthResponse authResponse = authService.adminLogin(request);
+        
+        if (authResponse.isSuccess()) {
+            // Create HTTP-only secure cookie for admin
+            try {
+                Cookie jwtCookie = new Cookie("jwt", authResponse.getToken());
+                jwtCookie.setHttpOnly(true);
+                jwtCookie.setPath("/");
+                jwtCookie.setMaxAge(30 * 60); // 30 minutes
+                // jwtCookie.setSecure(true); // Enable for HTTPS
+                
+                response.addCookie(jwtCookie);
+                
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(AuthResponse.builder()
+                                .success(false)
+                                .message("Admin login successful but token generation failed")
+                                .build());
+            }
+        }
+        
+        return ResponseEntity.status(authResponse.isSuccess() ? HttpStatus.OK : HttpStatus.UNAUTHORIZED)
+                .body(authResponse);
+    }
+
     @PostMapping("/resend-verification")
     public ResponseEntity<AuthResponse> resendVerificationCode(@RequestParam String email) {
         try {
@@ -270,6 +303,14 @@ public class AuthController {
                     userPhoto = worker.getPhoto();
                     userName = worker.getName();
                     userId = worker.getWorkerId();
+                }
+            } else if (user.getRole() == UserRole.ADMIN) {
+                Optional<Admin> adminOpt = adminRepository.findByEmail(user.getEmail());
+                if (adminOpt.isPresent()) {
+                    Admin admin = adminOpt.get();
+                    userPhoto = admin.getPhoto();
+                    userName = admin.getName();
+                    userId = admin.getAdminId();
                 }
             }
             

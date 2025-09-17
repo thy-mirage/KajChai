@@ -285,6 +285,31 @@
   background: #2980b9;
 }
 
+.report-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.report-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.report-btn:active {
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .post-card {

@@ -12,8 +12,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -319,11 +324,17 @@ public class ProfileController {
     @GetMapping("/workers")
     public ResponseEntity<?> getAllWorkers(
             @RequestParam(required = false) String field,
-            @RequestParam(required = false, defaultValue = "false") Boolean sortByLocation) {
+            @RequestParam(required = false, defaultValue = "false") Boolean sortByLocation,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             
-            List<WorkerProfileResponse> workers = profileService.getAllWorkers(field);
+            // Create pageable
+            Pageable pageable = PageRequest.of(page, size);
+            Page<WorkerProfileResponse> workersPage = profileService.getAllWorkersPaginated(field, pageable);
+            
+            List<WorkerProfileResponse> workers = workersPage.getContent();
             
             // Apply location-based sorting if requested and user is a customer
             if (sortByLocation && authentication != null && authentication.isAuthenticated()) {
@@ -338,12 +349,48 @@ public class ProfileController {
                 }
             }
             
-            return ResponseEntity.ok(workers);
+            // Create paginated response
+            Map<String, Object> response = new HashMap<>();
+            response.put("workers", workers);
+            response.put("currentPage", workersPage.getNumber());
+            response.put("totalPages", workersPage.getTotalPages());
+            response.put("totalElements", workersPage.getTotalElements());
+            response.put("size", workersPage.getSize());
+            response.put("hasNext", workersPage.hasNext());
+            response.put("hasPrevious", workersPage.hasPrevious());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ProfileResponse.builder()
                             .success(false)
                             .message("Failed to get workers: " + e.getMessage())
+                            .build());
+        }
+    }
+    
+    @GetMapping("/search-workers")
+    public ResponseEntity<?> searchWorkers(
+            @RequestParam String query,
+            @RequestParam(required = false) String field,
+            @RequestParam(defaultValue = "5") int limit) {
+        try {
+            // Build search request
+            WorkerSearchRequest searchRequest = WorkerSearchRequest.builder()
+                    .query(query)
+                    .field(field)
+                    .limit(limit)
+                    .build();
+            
+            // Perform search
+            List<WorkerSearchResult> results = profileService.searchWorkers(searchRequest);
+            
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ProfileResponse.builder()
+                            .success(false)
+                            .message("Failed to search workers: " + e.getMessage())
                             .build());
         }
     }

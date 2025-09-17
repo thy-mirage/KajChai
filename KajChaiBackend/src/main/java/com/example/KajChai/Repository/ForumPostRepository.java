@@ -84,4 +84,14 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     
     // Migration helper method
     List<ForumPost> findByStatusIsNull();
+    
+    // Count posts by section
+    long countBySection(ForumSection section);
+    
+    // Search methods for admin panel
+    Page<ForumPost> findBySectionAndTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+            ForumSection section, String title, String content, Pageable pageable);
+    
+    Page<ForumPost> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+            String title, String content, Pageable pageable);
 }

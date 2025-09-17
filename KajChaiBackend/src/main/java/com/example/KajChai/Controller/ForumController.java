@@ -4,6 +4,8 @@ import com.example.KajChai.DTO.*;
 import com.example.KajChai.Enum.ForumSection;
 import com.example.KajChai.Enum.ForumCategory;
 import com.example.KajChai.Service.ForumService;
+import com.example.KajChai.Service.ForumComplaintService;
+import com.example.KajChai.CloudinaryConfiguration.CloudinaryService;
 import com.example.KajChai.DatabaseEntity.User;
 import com.example.KajChai.Repository.UserRepository;
 import jakarta.validation.Valid;
@@ -13,8 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/forum")
@@ -23,6 +28,8 @@ import java.util.List;
 public class ForumController {
     
     private final ForumService forumService;
+    private final ForumComplaintService forumComplaintService;
+    private final CloudinaryService cloudinaryService;
     private final UserRepository userRepository;
 
     // Create a new forum post
@@ -174,5 +181,54 @@ public class ForumController {
                 ForumCategory.PHOTOGRAPHY_TIPS_PROJECTS
             );
         };
+    }
+
+    // Submit a complaint about a forum post
+    @PostMapping("/posts/{postId}/complaint")
+    public ResponseEntity<ForumComplaintResponse> submitComplaint(
+            @PathVariable Long postId,
+            @Valid @RequestBody CreateComplaintRequest request) {
+        
+        // Ensure the request has the correct post ID
+        request.setPostId(postId);
+        
+        Integer userId = getCurrentUserId();
+        ForumComplaintResponse complaint = forumComplaintService.submitComplaint(request, userId);
+        return ResponseEntity.ok(complaint);
+    }
+
+    // Get user's own complaints
+    @GetMapping("/complaints")
+    public ResponseEntity<Page<ForumComplaintResponse>> getUserComplaints(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Integer userId = getCurrentUserId();
+        Page<ForumComplaintResponse> complaints = forumComplaintService.getUserComplaints(userId, page, size);
+        return ResponseEntity.ok(complaints);
+    }
+
+    // Upload evidence images for complaints
+    @PostMapping("/complaints/upload-evidence")
+    public ResponseEntity<Map<String, Object>> uploadComplaintEvidence(
+            @RequestParam("files") MultipartFile[] files) {
+        
+        try {
+            List<String> imageUrls = cloudinaryService.uploadMultipleFiles(List.of(files));
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("imageUrls", imageUrls);
+            response.put("message", "Images uploaded successfully");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Failed to upload images: " + e.getMessage());
+            
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }

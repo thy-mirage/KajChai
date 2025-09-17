@@ -7,6 +7,7 @@ import Signup from './components/Signup';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
+import DashboardRouter from './components/DashboardRouter';
 import MyProfile from './components/MyProfile';
 import Chat from './components/Chat';
 import CreateHirePost from './components/CreateHirePost';
@@ -16,6 +17,10 @@ import JobsPage from './components/JobsPage';
 import HirePostApplications from './components/HirePostApplications';
 import Notifications from './components/Notifications';
 import Forum from './components/Forum';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminComplaintManagement from './components/AdminComplaintManagement';
+import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Review from './components/Review';
 import './App.css';
@@ -33,12 +38,35 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute adminOnly={true} showBackButton={false}>
+                  <AdminLayout>
+                    <AdminDashboard />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/complaints" 
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminLayout>
+                    <AdminComplaintManagement embedded={true} />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+
             {/* Protected Routes */}
             <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute showBackButton={false}>
-                  <Dashboard />
+                  <DashboardRouter />
                 </ProtectedRoute>
               } 
             />
@@ -119,7 +147,7 @@ function App() {
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
-            {/* Catch all route */}
+            {/* Catch all route - also redirect to dashboard which will handle admin routing */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>

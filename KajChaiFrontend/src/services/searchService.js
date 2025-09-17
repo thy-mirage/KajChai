@@ -76,6 +76,27 @@ const searchAPI = {
       console.error('Error searching questions:', error);
       throw error;
     }
+  },
+  
+  // Search workers in real-time for Find Workers page
+  searchWorkers: async (query, field = null, limit = 5) => {
+    try {
+      const params = new URLSearchParams({
+        query: query.toString(),
+        limit: limit.toString(),
+      });
+      
+      // Add field filter if specified
+      if (field) {
+        params.append('field', field);
+      }
+      
+      const response = await apiClient.get(`/profile/search-workers?${params}`);
+      return response;
+    } catch (error) {
+      console.error('Error searching workers:', error);
+      throw error;
+    }
   }
 };
 

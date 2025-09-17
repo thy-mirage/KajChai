@@ -73,8 +73,11 @@ export const profileAPI = {
   },
 
   // Get all workers (for customers to browse)
-  getAllWorkers: (field = null, sortByLocation = false) => {
-    const params = {};
+  getAllWorkers: (field = null, sortByLocation = false, page = 1, size = 10) => {
+    const params = {
+      page: page - 1, // Spring Boot uses 0-based indexing
+      size: size
+    };
     if (field) params.field = field;
     if (sortByLocation) params.sortByLocation = true;
     return apiClient.get('/profile/workers', { params });
