@@ -2,7 +2,11 @@ package com.example.KajChai.Controller;
 
 import com.example.KajChai.DTO.AuthResponse;
 import com.example.KajChai.Repository.UserRepository;
+import com.example.KajChai.Repository.CustomerRepository;
+import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.DatabaseEntity.User;
+import com.example.KajChai.DatabaseEntity.Customer;
+import com.example.KajChai.DatabaseEntity.Worker;
 import com.example.KajChai.Enum.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,8 @@ import java.util.Map;
 public class TestController {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final WorkerRepository workerRepository;
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/public")
@@ -83,7 +89,7 @@ public class TestController {
                 userRepository.save(admin);
             }
 
-            // Create test customer user
+            // Create test customer user and profile
             if (!userRepository.existsByEmail("customer@kajchai.com")) {
                 User customer = User.builder()
                     .email("customer@kajchai.com")
@@ -92,9 +98,27 @@ public class TestController {
                     .enabled(true)
                     .build();
                 userRepository.save(customer);
+                
+                // Create corresponding customer profile
+                if (!customerRepository.existsByGmail("customer@kajchai.com")) {
+                    Customer customerProfile = Customer.builder()
+                        .customerName("Test Customer")
+                        .gmail("customer@kajchai.com")
+                        .password(passwordEncoder.encode("password123"))
+                        .phone("01712345678")
+                        .gender("Male")
+                        .latitude(23.8103)
+                        .longitude(90.4125)
+                        .city("Dhaka")
+                        .upazila("Dhanmondi")
+                        .district("Dhaka")
+                        .fullAddress("Dhanmondi, Dhaka, Bangladesh")
+                        .build();
+                    customerRepository.save(customerProfile);
+                }
             }
 
-            // Create test worker user
+            // Create test worker user and profile
             if (!userRepository.existsByEmail("worker@kajchai.com")) {
                 User worker = User.builder()
                     .email("worker@kajchai.com")
@@ -103,6 +127,27 @@ public class TestController {
                     .enabled(true)
                     .build();
                 userRepository.save(worker);
+                
+                // Create corresponding worker profile
+                if (!workerRepository.existsByGmail("worker@kajchai.com")) {
+                    Worker workerProfile = Worker.builder()
+                        .name("Test Worker")
+                        .gmail("worker@kajchai.com")
+                        .password(passwordEncoder.encode("password123"))
+                        .phone("01787654321")
+                        .gender("Female")
+                        .latitude(23.7947)
+                        .longitude(90.4056)
+                        .city("Dhaka")
+                        .upazila("Gulshan")
+                        .district("Dhaka")
+                        .fullAddress("Gulshan, Dhaka, Bangladesh")
+                        .field("Electrician")
+                        .rating(4.5f)
+                        .experience(3.0f)
+                        .build();
+                    workerRepository.save(workerProfile);
+                }
             }
 
             return ResponseEntity.ok(AuthResponse.builder()
