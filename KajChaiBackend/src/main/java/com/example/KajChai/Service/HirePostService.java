@@ -1,5 +1,6 @@
 package com.example.KajChai.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +27,9 @@ import com.example.KajChai.Repository.ReviewRepository;
 import com.example.KajChai.Repository.WorkerRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HirePostService {
@@ -142,6 +145,46 @@ public class HirePostService {
         
         Worker worker = workerRepository.findById(workerId)
                 .orElseThrow(() -> new RuntimeException("Worker not found"));
+        
+        log.info("HirePost Application - Checking restrictions for worker {}: isBanned={}, isRestricted={}, restrictedAt={}", 
+                worker.getWorkerId(), worker.getIsBanned(), worker.getIsRestricted(), worker.getRestrictedAt());
+        
+        // Check if worker is banned
+        if (Boolean.TRUE.equals(worker.getIsBanned())) {
+            log.warn("Worker {} is banned, denying hire post application", worker.getWorkerId());
+            throw new RuntimeException("Your account has been banned. You cannot apply to hire posts.");
+        }
+        
+        // Check if worker is currently restricted
+        if (Boolean.TRUE.equals(worker.getIsRestricted())) {
+            log.info("Worker {} is restricted, checking expiry for hire post application", worker.getWorkerId());
+            // Check if restriction has expired (3 days)
+            if (worker.getRestrictedAt() != null) {
+                LocalDateTime restrictionExpiry = worker.getRestrictedAt().plusDays(3);
+                LocalDateTime now = LocalDateTime.now();
+                
+                log.info("HirePost Application restriction expiry check: now={}, expiry={}, isExpired={}", 
+                        now, restrictionExpiry, now.isAfter(restrictionExpiry));
+                
+                if (now.isAfter(restrictionExpiry)) {
+                    // Auto-lift expired restriction
+                    log.info("Auto-lifting expired restriction for worker {} in hire post application", worker.getWorkerId());
+                    worker.setIsRestricted(false);
+                    worker.setRestrictedAt(null);
+                    worker.setRestrictionReason(null);
+                    workerRepository.save(worker);
+                } else {
+                    // Still under restriction
+                    String expiryDate = restrictionExpiry.toLocalDate().toString();
+                    log.warn("Worker {} is still under restriction until {}, denying hire post application", worker.getWorkerId(), expiryDate);
+                    throw new RuntimeException("Your account is restricted from applying to hire posts until " + expiryDate + 
+                        ". Reason: " + (worker.getRestrictionReason() != null ? worker.getRestrictionReason() : "Policy violation"));
+                }
+            } else {
+                log.warn("Worker {} has restriction flag but no restrictedAt date, denying hire post application", worker.getWorkerId());
+                throw new RuntimeException("Your account is restricted from applying to hire posts. Please contact support.");
+            }
+        }
         
         // Check if post is available
         if (post.getStatus() != HirePostStatus.AVAILABLE) {

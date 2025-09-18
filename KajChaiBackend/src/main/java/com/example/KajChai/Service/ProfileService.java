@@ -82,6 +82,10 @@ public class ProfileService {
                 .field(worker.getField())
                 .rating(worker.getRating())
                 .experience(worker.getExperience())
+                .isBanned(worker.getIsBanned())
+                .isRestricted(worker.getIsRestricted())
+                .restrictedAt(worker.getRestrictedAt())
+                .restrictionReason(worker.getRestrictionReason())
                 .build();
     }
 

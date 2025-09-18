@@ -1,5 +1,7 @@
 package com.example.KajChai.DTO;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,4 +30,10 @@ public class WorkerProfileResponse {
     private String field;
     private Float rating;
     private Float experience;
+    
+    // Account status fields
+    private Boolean isBanned;
+    private Boolean isRestricted;
+    private LocalDateTime restrictedAt;
+    private String restrictionReason;
 }

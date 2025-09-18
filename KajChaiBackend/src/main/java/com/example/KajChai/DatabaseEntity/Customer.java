@@ -48,4 +48,19 @@ public class Customer {
 
     // Full formatted address for display
     private String fullAddress;
+
+    // Helper methods to get names
+    public String getFirstName() {
+        if (customerName != null && customerName.contains(" ")) {
+            return customerName.substring(0, customerName.indexOf(" "));
+        }
+        return customerName;
+    }
+
+    public String getLastName() {
+        if (customerName != null && customerName.contains(" ")) {
+            return customerName.substring(customerName.indexOf(" ") + 1);
+        }
+        return "";
+    }
 }

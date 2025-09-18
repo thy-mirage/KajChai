@@ -38,7 +38,9 @@
     "browse": "Browse",
     "view": "View",
     "showing": "Showing",
-    "of": "of"
+    "of": "of",
+    "characters": "characters",
+    "optional": "optional"
   },
   "auth": {
     "login": "Login",
@@ -265,6 +267,7 @@
     "experience": "Experience",
     "rating": "Rating",
     "contactWorker": "Contact Worker",
+    "reportWorker": "Report",
     "viewProfile": "View Profile",
     "specialization": "Specialization",
     "electrician": "Electrician",
@@ -581,6 +584,32 @@
       "estimateCost": "Estimate cost for cleaning service",
       "nearbyJobs": "Show me nearby jobs",
       "writeReview": "How to write a review?"
+    }
+  },
+  "reports": {
+    "reportWorker": "Report Worker",
+    "reason": "Reason",
+    "reasonRequired": "Please select a reason for the report",
+    "selectReason": "Select a reason",
+    "description": "Description",
+    "descriptionRequired": "Please provide a detailed description",
+    "descriptionPlaceholder": "Please describe the issue in detail. Include specific incidents, dates, and any relevant context that would help us investigate your complaint.",
+    "evidence": "Evidence",
+    "evidenceHelp": "Upload photos or other supporting evidence (max 5 files, up to 5MB each)",
+    "selectedFiles": "Selected Files",
+    "submitting": "Submitting...",
+    "submitComplaint": "Submit Complaint",
+    "complaintSubmitted": "Your complaint has been submitted successfully. We will review it and take appropriate action.",
+    "reasons": {
+      "unprofessional_behavior": "Unprofessional Behavior",
+      "poor_work_quality": "Poor Work Quality",
+      "unreliable": "Unreliable / No Show",
+      "inappropriate_communication": "Inappropriate Communication",
+      "overcharging": "Overcharging",
+      "safety_concerns": "Safety Concerns",
+      "harassment": "Harassment",
+      "fraud": "Fraud / Scam",
+      "other": "Other"
     }
   }
 }

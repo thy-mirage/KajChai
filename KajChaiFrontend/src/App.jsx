@@ -20,6 +20,7 @@ import Forum from './components/Forum';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import AdminComplaintManagement from './components/AdminComplaintManagement';
+import AdminUserComplaintManagement from './components/AdminUserComplaintManagement';
 import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Review from './components/Review';
@@ -56,6 +57,16 @@ function App() {
                 <ProtectedRoute adminOnly={true}>
                   <AdminLayout>
                     <AdminComplaintManagement embedded={true} />
+                  </AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/user-complaints" 
+              element={
+                <ProtectedRoute adminOnly={true}>
+                  <AdminLayout>
+                    <AdminUserComplaintManagement embedded={true} />
                   </AdminLayout>
                 </ProtectedRoute>
               } 

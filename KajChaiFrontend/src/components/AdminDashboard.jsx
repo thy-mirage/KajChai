@@ -58,10 +58,10 @@ const AdminDashboard = () => {
       action: () => navigate('/admin/complaints')
     },
     {
-      title: 'User Management',
-      description: 'Manage user accounts, permissions and user complaints',
+      title: 'Worker Complaint Management',
+      description: 'Manage customer complaints against workers, ban/restrict workers',
       icon: '👤',
-      action: () => console.log('User management coming soon')
+      action: () => navigate('/admin/user-complaints')
     },
     {
       title: 'System Reports',

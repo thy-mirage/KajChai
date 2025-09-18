@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,4 +59,41 @@ public class Worker {
 
     @Column(nullable = false)
     private float experience;
+
+    // Account status fields for user management
+    @Builder.Default
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @Builder.Default
+    @Column(name = "is_banned")
+    private Boolean isBanned = false;
+
+    @Builder.Default
+    @Column(name = "is_restricted")
+    private Boolean isRestricted = false;
+
+    @Column(name = "restriction_reason", columnDefinition = "TEXT")
+    private String restrictionReason;
+
+    @Column(name = "banned_at")
+    private LocalDateTime bannedAt;
+
+    @Column(name = "restricted_at")
+    private LocalDateTime restrictedAt;
+
+    // Helper methods to get names
+    public String getFirstName() {
+        if (name != null && name.contains(" ")) {
+            return name.substring(0, name.indexOf(" "));
+        }
+        return name;
+    }
+
+    public String getLastName() {
+        if (name != null && name.contains(" ")) {
+            return name.substring(name.indexOf(" ") + 1);
+        }
+        return "";
+    }
 }

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import profileService from '../services/profileService';
 import chatService from '../services/chatService';
 import WorkerSearch from './WorkerSearch';
+import ReportWorkerModal from './ReportWorkerModal';
 import './HirePost.css'; // Use the same CSS as HirePostList
 
 const WorkerList = () => {
@@ -18,6 +19,10 @@ const WorkerList = () => {
   const [selectedField, setSelectedField] = useState('');
   const [sortByLocation, setSortByLocation] = useState(false);
   const [contactingWorker, setContactingWorker] = useState(null);
+  
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedWorkerToReport, setSelectedWorkerToReport] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -150,6 +155,21 @@ const WorkerList = () => {
     } finally {
       setContactingWorker(null);
     }
+  };
+
+  const handleReportWorker = (worker) => {
+    setSelectedWorkerToReport(worker);
+    setShowReportModal(true);
+  };
+
+  const handleReportModalClose = () => {
+    setShowReportModal(false);
+    setSelectedWorkerToReport(null);
+  };
+
+  const handleReportSubmit = async (reportData) => {
+    // The report submission will be handled in the ReportWorkerModal
+    handleReportModalClose();
   };
 
   // Handle worker selection from search
@@ -350,6 +370,13 @@ const WorkerList = () => {
               >
                 {contactingWorker === selectedWorker.workerId ? t('workers.startingChat') : t('workers.contactWorker')}
               </button>
+              <button 
+                className="btn-secondary"
+                onClick={() => handleReportWorker(selectedWorker)}
+                style={{ marginLeft: '10px' }}
+              >
+                {t('workers.reportWorker')}
+              </button>
             </div>
           </div>
         </div>
@@ -421,6 +448,13 @@ const WorkerList = () => {
                     >
                       {contactingWorker === worker.workerId ? t('workers.startingChat') : t('workers.contactWorker')}
                     </button>
+                    <button 
+                      className="btn-secondary"
+                      onClick={() => handleReportWorker(worker)}
+                      style={{ marginLeft: '10px' }}
+                    >
+                      {t('workers.reportWorker')}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -470,6 +504,15 @@ const WorkerList = () => {
             </div>
           )}
         </>
+      )}
+      
+      {/* Report Worker Modal */}
+      {showReportModal && selectedWorkerToReport && (
+        <ReportWorkerModal
+          worker={selectedWorkerToReport}
+          onClose={handleReportModalClose}
+          onSubmit={handleReportSubmit}
+        />
       )}
     </div>
   );

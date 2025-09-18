@@ -249,9 +249,12 @@ const Signup = () => {
         uploadFormData.append('name', formData.name);
         uploadFormData.append('phone', formData.phone);
         uploadFormData.append('gender', formData.gender);
+        uploadFormData.append('latitude', formData.latitude);
+        uploadFormData.append('longitude', formData.longitude);
         uploadFormData.append('city', formData.city);
         uploadFormData.append('upazila', formData.upazila);
         uploadFormData.append('district', formData.district);
+        uploadFormData.append('fullAddress', formData.fullAddress);
         uploadFormData.append('photo', formData.photo);
         
         if (formData.role === 'WORKER') {
@@ -269,9 +272,12 @@ const Signup = () => {
           name: formData.name,
           phone: formData.phone,
           gender: formData.gender,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
           city: formData.city,
           upazila: formData.upazila,
-          district: formData.district
+          district: formData.district,
+          fullAddress: formData.fullAddress
         };
 
         if (formData.role === 'WORKER') {

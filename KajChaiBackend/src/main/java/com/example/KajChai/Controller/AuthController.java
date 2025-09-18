@@ -125,10 +125,12 @@ public class AuthController {
             @RequestParam("name") String name,
             @RequestParam("phone") String phone,
             @RequestParam("gender") String gender,
+            @RequestParam("latitude") Double latitude,
+            @RequestParam("longitude") Double longitude,
             @RequestParam("city") String city,
             @RequestParam("upazila") String upazila,
             @RequestParam("district") String district,
-            @RequestParam("division") String division,
+            @RequestParam(value = "fullAddress", required = false) String fullAddress,
             @RequestParam(value = "field", required = false) String field,
             @RequestParam(value = "experience", required = false) Float experience,
             @RequestParam(value = "photo", required = false) MultipartFile photo,
@@ -150,9 +152,12 @@ public class AuthController {
             request.setName(name);
             request.setPhone(phone);
             request.setGender(gender);
+            request.setLatitude(latitude);
+            request.setLongitude(longitude);
             request.setCity(city);
             request.setUpazila(upazila);
             request.setDistrict(district);
+            request.setFullAddress(fullAddress);
             request.setPhoto(photoUrl);
             request.setField(field);
             request.setExperience(experience);

@@ -47,6 +47,39 @@ public class ForumService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
+        // Check if user is a worker and if they're restricted from posting
+        if (user.getRole() == UserRole.WORKER) {
+            Worker worker = workerRepository.findByGmail(user.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Worker not found"));
+            
+            // Check if worker is banned
+            if (Boolean.TRUE.equals(worker.getIsBanned())) {
+                throw new RuntimeException("Your account has been banned. You cannot post in forums.");
+            }
+            
+            // Check if worker is currently restricted
+            if (Boolean.TRUE.equals(worker.getIsRestricted())) {
+                // Check if restriction has expired (3 days)
+                if (worker.getRestrictedAt() != null) {
+                    LocalDateTime restrictionExpiry = worker.getRestrictedAt().plusDays(3);
+                    LocalDateTime now = LocalDateTime.now();
+                    
+                    if (now.isAfter(restrictionExpiry)) {
+                        // Auto-lift expired restriction
+                        worker.setIsRestricted(false);
+                        worker.setRestrictedAt(null);
+                        worker.setRestrictionReason(null);
+                        workerRepository.save(worker);
+                    } else {
+                        // Still under restriction
+                        String expiryDate = restrictionExpiry.toLocalDate().toString();
+                        throw new RuntimeException("Your account is restricted from posting in forums until " + expiryDate + 
+                            ". Reason: " + (worker.getRestrictionReason() != null ? worker.getRestrictionReason() : "Policy violation"));
+                    }
+                }
+            }
+        }
+        
         // Validate section and category permissions
         validatePostPermissions(request.getSection(), user.getRole());
         
@@ -182,6 +215,49 @@ public class ForumService {
         // Get user details
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Check if user is a worker and if they're restricted from commenting
+        if (user.getRole() == UserRole.WORKER) {
+            Worker worker = workerRepository.findByGmail(user.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Worker not found"));
+            
+            log.info("Checking forum commenting restrictions for worker {}: isBanned={}, isRestricted={}, restrictedAt={}", 
+                    worker.getWorkerId(), worker.getIsBanned(), worker.getIsRestricted(), worker.getRestrictedAt());
+            
+            // Check if worker is banned
+            if (Boolean.TRUE.equals(worker.getIsBanned())) {
+                log.warn("Worker {} is banned, denying forum comment", worker.getWorkerId());
+                throw new RuntimeException("Your account has been banned. You cannot comment in forums.");
+            }
+            
+            // Check if worker is currently restricted
+            if (Boolean.TRUE.equals(worker.getIsRestricted())) {
+                log.info("Worker {} is restricted, checking expiry for forum commenting", worker.getWorkerId());
+                // Check if restriction has expired (3 days)
+                if (worker.getRestrictedAt() != null) {
+                    LocalDateTime restrictionExpiry = worker.getRestrictedAt().plusDays(3);
+                    LocalDateTime now = LocalDateTime.now();
+                    
+                    log.info("Forum commenting restriction expiry check: now={}, expiry={}, isExpired={}", 
+                            now, restrictionExpiry, now.isAfter(restrictionExpiry));
+                    
+                    if (now.isAfter(restrictionExpiry)) {
+                        // Auto-lift expired restriction
+                        log.info("Auto-lifting expired restriction for worker {} in forum commenting", worker.getWorkerId());
+                        worker.setIsRestricted(false);
+                        worker.setRestrictedAt(null);
+                        worker.setRestrictionReason(null);
+                        workerRepository.save(worker);
+                    } else {
+                        // Still under restriction
+                        String expiryDate = restrictionExpiry.toLocalDate().toString();
+                        log.warn("Worker {} is still under restriction for forum commenting until {}", worker.getWorkerId(), expiryDate);
+                        throw new RuntimeException("Your account is restricted from commenting in forums until " + expiryDate + 
+                            ". Reason: " + (worker.getRestrictionReason() != null ? worker.getRestrictionReason() : "Policy violation"));
+                    }
+                }
+            }
+        }
         
         String authorName;
         String authorPhoto = null;
