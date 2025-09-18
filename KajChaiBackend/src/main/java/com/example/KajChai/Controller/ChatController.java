@@ -22,7 +22,12 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5174", allowCredentials = "true")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 public class ChatController {
 
     private final ChatService chatService;

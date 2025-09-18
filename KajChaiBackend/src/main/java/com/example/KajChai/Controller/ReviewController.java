@@ -17,7 +17,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/review")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5174", allowCredentials = "true")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 public class ReviewController {
 
     private final ReviewService reviewService;

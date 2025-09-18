@@ -11,7 +11,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chatbot")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 public class ChatBotController {
 
     @Autowired

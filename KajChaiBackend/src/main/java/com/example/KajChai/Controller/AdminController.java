@@ -22,7 +22,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 

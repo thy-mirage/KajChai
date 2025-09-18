@@ -14,7 +14,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 public class PasswordResetController {
 
     private final PasswordResetService passwordResetService;

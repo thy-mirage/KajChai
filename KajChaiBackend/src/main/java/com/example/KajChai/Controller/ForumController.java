@@ -24,7 +24,12 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/forum")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", allowCredentials = "false")
+@CrossOrigin(origins = {
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
+}, allowCredentials = "true")
 public class ForumController {
     
     private final ForumService forumService;

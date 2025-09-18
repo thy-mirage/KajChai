@@ -26,8 +26,8 @@ import java.util.Map;
 @CrossOrigin(origins = {
     "http://localhost:5173", 
     "http://localhost:5174", 
-    "https://*.vercel.app",
-    "https://kaj-chai-frontend-8xawtdvzb-mirajs-projects-3c56b799.vercel.app"
+    "https://kaj-chai.vercel.app",
+    "https://*.vercel.app"
 }, allowCredentials = "true")
 public class ProfileController {
 
