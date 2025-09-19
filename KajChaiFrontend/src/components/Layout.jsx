@@ -27,6 +27,9 @@ const Layout = ({ children, showBackButton = true, title = null }) => {
       '/create-post': 'Create Job Post',
       '/jobs': 'Available Jobs',
       '/notifications': 'Notifications',
+      '/current-works': 'Current Works',
+      '/my-reviews': 'My Reviews',
+      '/past-jobs': 'Past Jobs',
     };
     
     return titleMap[path] || 'KajChai';

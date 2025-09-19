@@ -42,4 +42,16 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     // Count completed jobs for a worker
     @Query("SELECT COUNT(b) FROM Booking b JOIN b.hirePost hp WHERE b.worker.workerId = :workerId AND hp.status = 'COMPLETED'")
     Long countCompletedJobsByWorkerId(@Param("workerId") Integer workerId);
+    
+    // Count active jobs for a worker (booked but not completed)
+    @Query("SELECT COUNT(b) FROM Booking b JOIN b.hirePost hp WHERE b.worker.workerId = :workerId AND hp.status = 'BOOKED'")
+    Long countActiveJobsByWorkerId(@Param("workerId") Integer workerId);
+    
+    // Get current works for a worker (booked but not completed)
+    @Query("SELECT b FROM Booking b JOIN FETCH b.hirePost hp JOIN FETCH hp.customer WHERE b.worker.workerId = :workerId AND hp.status = 'BOOKED'")
+    List<Booking> findCurrentWorksByWorkerId(@Param("workerId") Integer workerId);
+    
+    // Get past completed jobs for a worker
+    @Query("SELECT b FROM Booking b JOIN FETCH b.hirePost hp JOIN FETCH hp.customer WHERE b.worker.workerId = :workerId AND hp.status = 'COMPLETED' ORDER BY hp.postTime DESC")
+    List<Booking> findPastJobsByWorkerId(@Param("workerId") Integer workerId);
 }

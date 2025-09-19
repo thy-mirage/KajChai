@@ -750,7 +750,7 @@ public class ChatBotService {
             
             response.append(String.format("%d. **%s**\n", i + 1, post.getDescription()));
             response.append(String.format("   📍 %s\n", customerLocation));
-            response.append(String.format("   💰 Budget: %s\n", post.getEstimatedPayment()));
+            response.append(String.format("   💰 Budget: %s\n", post.getPayment()));
             response.append(String.format("   📅 Posted: %s\n", post.getPostTime().format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))));
             response.append(String.format("   📝 %s\n\n", post.getDescription().length() > 100 ? 
                 post.getDescription().substring(0, 100) + "..." : post.getDescription()));

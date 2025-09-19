@@ -24,6 +24,9 @@ import AdminUserComplaintManagement from './components/AdminUserComplaintManagem
 import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Review from './components/Review';
+import CurrentWorks from './components/CurrentWorks';
+import MyReviews from './components/MyReviews';
+import PastJobs from './components/PastJobs';
 import './App.css';
 
 function App() {
@@ -160,6 +163,34 @@ function App() {
               element={
                 <ProtectedRoute title="Notifications">
                   <Notifications />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* Worker Dashboard Routes */}
+            <Route 
+              path="/current-works" 
+              element={
+                <ProtectedRoute title="Current Works" requiredRole="WORKER">
+                  <CurrentWorks />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/my-reviews" 
+              element={
+                <ProtectedRoute title="My Reviews" requiredRole="WORKER">
+                  <MyReviews />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/past-jobs" 
+              element={
+                <ProtectedRoute title="Past Jobs" requiredRole="WORKER">
+                  <PastJobs />
                 </ProtectedRoute>
               } 
             />

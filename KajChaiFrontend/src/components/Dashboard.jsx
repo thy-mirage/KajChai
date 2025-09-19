@@ -1,12 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import workerDashboardService from '../services/workerDashboardService';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [workerStatsData, setWorkerStatsData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'WORKER') {
+      loadWorkerStats();
+    }
+  }, [user]);
+
+  const loadWorkerStats = async () => {
+    try {
+      setLoading(true);
+      const stats = await workerDashboardService.getWorkerDashboardStats();
+      setWorkerStatsData(stats);
+    } catch (error) {
+      console.error('Error loading worker stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getWelcomeMessage = () => {
     const hour = new Date().getHours();
@@ -22,11 +43,16 @@ const Dashboard = () => {
     { label: t('dashboard.reviewsGiven', 'Reviews Given'), value: '8', icon: '⭐', color: '#e74c3c' },
   ];
 
-  const workerStats = [
+  const workerStats = workerStatsData ? [
+    { label: t('dashboard.jobsCompleted', 'Jobs Completed'), value: workerStatsData.jobsCompleted?.toString() || '0', icon: '🔧', color: '#27ae60' },
+    { label: t('dashboard.currentRating', 'Current Rating'), value: workerStatsData.currentRating?.toFixed(1) || '0.0', icon: '⭐', color: '#f39c12' },
+    { label: t('dashboard.totalEarned', 'Total Earned'), value: `$${workerStatsData.totalEarned?.toFixed(2) || '0.00'}`, icon: '💰', color: '#3498db' },
+    { label: t('dashboard.activeJobs', 'Active Jobs'), value: workerStatsData.activeJobs?.toString() || '0', icon: '📋', color: '#9b59b6' },
+  ] : [
     { label: t('dashboard.jobsCompleted', 'Jobs Completed'), value: '27', icon: '🔧', color: '#27ae60' },
     { label: t('dashboard.currentRating', 'Current Rating'), value: '4.8', icon: '⭐', color: '#f39c12' },
     { label: t('dashboard.totalEarned', 'Total Earned'), value: '$3,450', icon: '💰', color: '#3498db' },
-    { label: t('dashboard.activeBids', 'Active Bids'), value: '5', icon: '📋', color: '#9b59b6' },
+    { label: t('dashboard.activeJobs', 'Active Jobs'), value: '5', icon: '📋', color: '#9b59b6' },
   ];
 
   const stats = user?.role === 'CUSTOMER' ? customerStats : workerStats;
@@ -57,19 +83,25 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="stats-grid">
-        {stats.map((stat, index) => (
-          <div key={index} className="stat-card">
-            <div className="stat-icon" style={{ backgroundColor: stat.color }}>
-              {stat.icon}
+      {loading && user?.role === 'WORKER' ? (
+        <div className="stats-grid">
+          <div className="loading">{t('common.loading', 'Loading...')}</div>
+        </div>
+      ) : (
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-icon" style={{ backgroundColor: stat.color }}>
+                {stat.icon}
+              </div>
+              <div className="stat-content">
+                <h3 className="stat-value">{stat.value}</h3>
+                <p className="stat-label">{stat.label}</p>
+              </div>
             </div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stat.value}</h3>
-              <p className="stat-label">{stat.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="quick-actions">
@@ -104,23 +136,23 @@ const Dashboard = () => {
             </>
           ) : (
             <>
-              <Link to="/jobs" className="action-card">
-                <div className="action-icon">🔍</div>
-                <h3>{t('dashboard.findJobs', 'Find Jobs')}</h3>
-                <p>{t('dashboard.findJobsDesc', 'Browse available jobs that match your skills')}</p>
-                <button className="action-btn">{t('dashboard.findJobs')}</button>
+              <Link to="/current-works" className="action-card">
+                <div className="action-icon">�</div>
+                <h3>{t('dashboard.currentWorks', 'Current Works')}</h3>
+                <p>{t('dashboard.currentWorksDesc', 'View your ongoing booked jobs and their details')}</p>
+                <button className="action-btn">{t('dashboard.viewCurrentWorks', 'View Works')}</button>
               </Link>
-              <Link to="/my-profile" className="action-card">
-                <div className="action-icon">📊</div>
-                <h3>{t('navigation.profile')}</h3>
-                <p>{t('dashboard.myProfileDesc', 'Track your ratings, earnings and job completion')}</p>
-                <button className="action-btn">{t('workers.viewProfile')}</button>
+              <Link to="/my-reviews" className="action-card">
+                <div className="action-icon">⭐</div>
+                <h3>{t('dashboard.myReviews', 'My Reviews')}</h3>
+                <p>{t('dashboard.myReviewsDesc', 'See what customers are saying about your work')}</p>
+                <button className="action-btn">{t('dashboard.viewReviews', 'View Reviews')}</button>
               </Link>
-              <Link to="/notifications" className="action-card">
-                <div className="action-icon">💼</div>
-                <h3>{t('navigation.notifications')}</h3>
-                <p>{t('dashboard.notificationsDesc', 'View your latest notifications and updates')}</p>
-                <button className="action-btn">{t('dashboard.viewNotifications', 'View Notifications')}</button>
+              <Link to="/past-jobs" className="action-card">
+                <div className="action-icon">�</div>
+                <h3>{t('dashboard.pastJobs', 'Past Jobs')}</h3>
+                <p>{t('dashboard.pastJobsDesc', 'View your completed jobs and payment history')}</p>
+                <button className="action-btn">{t('dashboard.viewPastJobs', 'View History')}</button>
               </Link>
             </>
           )}
