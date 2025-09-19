@@ -58,6 +58,11 @@ export const adminAPI = {
     return apiClient.get('/admin/stats');
   },
 
+  // Get recent admin activity
+  getRecentActivity: () => {
+    return apiClient.get('/admin/recent-activity');
+  },
+
   // Forum management
   getAllForumPosts: (params = {}) => {
     const searchParams = new URLSearchParams();
@@ -124,6 +129,7 @@ export const adminAPI = {
 const adminService = {
   // Statistics
   getAdminStats: adminAPI.getAdminStats,
+  getRecentActivity: adminAPI.getRecentActivity,
 
   // Forum management
   getAllForumPosts: adminAPI.getAllForumPosts,

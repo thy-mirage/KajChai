@@ -5,6 +5,7 @@ import forumAPI from '../services/forumService';
 import PostCard from './PostCard';
 import CreatePostModal from './CreatePostModal';
 import QuestionSearch from './QuestionSearch';
+import { isUserRestrictedFromForum, getRestrictionMessage } from '../utils/userRestrictions';
 import './Forum.css';
 
 const Forum = () => {
@@ -134,6 +135,9 @@ const Forum = () => {
 
   const canCreatePost = () => {
     if (!user) return false;
+    
+    // Check if user is restricted from forum activities
+    if (isUserRestrictedFromForum(user)) return false;
     
     switch (currentSection) {
       case 'CUSTOMER_QA':
@@ -282,6 +286,12 @@ const Forum = () => {
             >
               + {t('forum.createPost')}
             </button>
+          )}
+          {/* Show restriction message for restricted workers */}
+          {user && user.role === 'WORKER' && isUserRestrictedFromForum(user) && (
+            <div className="restriction-notice" title={getRestrictionMessage(user)}>
+              <span>⚠️ {t('forum.restrictedFromPosting', 'Unable to create posts')}</span>
+            </div>
           )}
         </div>
       </div>

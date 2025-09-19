@@ -285,6 +285,16 @@
   background: #2980b9;
 }
 
+.comment-toggle-btn:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.comment-toggle-btn:disabled:hover {
+  background: #95a5a6;
+}
+
 .report-btn {
   background: #dc3545;
   color: white;

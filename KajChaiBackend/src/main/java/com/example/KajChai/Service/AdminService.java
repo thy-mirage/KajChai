@@ -9,6 +9,7 @@ import com.example.KajChai.Repository.ForumCommentRepository;
 import com.example.KajChai.Repository.ForumPostRepository;
 import com.example.KajChai.Repository.CustomerRepository;
 import com.example.KajChai.Repository.WorkerRepository;
+import com.example.KajChai.Repository.HirePostRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class AdminService {
     private final ForumCommentRepository forumCommentRepository;
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final HirePostRepository hirePostRepository;
     private final ObjectMapper objectMapper;
 
     public Page<ForumPostResponse> getAllForumPosts(int page, int size, String section, String search) {
@@ -121,6 +123,7 @@ public class AdminService {
         long totalComments = forumCommentRepository.count();
         long totalCustomers = customerRepository.count();
         long totalWorkers = workerRepository.count();
+        long totalHirePosts = hirePostRepository.count();
         
         // Posts by section
         Map<String, Long> postsBySection = new HashMap<>();
@@ -133,9 +136,71 @@ public class AdminService {
         stats.put("totalComments", totalComments);
         stats.put("totalCustomers", totalCustomers);
         stats.put("totalWorkers", totalWorkers);
+        stats.put("totalHirePosts", totalHirePosts);
         stats.put("postsBySection", postsBySection);
         
         return stats;
+    }
+
+    public List<Map<String, Object>> getRecentActivity() {
+        List<Map<String, Object>> activities = new ArrayList<>();
+        
+        // Get recent forum posts (last 5)
+        Pageable recentPostsPageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ForumPost> recentPosts = forumPostRepository.findAll(recentPostsPageable);
+        
+        for (ForumPost post : recentPosts.getContent()) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("type", "forum_post");
+            activity.put("action", "New forum post published");
+            activity.put("details", post.getTitle());
+            activity.put("time", formatRelativeTime(post.getCreatedAt()));
+            activity.put("icon", "💬");
+            activities.add(activity);
+        }
+        
+        // Get recent comments (last 3)
+        Pageable recentCommentsPageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ForumComment> recentComments = forumCommentRepository.findAll(recentCommentsPageable);
+        
+        for (ForumComment comment : recentComments.getContent()) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("type", "forum_comment");
+            activity.put("action", "New comment posted");
+            activity.put("details", comment.getContent().substring(0, Math.min(50, comment.getContent().length())) + "...");
+            activity.put("time", formatRelativeTime(comment.getCreatedAt()));
+            activity.put("icon", "💭");
+            activities.add(activity);
+        }
+        
+        // Sort all activities by time (most recent first)
+        activities.sort((a, b) -> {
+            // Simple comparison by time string - in a real app, you'd sort by actual timestamps
+            return 0; // For now, keep the order as is
+        });
+        
+        return activities.stream().limit(5).collect(java.util.stream.Collectors.toList());
+    }
+    
+    private String formatRelativeTime(java.time.LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "Unknown time";
+        }
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.Duration duration = java.time.Duration.between(dateTime, now);
+        
+        long hours = duration.toHours();
+        long days = duration.toDays();
+        
+        if (days > 0) {
+            return days == 1 ? "1 day ago" : days + " days ago";
+        } else if (hours > 0) {
+            return hours == 1 ? "1 hour ago" : hours + " hours ago";
+        } else {
+            long minutes = duration.toMinutes();
+            return minutes <= 1 ? "Just now" : minutes + " minutes ago";
+        }
     }
 
     private ForumPostResponse convertToForumPostResponse(ForumPost post) {

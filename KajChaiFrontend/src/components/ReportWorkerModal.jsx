@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { API_CONFIG } from '../config/api';
 import './ReportWorkerModal.css'; // Create dedicated CSS file
 
 const ReportWorkerModal = ({ worker, onClose, onSubmit }) => {
@@ -99,7 +100,7 @@ const ReportWorkerModal = ({ worker, onClose, onSubmit }) => {
     try {
       const token = getCurrentUserToken(); // Use the correct token retrieval method
       
-      const response = await fetch('http://localhost:8080/api/forum/complaints/upload-evidence', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/forum/complaints/upload-evidence`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -166,7 +167,7 @@ const ReportWorkerModal = ({ worker, onClose, onSubmit }) => {
       // Submit complaint
       const token = getCurrentUserToken(); // Use the correct token retrieval method
       
-      const response = await fetch('http://localhost:8080/api/user-complaints', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/user-complaints`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

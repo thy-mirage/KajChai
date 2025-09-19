@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import complaintService from '../services/complaintService';
 import './ComplaintModal.css';
 
 const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     reason: '',
     description: '',
@@ -15,13 +17,13 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
   const [error, setError] = useState('');
 
   const complaintReasons = [
-    { value: 'SPAM_OR_SCAM', label: 'Spam or Scam' },
-    { value: 'INAPPROPRIATE_CONTENT', label: 'Inappropriate Content' },
-    { value: 'HARASSMENT', label: 'Harassment' },
-    { value: 'FALSE_INFORMATION', label: 'False Information' },
-    { value: 'COPYRIGHT_VIOLATION', label: 'Copyright Violation' },
-    { value: 'OFFENSIVE_LANGUAGE', label: 'Offensive Language' },
-    { value: 'OTHER', label: 'Other' }
+    { value: 'SPAM_OR_SCAM', label: t('forum.reportModal.reasons.SPAM_OR_SCAM') },
+    { value: 'INAPPROPRIATE_CONTENT', label: t('forum.reportModal.reasons.INAPPROPRIATE_CONTENT') },
+    { value: 'HARASSMENT', label: t('forum.reportModal.reasons.HARASSMENT') },
+    { value: 'FALSE_INFORMATION', label: t('forum.reportModal.reasons.FALSE_INFORMATION') },
+    { value: 'COPYRIGHT_VIOLATION', label: t('forum.reportModal.reasons.COPYRIGHT_VIOLATION') },
+    { value: 'OFFENSIVE_LANGUAGE', label: t('forum.reportModal.reasons.OFFENSIVE_LANGUAGE') },
+    { value: 'OTHER', label: t('forum.reportModal.reasons.OTHER') }
   ];
 
   const handleInputChange = (e) => {
@@ -104,10 +106,10 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
       }
       
       onClose();
-      alert('Complaint submitted successfully! We will review it shortly.');
+      alert(t('forum.reportModal.complaintSubmitted'));
       
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit complaint. Please try again.');
+      setError(err.response?.data?.message || t('forum.reportModal.submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +131,7 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
     <div className="complaint-modal-overlay" onClick={handleClose}>
       <div className="complaint-modal" onClick={(e) => e.stopPropagation()}>
         <div className="complaint-modal-header">
-          <h2>Report Post</h2>
+          <h2>{t('forum.reportModal.title')}</h2>
           <button 
             className="close-btn"
             onClick={handleClose}
@@ -141,7 +143,7 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
 
         <div className="complaint-modal-body">
           <div className="post-preview">
-            <h3>Post being reported:</h3>
+            <h3>{t('forum.reportModal.postBeingReported')}</h3>
             <div className="post-preview-content">
               <h4>{post.title}</h4>
               <p>{post.content.substring(0, 150)}{post.content.length > 150 ? '...' : ''}</p>
@@ -157,7 +159,7 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
 
           <form onSubmit={handleSubmit} className="complaint-form">
             <div className="form-group">
-              <label htmlFor="reason">Reason for reporting *</label>
+              <label htmlFor="reason">{t('forum.reportModal.reasonForReporting')} *</label>
               <select
                 id="reason"
                 name="reason"
@@ -166,7 +168,7 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
                 required
                 disabled={isSubmitting || isUploadingImages}
               >
-                <option value="">Select a reason</option>
+                <option value="">{t('forum.reportModal.selectReason')}</option>
                 {complaintReasons.map(reason => (
                   <option key={reason.value} value={reason.value}>
                     {reason.label}
@@ -176,13 +178,13 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="description">Detailed description *</label>
+              <label htmlFor="description">{t('forum.reportModal.detailedDescription')} *</label>
               <textarea
                 id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="Please provide specific details about why you're reporting this post..."
+                placeholder={t('forum.reportModal.descriptionPlaceholder')}
                 required
                 rows={4}
                 disabled={isSubmitting || isUploadingImages}
@@ -190,7 +192,7 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="evidenceImages">Evidence images (optional)</label>
+              <label htmlFor="evidenceImages">{t('forum.reportModal.evidenceImages')}</label>
               <input
                 type="file"
                 id="evidenceImages"
@@ -201,19 +203,19 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
               />
               <small>
                 {isUploadingImages 
-                  ? 'Uploading images...' 
-                  : 'You can upload images to support your complaint'
+                  ? t('forum.reportModal.uploadingImages')
+                  : t('forum.reportModal.uploadImagesHelp')
                 }
               </small>
             </div>
 
             {formData.evidenceImages.length > 0 && (
               <div className="evidence-preview">
-                <h4>Uploaded Evidence:</h4>
+                <h4>{t('forum.reportModal.uploadedEvidence')}</h4>
                 <div className="evidence-grid">
                   {formData.evidenceImages.map((image, index) => (
                     <div key={index} className="evidence-item">
-                      <img src={image} alt={`Evidence ${index + 1}`} />
+                      <img src={image} alt={`${t('forum.reportModal.evidenceAlt')} ${index + 1}`} />
                       <button
                         type="button"
                         className="remove-evidence"
@@ -235,14 +237,14 @@ const ComplaintModal = ({ isOpen, onClose, post, onComplaintSubmitted }) => {
                 className="cancel-btn"
                 disabled={isSubmitting || isUploadingImages}
               >
-                Cancel
+                {t('forum.reportModal.cancel')}
               </button>
               <button
                 type="submit"
                 className="submit-btn"
                 disabled={isSubmitting || isUploadingImages}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Complaint'}
+                {isSubmitting ? t('forum.reportModal.submitting') : t('forum.reportModal.submitComplaint')}
               </button>
             </div>
           </form>

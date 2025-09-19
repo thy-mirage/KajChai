@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import forumAPI from '../services/forumService';
+import { isUserRestrictedFromForum, getRestrictionMessage } from '../utils/userRestrictions';
 import './CommentSection.css';
 
 const CommentSection = ({ postId, onCommentAdded }) => {
@@ -77,7 +78,7 @@ const CommentSection = ({ postId, onCommentAdded }) => {
       </div>
 
       {/* Add Comment Form */}
-      {user && (
+      {user && !isUserRestrictedFromForum(user) && (
         <form onSubmit={handleSubmitComment} className="add-comment-form">
           <div className="comment-input-section">
             {user.photo && (
@@ -110,6 +111,13 @@ const CommentSection = ({ postId, onCommentAdded }) => {
             </div>
           </div>
         </form>
+      )}
+      
+      {/* Show restriction message for restricted users */}
+      {user && isUserRestrictedFromForum(user) && (
+        <div className="restriction-message">
+          <p>{getRestrictionMessage(user)}</p>
+        </div>
       )}
 
       {/* Comments List */}

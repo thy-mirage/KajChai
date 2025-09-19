@@ -1,1 +1,1 @@
-Ok let's do a fresh start. Don't complicate. As we know 
+for searching under investigation complaints this error is coming and also in the second image you can see the status is in awaiting clarification. I think there is error for this. fix the error. And also show the user management complaints in sorted order like always the latest one will be showed first and then the other ones. implement this 

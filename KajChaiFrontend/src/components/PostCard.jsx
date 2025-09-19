@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import forumAPI from '../services/forumService';
 import CommentSection from './CommentSection';
 import ComplaintModal from './ComplaintModal';
+import { isUserRestrictedFromForum, getRestrictionMessage } from '../utils/userRestrictions';
 import './PostCard.css';
 
 const PostCard = ({ post, onUpdate }) => {
@@ -257,18 +258,20 @@ const PostCard = ({ post, onUpdate }) => {
             <button 
               className="comment-toggle-btn"
               onClick={() => setShowComments(!showComments)}
+              disabled={isUserRestrictedFromForum(user)}
+              title={isUserRestrictedFromForum(user) ? getRestrictionMessage(user) : undefined}
             >
               {showComments ? t('forum.hideComments') : t('forum.addComment')}
             </button>
             
-            {/* Report Button - Don't allow users to report their own posts */}
-            {user.userId !== localPost.authorId && (
+            {/* Report Button - Don't allow users to report their own posts or if they're restricted */}
+            {user.userId !== localPost.authorId && !isUserRestrictedFromForum(user) && (
               <button 
                 className="report-btn"
                 onClick={() => setShowComplaintModal(true)}
-                title="Report this post"
+                title={t('forum.reportPost')}
               >
-                🚩 Report
+                🚩 {t('forum.reportPostButton')}
               </button>
             )}
           </div>

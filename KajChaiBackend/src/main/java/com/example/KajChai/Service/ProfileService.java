@@ -203,6 +203,10 @@ public class ProfileService {
                 .field(updatedWorker.getField())
                 .rating(updatedWorker.getRating())
                 .experience(updatedWorker.getExperience())
+                .isBanned(updatedWorker.getIsBanned())
+                .isRestricted(updatedWorker.getIsRestricted())
+                .restrictedAt(updatedWorker.getRestrictedAt())
+                .restrictionReason(updatedWorker.getRestrictionReason())
                 .build();
     }
 
@@ -275,6 +279,10 @@ public class ProfileService {
                 .field(worker.getField())
                 .rating(worker.getRating())
                 .experience(worker.getExperience())
+                .isBanned(worker.getIsBanned())
+                .isRestricted(worker.getIsRestricted())
+                .restrictedAt(worker.getRestrictedAt())
+                .restrictionReason(worker.getRestrictionReason())
                 .build();
     }
 

@@ -37,6 +37,9 @@ public class DatabaseMigrationService implements ApplicationRunner {
         
         // Migrate user complaint evidence_urls column
         migrateUserComplaintEvidenceUrls();
+        
+        // Migrate complaint status from AWAITING_CLARIFICATION to UNDER_INVESTIGATION
+        migrateComplaintStatus();
     }
     
     private void migrateForumPosts() {
@@ -114,6 +117,27 @@ public class DatabaseMigrationService implements ApplicationRunner {
             
         } catch (Exception e) {
             log.error("Error during user complaint evidence_urls migration: {}", e.getMessage());
+            // Don't throw exception here as it might prevent application startup
+        }
+    }
+    
+    private void migrateComplaintStatus() {
+        log.info("Starting complaint status migration...");
+        
+        try {
+            // Update any AWAITING_CLARIFICATION status to UNDER_INVESTIGATION
+            int updatedRows = jdbcTemplate.update(
+                "UPDATE user_complaint SET status = 'UNDER_INVESTIGATION' WHERE status = 'AWAITING_CLARIFICATION'"
+            );
+            
+            if (updatedRows > 0) {
+                log.info("Migrated {} complaints from AWAITING_CLARIFICATION to UNDER_INVESTIGATION", updatedRows);
+            } else {
+                log.info("No complaints with AWAITING_CLARIFICATION status found");
+            }
+            
+        } catch (Exception e) {
+            log.error("Error during complaint status migration: {}", e.getMessage());
             // Don't throw exception here as it might prevent application startup
         }
     }

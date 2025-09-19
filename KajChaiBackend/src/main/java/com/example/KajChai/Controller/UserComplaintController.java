@@ -111,7 +111,7 @@ public class UserComplaintController {
             
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Invalid status", "Valid statuses: PENDING, INVESTIGATING, AWAITING_CLARIFICATION, RESOLVED, REJECTED, DISMISSED"));
+                    .body(new ErrorResponse("Invalid status", "Valid statuses: PENDING, UNDER_INVESTIGATION, RESOLVED, REJECTED"));
         } catch (Exception e) {
             log.error("Error fetching complaints by status: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

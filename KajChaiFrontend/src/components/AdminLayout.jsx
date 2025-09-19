@@ -1,15 +1,18 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 import './AdminLayout.css';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to logout?')) {
+    if (window.confirm(t('adminNavigation.logoutConfirm'))) {
       try {
         await logout();
         navigate('/admin/login');
@@ -21,22 +24,22 @@ const AdminLayout = ({ children }) => {
 
   const navItems = [
     {
-      label: 'Dashboard',
+      label: t('adminNavigation.dashboard'),
       path: '/admin/dashboard',
       icon: '🏠'
     },
     {
-      label: 'Forum Complaints',
+      label: t('adminNavigation.forumComplaints'),
       path: '/admin/complaints',
       icon: '📋'
     },
     {
-      label: 'User Management',
-      path: '/admin/users',
+      label: t('adminNavigation.userManagement'),
+      path: '/admin/user-complaints',
       icon: '👥'
     },
     {
-      label: 'System Reports',
+      label: t('adminNavigation.systemReports'),
       path: '/admin/reports',
       icon: '📊'
     }
@@ -74,17 +77,22 @@ const AdminLayout = ({ children }) => {
 
           {/* User Info & Logout */}
           <div className="navbar-user">
+            {/* Language Switcher */}
+            <div className="navbar-language">
+              <LanguageSwitcher />
+            </div>
+            
             <div className="user-info">
-              <span className="user-role">Administrator</span>
+              <span className="user-role">{t('adminNavigation.administrator')}</span>
               <span className="user-name">{user?.name || 'Admin'}</span>
             </div>
             <button
               onClick={handleLogout}
               className="logout-btn"
-              title="Sign Out"
+              title={t('adminNavigation.signOut')}
             >
               <span className="logout-icon">🚪</span>
-              <span className="logout-text">Sign Out</span>
+              <span className="logout-text">{t('adminNavigation.signOut')}</span>
             </button>
           </div>
         </div>

@@ -180,7 +180,14 @@ export const AuthProvider = ({ children }) => {
           role: response.role,
           userId: userId,
           name: userName,
-          photo: userPhoto
+          photo: userPhoto,
+          // Include restriction information for workers
+          ...(response.role === 'WORKER' && profileResponse.success && profileResponse.data && {
+            isRestricted: profileResponse.data.isRestricted,
+            isBanned: profileResponse.data.isBanned,
+            restrictedAt: profileResponse.data.restrictedAt,
+            restrictionReason: profileResponse.data.restrictionReason
+          })
         };
         
         // Additional safety check: If there's already a user and it's different,
@@ -345,7 +352,14 @@ export const AuthProvider = ({ children }) => {
           role: response.role,
           userId: userId,
           name: userName,
-          photo: userPhoto
+          photo: userPhoto,
+          // Include restriction information for workers
+          ...(response.role === 'WORKER' && profileResponse.success && profileResponse.data && {
+            isRestricted: profileResponse.data.isRestricted,
+            isBanned: profileResponse.data.isBanned,
+            restrictedAt: profileResponse.data.restrictedAt,
+            restrictionReason: profileResponse.data.restrictionReason
+          })
         };
         
         setUser(newUserData);

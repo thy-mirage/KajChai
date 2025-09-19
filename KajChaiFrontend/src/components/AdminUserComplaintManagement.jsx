@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { API_CONFIG } from '../config/api';
 import './AdminUserComplaintManagement.css';
 
 const AdminUserComplaintManagement = ({ embedded = false }) => {
@@ -22,13 +23,11 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
     const [clarificationRequest, setClarificationRequest] = useState('');
 
     const complaintStatuses = [
-        { value: '', label: 'All Statuses' },
-        { value: 'PENDING', label: 'Pending' },
-        { value: 'INVESTIGATING', label: 'Investigating' },
-        { value: 'AWAITING_CLARIFICATION', label: 'Awaiting Clarification' },
-        { value: 'RESOLVED', label: 'Resolved' },
-        { value: 'REJECTED', label: 'Rejected' },
-        { value: 'DISMISSED', label: 'Dismissed' }
+        { value: '', label: t('admin.allStatuses') },
+        { value: 'PENDING', label: t('admin.pending') },
+        { value: 'UNDER_INVESTIGATION', label: t('admin.investigating') },
+        { value: 'RESOLVED', label: t('admin.resolved') },
+        { value: 'REJECTED', label: t('admin.rejected') }
     ];
 
     const getCurrentUserToken = () => {
@@ -54,9 +53,9 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
             setLoading(true);
             const token = getCurrentUserToken();
             
-            let url = `http://localhost:8080/api/admin/user-complaints`;
+            let url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints`;
             if (filterStatus) {
-                url = `http://localhost:8080/api/admin/user-complaints/status/${filterStatus}`;
+                url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints/status/${filterStatus}`;
             }
 
             const response = await fetch(url, {
@@ -78,7 +77,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
         } catch (error) {
             console.error('Error fetching complaints:', error);
             setComplaints([]);
-            alert('Failed to fetch complaints');
+            alert(t('admin.failedToFetchComplaints'));
         } finally {
             setLoading(false);
         }
@@ -86,7 +85,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
     const fetchStats = async () => {
         try {
-            const complaints = await fetch('http://localhost:8080/api/admin/user-complaints', {
+            const complaints = await fetch(`${API_CONFIG.BASE_URL}/api/admin/user-complaints`, {
                 headers: {
                     'Authorization': `Bearer ${getCurrentUserToken()}`,
                     'Content-Type': 'application/json'
@@ -97,9 +96,9 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
             const stats = {
                 totalComplaints: complaints.length,
                 pendingComplaints: complaints.filter(c => c.status === 'PENDING').length,
+                underInvestigationComplaints: complaints.filter(c => c.status === 'UNDER_INVESTIGATION').length,
                 resolvedComplaints: complaints.filter(c => c.status === 'RESOLVED').length,
-                rejectedComplaints: complaints.filter(c => c.status === 'REJECTED').length,
-                awaitingClarification: complaints.filter(c => c.status === 'AWAITING_CLARIFICATION').length
+                rejectedComplaints: complaints.filter(c => c.status === 'REJECTED').length
             };
             
             setStats(stats);
@@ -141,42 +140,42 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
             switch (actionType) {
                 case 'ban':
                     if (!actionReason.trim()) {
-                        alert('Please provide a reason for banning the worker');
+                        alert(t('admin.provideBanReason'));
                         return;
                     }
-                    url = `http://localhost:8080/api/admin/user-complaints/${selectedComplaint.complaintId}/ban-worker`;
+                    url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints/${selectedComplaint.complaintId}/ban-worker`;
                     body = { reason: actionReason.trim() };
                     break;
 
                 case 'restrict':
                     if (!actionReason.trim()) {
-                        alert('Please provide a reason for restricting the worker');
+                        alert(t('admin.provideRestrictReason'));
                         return;
                     }
-                    url = `http://localhost:8080/api/admin/user-complaints/${selectedComplaint.complaintId}/restrict-worker`;
+                    url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints/${selectedComplaint.complaintId}/restrict-worker`;
                     body = { reason: actionReason.trim() };
                     break;
 
                 case 'clarify':
                     if (!clarificationRequest.trim()) {
-                        alert('Please provide a clarification request');
+                        alert(t('admin.provideClarificationRequest'));
                         return;
                     }
-                    url = `http://localhost:8080/api/admin/user-complaints/${selectedComplaint.complaintId}/request-clarification`;
+                    url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints/${selectedComplaint.complaintId}/request-clarification`;
                     body = { clarificationRequest: clarificationRequest.trim() };
                     break;
 
                 case 'reject':
                     if (!actionReason.trim()) {
-                        alert('Please provide a reason for rejecting the complaint');
+                        alert(t('admin.provideRejectReason'));
                         return;
                     }
-                    url = `http://localhost:8080/api/admin/user-complaints/${selectedComplaint.complaintId}/status`;
+                    url = `${API_CONFIG.BASE_URL}/api/admin/user-complaints/${selectedComplaint.complaintId}/status`;
                     body = { status: 'REJECTED', adminResponse: actionReason.trim() };
                     break;
 
                 default:
-                    alert('Invalid action');
+                    alert(t('admin.invalidAction'));
                     return;
             }
 
@@ -195,14 +194,33 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                 throw new Error(errorData.message || `Failed to ${actionType} complaint`);
             }
 
-            alert(`Complaint ${actionType}ed successfully!`);
+            // Success message based on action type
+            let successMessage;
+            switch (actionType) {
+                case 'ban':
+                    successMessage = t('admin.banSuccess');
+                    break;
+                case 'restrict':
+                    successMessage = t('admin.restrictSuccess');
+                    break;
+                case 'clarify':
+                    successMessage = t('admin.clarifySuccess');
+                    break;
+                case 'reject':
+                    successMessage = t('admin.rejectSuccess');
+                    break;
+                default:
+                    successMessage = 'Action completed successfully!';
+            }
+            
+            alert(successMessage);
             fetchComplaints();
             fetchStats();
             closeActionModal();
 
         } catch (error) {
             console.error(`Error ${actionType}ing complaint:`, error);
-            alert(`Failed to ${actionType} complaint: ${error.message}`);
+            alert(`${t('admin.actionFailed')}: ${error.message}`);
         } finally {
             setProcessingComplaint(null);
         }
@@ -222,11 +240,9 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
     const getStatusBadgeClass = (status) => {
         switch (status) {
             case 'PENDING': return 'status-pending';
-            case 'INVESTIGATING': return 'status-investigating';
-            case 'AWAITING_CLARIFICATION': return 'status-awaiting-clarification';
+            case 'UNDER_INVESTIGATION': return 'status-investigating';
             case 'RESOLVED': return 'status-resolved';
             case 'REJECTED': return 'status-rejected';
-            case 'DISMISSED': return 'status-dismissed';
             default: return 'status-default';
         }
     };
@@ -246,7 +262,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
     };
 
     if (!user || user.role !== 'ADMIN') {
-        return <div className="access-denied">Access denied. Admin privileges required.</div>;
+        return <div className="access-denied">{t('admin.accessDenied')}</div>;
     }
 
     return (
@@ -257,46 +273,46 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                         <button 
                             onClick={() => navigate('/admin/dashboard')} 
                             className="back-btn"
-                            title="Back to Dashboard"
+                            title={t('admin.backToDashboard')}
                         >
-                            ← Back to Dashboard
+                            ← {t('admin.backToDashboard')}
                         </button>
                     </div>
                     <div className="header-content">
-                        <h1>Worker Complaint Management</h1>
-                        <p>Manage customer complaints against workers</p>
+                        <h1>{t('admin.workerComplaintManagement')}</h1>
+                        <p>{t('admin.manageCustomerComplaintsAgainstWorkers')}</p>
                     </div>
                 </div>
             )}
             
             {embedded && (
                 <div className="page-header">
-                    <h1 className="page-title">Worker Complaint Management</h1>
-                    <p className="page-subtitle">Manage customer complaints against workers</p>
+                    <h1 className="page-title">{t('admin.workerComplaintManagement')}</h1>
+                    <p className="page-subtitle">{t('admin.manageCustomerComplaintsAgainstWorkers')}</p>
                 </div>
             )}
 
             {/* Statistics */}
             <div className="complaint-stats">
                 <div className="stat-card">
-                    <h3>Total Complaints</h3>
+                    <h3>{t('admin.totalComplaints')}</h3>
                     <div className="stat-number">{stats.totalComplaints || 0}</div>
                 </div>
                 <div className="stat-card pending">
-                    <h3>Pending</h3>
+                    <h3>{t('admin.pending')}</h3>
                     <div className="stat-number">{stats.pendingComplaints || 0}</div>
                 </div>
+                <div className="stat-card investigating">
+                    <h3>{t('admin.investigating')}</h3>
+                    <div className="stat-number">{stats.underInvestigationComplaints || 0}</div>
+                </div>
                 <div className="stat-card resolved">
-                    <h3>Resolved</h3>
+                    <h3>{t('admin.resolved')}</h3>
                     <div className="stat-number">{stats.resolvedComplaints || 0}</div>
                 </div>
                 <div className="stat-card rejected">
-                    <h3>Rejected</h3>
+                    <h3>{t('admin.rejected')}</h3>
                     <div className="stat-number">{stats.rejectedComplaints || 0}</div>
-                </div>
-                <div className="stat-card clarification">
-                    <h3>Awaiting Clarification</h3>
-                    <div className="stat-number">{stats.awaitingClarification || 0}</div>
                 </div>
             </div>
 
@@ -320,9 +336,46 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
             {/* Complaints List */}
             <div className="complaints-list">
                 {loading ? (
-                    <div className="loading-spinner">Loading complaints...</div>
+                    <div className="loading-container">
+                        <div className="loading-header">
+                            <div className="pulse-animation">
+                                <div className="loading-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
+                                              fill="currentColor" className="star"/>
+                                    </svg>
+                                </div>
+                                <h3>{t('admin.loadingComplaints')}</h3>
+                                <p>Please wait while we fetch the latest complaints...</p>
+                            </div>
+                        </div>
+                        
+                        {/* Skeleton Cards */}
+                        <div className="skeleton-cards">
+                            {[1, 2, 3].map(index => (
+                                <div key={index} className="skeleton-complaint-card">
+                                    <div className="skeleton-header">
+                                        <div className="skeleton-badge"></div>
+                                        <div className="skeleton-id"></div>
+                                        <div className="skeleton-date"></div>
+                                    </div>
+                                    <div className="skeleton-content">
+                                        <div className="skeleton-title"></div>
+                                        <div className="skeleton-line long"></div>
+                                        <div className="skeleton-line medium"></div>
+                                        <div className="skeleton-line short"></div>
+                                    </div>
+                                    <div className="skeleton-actions">
+                                        <div className="skeleton-button"></div>
+                                        <div className="skeleton-button"></div>
+                                        <div className="skeleton-button"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 ) : (!complaints || complaints.length === 0) ? (
-                    <div className="no-complaints">No complaints found.</div>
+                    <div className="no-complaints">{t('admin.noComplaintsFound')}</div>
                 ) : (
                     complaints.map(complaint => (
                         <div key={complaint.complaintId} className="complaint-card">
@@ -335,39 +388,39 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                                     <span className="complaint-date">{formatDate(complaint.createdAt)}</span>
                                 </div>
                                 
-                                {complaint.status === 'PENDING' && (
+                                {(complaint.status === 'PENDING' || complaint.status === 'UNDER_INVESTIGATION') && (
                                     <div className="complaint-actions">
                                         <button 
                                             onClick={() => openActionModal(complaint, 'ban')}
                                             className="ban-btn"
                                             disabled={processingComplaint === complaint.complaintId}
-                                            title="Ban Worker"
+                                            title={t('admin.banWorkerTitle')}
                                         >
-                                            🚫 Ban
+                                            🚫 {t('admin.ban')}
                                         </button>
                                         <button 
                                             onClick={() => openActionModal(complaint, 'restrict')}
                                             className="restrict-btn"
                                             disabled={processingComplaint === complaint.complaintId}
-                                            title="Restrict Worker"
+                                            title={t('admin.restrictWorkerTitle')}
                                         >
-                                            ⚠️ Restrict
+                                            ⚠️ {t('admin.restrict')}
                                         </button>
                                         <button 
                                             onClick={() => openActionModal(complaint, 'clarify')}
                                             className="clarify-btn"
                                             disabled={processingComplaint === complaint.complaintId}
-                                            title="Request Clarification"
+                                            title={t('admin.requestClarificationTitle')}
                                         >
-                                            ❓ Clarify
+                                            ❓ {t('admin.clarify')}
                                         </button>
                                         <button 
                                             onClick={() => openActionModal(complaint, 'reject')}
                                             className="reject-btn"
                                             disabled={processingComplaint === complaint.complaintId}
-                                            title="Reject Complaint"
+                                            title={t('admin.rejectComplaintTitle')}
                                         >
-                                            ❌ Reject
+                                            ❌ {t('admin.reject')}
                                         </button>
                                     </div>
                                 )}
@@ -375,24 +428,24 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
                             <div className="complaint-content">
                                 <div className="complaint-details">
-                                    <h3>Complaint Details</h3>
+                                    <h3>{t('admin.complaintDetails')}</h3>
                                     <div className="detail-row">
-                                        <strong>Reason:</strong> {getReasonDisplayName(complaint.reason)}
+                                        <strong>{t('admin.reason')}:</strong> {getReasonDisplayName(complaint.reason)}
                                     </div>
                                     <div className="detail-row">
-                                        <strong>Reported Worker:</strong> {complaint.reportedWorkerName}
+                                        <strong>{t('admin.reportedWorker')}:</strong> {complaint.reportedWorkerName}
                                     </div>
                                     <div className="detail-row">
-                                        <strong>Reported By:</strong> {complaint.reportedByCustomerName}
+                                        <strong>{t('admin.reportedBy')}:</strong> {complaint.reportedByCustomerName}
                                     </div>
                                     <div className="detail-row">
-                                        <strong>Description:</strong>
+                                        <strong>{t('admin.description')}:</strong>
                                         <p>{complaint.description}</p>
                                     </div>
                                     
                                     {complaint.evidenceUrls && (
                                         <div className="detail-row">
-                                            <strong>Evidence:</strong>
+                                            <strong>{t('admin.evidence')}:</strong>
                                             <div className="evidence-images">
                                                 {parseEvidenceUrls(complaint.evidenceUrls).map((imageUrl, index) => (
                                                     <div key={index} className="evidence-image-container">
@@ -408,7 +461,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                                                         />
                                                         <div className="image-error-placeholder" style={{display: 'none'}}>
                                                             <span>📷</span>
-                                                            <small>Image unavailable</small>
+                                                            <small>{t('admin.imageUnavailable')}</small>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -418,7 +471,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
                                     {complaint.clarificationDeadline && (
                                         <div className="detail-row">
-                                            <strong>Clarification Deadline:</strong> {formatDate(complaint.clarificationDeadline)}
+                                            <strong>{t('admin.clarificationDeadline')}:</strong> {formatDate(complaint.clarificationDeadline)}
                                         </div>
                                     )}
                                 </div>
@@ -426,11 +479,11 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
                             {complaint.adminResponse && (
                                 <div className="admin-response">
-                                    <h4>Admin Response</h4>
+                                    <h4>{t('admin.adminResponse')}</h4>
                                     <p>{complaint.adminResponse}</p>
                                     {complaint.resolvedAt && (
                                         <small>
-                                            Resolved on {formatDate(complaint.resolvedAt)}
+                                            {t('admin.resolvedOn')} {formatDate(complaint.resolvedAt)}
                                         </small>
                                     )}
                                 </div>
@@ -439,7 +492,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                             {complaint.adminAction && (
                                 <div className="admin-action">
                                     <span className={`action-badge action-${complaint.adminAction.toLowerCase()}`}>
-                                        Action Taken: {complaint.adminAction}
+                                        {t('admin.actionTaken')}: {complaint.adminAction}
                                     </span>
                                 </div>
                             )}
@@ -454,34 +507,34 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                     <div className="action-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>
-                                {actionType === 'ban' && '🚫 Ban Worker'}
-                                {actionType === 'restrict' && '⚠️ Restrict Worker'}
-                                {actionType === 'clarify' && '❓ Request Clarification'}
-                                {actionType === 'reject' && '❌ Reject Complaint'}
+                                {actionType === 'ban' && `🚫 ${t('admin.banWorker')}`}
+                                {actionType === 'restrict' && `⚠️ ${t('admin.restrictWorker')}`}
+                                {actionType === 'clarify' && `❓ ${t('admin.requestClarification')}`}
+                                {actionType === 'reject' && `❌ ${t('admin.rejectComplaint')}`}
                             </h2>
                             <button className="close-btn" onClick={closeActionModal}>×</button>
                         </div>
                         
                         <div className="modal-body">
                             <div className="complaint-summary">
-                                <h3>Complaint Summary</h3>
-                                <p><strong>Worker:</strong> {selectedComplaint?.reportedWorkerName}</p>
-                                <p><strong>Reason:</strong> {selectedComplaint && getReasonDisplayName(selectedComplaint.reason)}</p>
-                                <p><strong>Customer:</strong> {selectedComplaint?.reportedByCustomerName}</p>
+                                <h3>{t('admin.complaintSummary')}</h3>
+                                <p><strong>{t('admin.worker')}:</strong> {selectedComplaint?.reportedWorkerName}</p>
+                                <p><strong>{t('admin.reason')}:</strong> {selectedComplaint && getReasonDisplayName(selectedComplaint.reason)}</p>
+                                <p><strong>{t('admin.customer')}:</strong> {selectedComplaint?.reportedByCustomerName}</p>
                             </div>
                             
                             <div className="action-form">
                                 {actionType === 'clarify' ? (
                                     <>
                                         <label htmlFor="clarificationRequest">
-                                            Clarification Request *
-                                            <span className="help-text">Ask the customer for additional information</span>
+                                            {t('admin.clarificationRequest')} *
+                                            <span className="help-text">{t('admin.clarificationHelpText')}</span>
                                         </label>
                                         <textarea
                                             id="clarificationRequest"
                                             value={clarificationRequest}
                                             onChange={(e) => setClarificationRequest(e.target.value)}
-                                            placeholder="What additional information do you need from the customer?"
+                                            placeholder={t('admin.whatAdditionalInfo')}
                                             rows={4}
                                             required
                                         />
@@ -489,18 +542,18 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                                 ) : (
                                     <>
                                         <label htmlFor="actionReason">
-                                            {actionType === 'ban' && 'Ban Reason *'}
-                                            {actionType === 'restrict' && 'Restriction Reason *'}
-                                            {actionType === 'reject' && 'Rejection Reason *'}
+                                            {actionType === 'ban' && `${t('admin.banReason')} *`}
+                                            {actionType === 'restrict' && `${t('admin.restrictionReason')} *`}
+                                            {actionType === 'reject' && `${t('admin.rejectionReason')} *`}
                                         </label>
                                         <textarea
                                             id="actionReason"
                                             value={actionReason}
                                             onChange={(e) => setActionReason(e.target.value)}
                                             placeholder={
-                                                actionType === 'ban' ? 'Explain why you are banning this worker...' :
-                                                actionType === 'restrict' ? 'Explain why you are restricting this worker...' :
-                                                'Explain why you are rejecting this complaint...'
+                                                actionType === 'ban' ? t('admin.explainBanWorker') :
+                                                actionType === 'restrict' ? t('admin.explainRestrictWorker') :
+                                                t('admin.explainRejectComplaint')
                                             }
                                             rows={4}
                                             required
@@ -510,33 +563,33 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
                                 {actionType === 'ban' && (
                                     <div className="warning-box">
-                                        <p><strong>⚠️ Warning:</strong> Banning a worker will:</p>
+                                        <p><strong>⚠️ {t('admin.warning')}:</strong> {t('admin.banningWorkerWill')}</p>
                                         <ul>
-                                            <li>Permanently delete their account</li>
-                                            <li>Send them an email notification</li>
-                                            <li>Prevent them from creating new accounts with this email</li>
+                                            <li>{t('admin.permanentlyDeleteAccount')}</li>
+                                            <li>{t('admin.sendEmailNotification')}</li>
+                                            <li>{t('admin.preventNewAccounts')}</li>
                                         </ul>
                                     </div>
                                 )}
 
                                 {actionType === 'restrict' && (
                                     <div className="info-box">
-                                        <p><strong>ℹ️ Info:</strong> Restricting a worker will:</p>
+                                        <p><strong>ℹ️ {t('admin.info')}:</strong> {t('admin.restrictingWorkerWill')}</p>
                                         <ul>
-                                            <li>Prevent them from applying to hire posts for 3 days</li>
-                                            <li>Prevent them from posting/commenting in forums for 3 days</li>
-                                            <li>Send them a notification about the restriction</li>
+                                            <li>{t('admin.preventApplyingJobs')}</li>
+                                            <li>{t('admin.preventForumActivity')}</li>
+                                            <li>{t('admin.sendRestrictionNotification')}</li>
                                         </ul>
                                     </div>
                                 )}
 
                                 {actionType === 'clarify' && (
                                     <div className="info-box">
-                                        <p><strong>ℹ️ Info:</strong> Requesting clarification will:</p>
+                                        <p><strong>ℹ️ {t('admin.info')}:</strong> {t('admin.requestingClarificationWill')}</p>
                                         <ul>
-                                            <li>Send a notification to the customer</li>
-                                            <li>Give them 24 hours to respond</li>
-                                            <li>Auto-dismiss if no response within deadline</li>
+                                            <li>{t('admin.sendNotificationToCustomer')}</li>
+                                            <li>{t('admin.give24HoursToRespond')}</li>
+                                            <li>{t('admin.autoDismissIfNoResponse')}</li>
                                         </ul>
                                     </div>
                                 )}
@@ -549,7 +602,7 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                                 onClick={closeActionModal}
                                 disabled={processingComplaint}
                             >
-                                Cancel
+                                {t('admin.cancel')}
                             </button>
                             <button 
                                 className={`submit-btn ${actionType}`} 
@@ -557,11 +610,11 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
                                 disabled={processingComplaint || 
                                     (actionType === 'clarify' ? !clarificationRequest.trim() : !actionReason.trim())}
                             >
-                                {processingComplaint ? 'Processing...' : 
-                                 (actionType === 'ban' ? 'Ban Worker' :
-                                  actionType === 'restrict' ? 'Restrict Worker' :
-                                  actionType === 'clarify' ? 'Request Clarification' :
-                                  'Reject Complaint')}
+                                {processingComplaint ? t('admin.processing') : 
+                                 (actionType === 'ban' ? t('admin.banWorker') :
+                                  actionType === 'restrict' ? t('admin.restrictWorker') :
+                                  actionType === 'clarify' ? t('admin.requestClarification') :
+                                  t('admin.rejectComplaint'))}
                             </button>
                         </div>
                     </div>

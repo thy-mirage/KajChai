@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -140,6 +141,26 @@ public class AdminController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", "Failed to retrieve admin statistics: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/recent-activity")
+    public ResponseEntity<Map<String, Object>> getRecentActivity() {
+        try {
+            List<Map<String, Object>> activities = adminService.getRecentActivity();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", activities);
+            response.put("message", "Recent activity retrieved successfully");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to retrieve recent activity: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

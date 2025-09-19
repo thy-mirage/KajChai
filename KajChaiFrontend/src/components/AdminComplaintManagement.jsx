@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import complaintService from '../services/complaintService';
 import './AdminComplaintManagement.css';
 
 const AdminComplaintManagement = ({ embedded = false }) => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [complaints, setComplaints] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -21,12 +23,9 @@ const AdminComplaintManagement = ({ embedded = false }) => {
     const [deletePost, setDeletePost] = useState(false);
 
     const complaintStatuses = [
-        { value: '', label: 'All Statuses' },
-        { value: 'PENDING', label: 'Pending' },
-        { value: 'UNDER_REVIEW', label: 'Under Review' },
-        { value: 'RESOLVED', label: 'Resolved' },
-        { value: 'REJECTED', label: 'Rejected' },
-        { value: 'DISMISSED', label: 'Dismissed' }
+        { value: '', label: t('forumAdmin.allStatuses') },
+        { value: 'RESOLVED', label: t('forumAdmin.resolved') },
+        { value: 'REJECTED', label: t('forumAdmin.rejected') }
     ];
 
     useEffect(() => {
@@ -38,7 +37,6 @@ const AdminComplaintManagement = ({ embedded = false }) => {
 
     const fetchComplaints = async () => {
         try {
-            setLoading(true);
             const response = await complaintService.admin.getAllComplaints(
                 currentPage,
                 10,
@@ -56,8 +54,6 @@ const AdminComplaintManagement = ({ embedded = false }) => {
             setComplaints([]);
             setTotalPages(0);
             alert('Failed to fetch complaints');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -143,10 +139,8 @@ const AdminComplaintManagement = ({ embedded = false }) => {
     const getStatusBadgeClass = (status) => {
         switch (status) {
             case 'PENDING': return 'status-pending';
-            case 'UNDER_REVIEW': return 'status-under-review';
             case 'RESOLVED': return 'status-resolved';
             case 'REJECTED': return 'status-rejected';
-            case 'DISMISSED': return 'status-dismissed';
             default: return 'status-default';
         }
     };
@@ -156,7 +150,7 @@ const AdminComplaintManagement = ({ embedded = false }) => {
     };
 
     if (!user || user.role !== 'ADMIN') {
-        return <div className="access-denied">Access denied. Admin privileges required.</div>;
+        return <div className="access-denied">{t('forumAdmin.accessDenied')}</div>;
     }
 
     return (
@@ -167,41 +161,37 @@ const AdminComplaintManagement = ({ embedded = false }) => {
                         <button 
                             onClick={() => navigate('/admin/dashboard')} 
                             className="back-btn"
-                            title="Back to Dashboard"
+                            title={t('forumAdmin.backToDashboard')}
                         >
-                            ← Back to Dashboard
+                            ← {t('forumAdmin.backToDashboard')}
                         </button>
                     </div>
                     <div className="header-content">
-                        <h1>Forum Complaint Management</h1>
-                        <p>Manage and review forum post complaints from users</p>
+                        <h1>{t('forumAdmin.title')}</h1>
+                        <p>{t('forumAdmin.subtitle')}</p>
                     </div>
                 </div>
             )}
             
             {embedded && (
                 <div className="page-header">
-                    <h1 className="page-title">Forum Complaint Management</h1>
-                    <p className="page-subtitle">Manage and review forum post complaints from users</p>
+                    <h1 className="page-title">{t('forumAdmin.title')}</h1>
+                    <p className="page-subtitle">{t('forumAdmin.subtitle')}</p>
                 </div>
             )}
 
             {/* Statistics */}
             <div className="complaint-stats">
                 <div className="stat-card">
-                    <h3>Total Complaints</h3>
+                    <h3>{t('forumAdmin.totalComplaints')}</h3>
                     <div className="stat-number">{stats.totalComplaints || 0}</div>
                 </div>
-                <div className="stat-card pending">
-                    <h3>Pending</h3>
-                    <div className="stat-number">{stats.pendingComplaints || 0}</div>
-                </div>
                 <div className="stat-card resolved">
-                    <h3>Resolved</h3>
+                    <h3>{t('forumAdmin.resolved')}</h3>
                     <div className="stat-number">{stats.resolvedComplaints || 0}</div>
                 </div>
                 <div className="stat-card rejected">
-                    <h3>Rejected</h3>
+                    <h3>{t('forumAdmin.rejected')}</h3>
                     <div className="stat-number">{stats.rejectedComplaints || 0}</div>
                 </div>
             </div>
@@ -227,10 +217,8 @@ const AdminComplaintManagement = ({ embedded = false }) => {
 
             {/* Complaints List */}
             <div className="complaints-list">
-                {loading ? (
-                    <div className="loading-spinner">Loading complaints...</div>
-                ) : (!complaints || complaints.length === 0) ? (
-                    <div className="no-complaints">No complaints found.</div>
+                {(!complaints || complaints.length === 0) ? (
+                    <div className="no-complaints">{t('forumAdmin.noComplaints')}</div>
                 ) : (
                     complaints.map(complaint => (
                         <div key={complaint.complaintId} className="complaint-card">
@@ -250,14 +238,14 @@ const AdminComplaintManagement = ({ embedded = false }) => {
                                             className="resolve-btn"
                                             disabled={processingComplaint === complaint.complaintId}
                                         >
-                                            Resolve
+                                            {t('forumAdmin.resolve')}
                                         </button>
                                         <button 
                                             onClick={() => openResponseModal(complaint, 'reject')}
                                             className="reject-btn"
                                             disabled={processingComplaint === complaint.complaintId}
                                         >
-                                            Reject
+                                            {t('forumAdmin.reject')}
                                         </button>
                                     </div>
                                 )}
@@ -358,24 +346,24 @@ const AdminComplaintManagement = ({ embedded = false }) => {
                 <div className="modal-overlay" onClick={closeResponseModal}>
                     <div className="response-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>{actionType === 'resolve' ? 'Resolve' : 'Reject'} Complaint</h2>
+                            <h2>{actionType === 'resolve' ? t('forumAdmin.resolveComplaint') : t('forumAdmin.rejectComplaint')}</h2>
                             <button className="close-btn" onClick={closeResponseModal}>×</button>
                         </div>
                         
                         <div className="modal-body">
                             <div className="complaint-summary">
-                                <h3>Complaint Summary</h3>
-                                <p><strong>Reason:</strong> {selectedComplaint && getReasonDisplayName(selectedComplaint.reason)}</p>
-                                <p><strong>Post:</strong> {selectedComplaint && selectedComplaint.postTitle}</p>
+                                <h3>{t('forumAdmin.complaintSummary')}</h3>
+                                <p><strong>{t('forumAdmin.reason')}:</strong> {selectedComplaint && getReasonDisplayName(selectedComplaint.reason)}</p>
+                                <p><strong>{t('forumAdmin.post')}:</strong> {selectedComplaint && selectedComplaint.postTitle}</p>
                             </div>
                             
                             <div className="response-form">
-                                <label htmlFor="adminResponse">Admin Response *</label>
+                                <label htmlFor="adminResponse">{t('forumAdmin.adminResponse')} *</label>
                                 <textarea
                                     id="adminResponse"
                                     value={adminResponse}
                                     onChange={(e) => setAdminResponse(e.target.value)}
-                                    placeholder={`Explain why you are ${actionType}ing this complaint...`}
+                                    placeholder={actionType === 'resolve' ? t('forumAdmin.adminResponsePlaceholder') : t('forumAdmin.adminResponsePlaceholderReject')}
                                     rows={4}
                                     required
                                 />
@@ -388,7 +376,7 @@ const AdminComplaintManagement = ({ embedded = false }) => {
                                                 checked={deletePost}
                                                 onChange={(e) => setDeletePost(e.target.checked)}
                                             />
-                                            Delete the reported post
+                                            {t('forumAdmin.deleteReportedPost')}
                                         </label>
                                     </div>
                                 )}
@@ -401,14 +389,14 @@ const AdminComplaintManagement = ({ embedded = false }) => {
                                 onClick={closeResponseModal}
                                 disabled={processingComplaint}
                             >
-                                Cancel
+                                {t('forumAdmin.cancel')}
                             </button>
                             <button 
                                 className={`submit-btn ${actionType}`} 
                                 onClick={handleSubmitResponse}
                                 disabled={processingComplaint || !adminResponse.trim()}
                             >
-                                {processingComplaint ? 'Processing...' : (actionType === 'resolve' ? 'Resolve' : 'Reject')}
+                                {processingComplaint ? t('forumAdmin.processing') : (actionType === 'resolve' ? t('forumAdmin.resolve') : t('forumAdmin.reject'))}
                             </button>
                         </div>
                     </div>

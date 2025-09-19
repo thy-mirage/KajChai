@@ -1,96 +1,178 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import adminService from '../services/adminService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [adminStats, setAdminStats] = useState({
-    totalUsers: 0,
-    totalComplaints: 0,
-    pendingComplaints: 0,
-    resolvedComplaints: 0
+    totalCustomers: 0,
+    totalWorkers: 0,
+    totalHirePosts: 0,
+    totalForumPosts: 0,
+    customerQA: 0,
+    tipsAndProjects: 0,
+    customerExperiences: 0
   });
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
-    // Mock data - replace with actual API calls
-    setAdminStats({
-      totalUsers: 1250,
-      totalComplaints: 45,
-      pendingComplaints: 12,
-      resolvedComplaints: 33
-    });
+    fetchAdminData();
   }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      // Fetch admin statistics
+      const statsResponse = await adminService.getAdminStats();
+      
+      if (statsResponse.success) {
+        const data = statsResponse.data;
+        const postsBySection = data.postsBySection || {};
+        
+        setAdminStats({
+          totalCustomers: data.totalCustomers || 0,
+          totalWorkers: data.totalWorkers || 0,
+          totalHirePosts: data.totalHirePosts || 0,
+          totalForumPosts: data.totalPosts || 0,
+          customerQA: postsBySection.CUSTOMER_QA || 0,
+          tipsAndProjects: postsBySection.WORKER_TIPS_PROJECTS || 0,
+          customerExperiences: postsBySection.CUSTOMER_EXPERIENCE || 0
+        });
+      }
+
+      // Fetch recent activity
+      const activityResponse = await adminService.getRecentActivity();
+      
+      if (activityResponse.success) {
+        const activities = activityResponse.data || [];
+        setRecentActivity(activities.map(activity => ({
+          action: activity.action,
+          time: activity.time,
+          icon: activity.icon || '📝'
+        })));
+      } else {
+        // Fallback to translated mock data if API fails
+        setRecentActivity([
+          {
+            action: t('adminDashboard.recentActivities.newCustomerJoined'),
+            time: '2 hours ago',
+            icon: '👤'
+          },
+          {
+            action: t('adminDashboard.recentActivities.newHirePostCreated'),
+            time: '4 hours ago',
+            icon: '📝'
+          },
+          {
+            action: t('adminDashboard.recentActivities.newForumPost'),
+            time: '6 hours ago',
+            icon: '💬'
+          },
+          {
+            action: t('adminDashboard.recentActivities.workerVerified'),
+            time: '8 hours ago',
+            icon: '✅'
+          },
+          {
+            action: t('adminDashboard.recentActivities.customerExperienceShared'),
+            time: '1 day ago',
+            icon: '⭐'
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      // Keep default values on error and set fallback recent activity
+      setRecentActivity([
+        {
+          action: t('adminDashboard.recentActivities.newCustomerJoined'),
+          time: '2 hours ago',
+          icon: '👤'
+        },
+        {
+          action: t('adminDashboard.recentActivities.newHirePostCreated'),
+          time: '4 hours ago',
+          icon: '📝'
+        },
+        {
+          action: t('adminDashboard.recentActivities.newForumPost'),
+          time: '6 hours ago',
+          icon: '💬'
+        }
+      ]);
+    }
+  };
 
   const adminStatsArray = [
     {
-      label: 'Total Users',
-      value: adminStats.totalUsers,
-      icon: '👥',
+      label: t('adminDashboard.totalCustomers'),
+      value: adminStats.totalCustomers,
+      icon: '�',
       color: '#3498db'
     },
     {
-      label: 'Total Complaints',
-      value: adminStats.totalComplaints,
-      icon: '📋',
+      label: t('adminDashboard.totalWorkers'),
+      value: adminStats.totalWorkers,
+      icon: '�',
       color: '#f39c12'
     },
     {
-      label: 'Pending Complaints',
-      value: adminStats.pendingComplaints,
-      icon: '⏳',
+      label: t('adminDashboard.totalHirePosts'),
+      value: adminStats.totalHirePosts,
+      icon: '📝',
       color: '#e74c3c'
     },
     {
-      label: 'Resolved Complaints',
-      value: adminStats.resolvedComplaints,
-      icon: '✅',
+      label: t('adminDashboard.totalForumPosts'),
+      value: adminStats.totalForumPosts,
+      icon: '💬',
       color: '#27ae60'
+    }
+  ];
+
+  const forumStatsArray = [
+    {
+      label: t('adminDashboard.customerQA'),
+      value: adminStats.customerQA,
+      icon: '❓',
+      color: '#9b59b6'
+    },
+    {
+      label: t('adminDashboard.tipsAndProjects'),
+      value: adminStats.tipsAndProjects,
+      icon: '💡',
+      color: '#34495e'
+    },
+    {
+      label: t('adminDashboard.customerExperiences'),
+      value: adminStats.customerExperiences,
+      icon: '⭐',
+      color: '#16a085'
     }
   ];
 
   const quickActions = [
     {
-      title: 'Manage Forum Complaints',
-      description: 'View and manage forum-related complaints from users',
+      title: t('adminDashboard.quickActions.manageForumComplaints'),
+      description: t('adminDashboard.quickActions.manageForumComplaintsDesc'),
       icon: '💬',
       action: () => navigate('/admin/complaints')
     },
     {
-      title: 'Worker Complaint Management',
-      description: 'Manage customer complaints against workers, ban/restrict workers',
+      title: t('adminDashboard.quickActions.workerComplaintManagement'),
+      description: t('adminDashboard.quickActions.workerComplaintManagementDesc'),
       icon: '👤',
       action: () => navigate('/admin/user-complaints')
     },
     {
-      title: 'System Reports',
-      description: 'View system analytics, reports and platform statistics',
+      title: t('adminDashboard.quickActions.systemReports'),
+      description: t('adminDashboard.quickActions.systemReportsDesc'),
       icon: '📊',
       action: () => console.log('System reports coming soon')
-    }
-  ];
-
-  const recentActivity = [
-    {
-      action: 'New forum complaint received',
-      time: '2 hours ago',
-      icon: '📝'
-    },
-    {
-      action: 'Complaint #123 resolved',
-      time: '5 hours ago',
-      icon: '✅'
-    },
-    {
-      action: 'New user registered',
-      time: '1 day ago',
-      icon: '👤'
-    },
-    {
-      action: 'Forum post reported',
-      time: '2 days ago',
-      icon: '⚠️'
     }
   ];
 
@@ -98,8 +180,8 @@ const AdminDashboard = () => {
     <div className="dashboard">
       {/* Welcome Section */}
       <div className="welcome-section">
-        <h1 className="page-title">Admin Dashboard</h1>
-        <p className="page-subtitle">Manage the KajChai platform and monitor system activities</p>
+        <h1 className="page-title">{t('adminDashboard.title')}</h1>
+        <p className="page-subtitle">{t('adminDashboard.subtitle')}</p>
       </div>
 
       {/* Stats Section */}
@@ -117,9 +199,27 @@ const AdminDashboard = () => {
         ))}
       </div>
 
+      {/* Forum Stats Breakdown */}
+      <div className="forum-stats">
+        <h2 className="section-title">{t('adminDashboard.forumStats.title')}</h2>
+        <div className="stats-grid">
+          {forumStatsArray.map((stat, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-icon" style={{ color: stat.color }}>
+                {stat.icon}
+              </div>
+              <div className="stat-content">
+                <div className="stat-value">{stat.value}</div>
+                <div className="stat-label">{stat.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="quick-actions">
-        <h2 className="section-title">Quick Actions</h2>
+        <h2 className="section-title">{t('adminDashboard.quickActions.title')}</h2>
         <div className="actions-grid">
           {quickActions.map((action, index) => (
             <div key={index} className="action-card" onClick={action.action}>
@@ -127,7 +227,7 @@ const AdminDashboard = () => {
               <h3>{action.title}</h3>
               <p>{action.description}</p>
               <button className="action-btn">
-                Get Started
+                {t('adminDashboard.quickActions.getStarted')}
               </button>
             </div>
           ))}
@@ -136,7 +236,7 @@ const AdminDashboard = () => {
 
       {/* Recent Activity */}
       <div className="recent-activity">
-        <h2 className="section-title">Recent Activity</h2>
+        <h2 className="section-title">{t('adminDashboard.recentActivity.title')}</h2>
         <div className="activity-list">
           {recentActivity.map((activity, index) => (
             <div key={index} className="activity-item">

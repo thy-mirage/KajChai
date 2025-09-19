@@ -1,13 +1,10 @@
 package com.example.KajChai.Enum;
 
 public enum ComplaintStatus {
-    PENDING("Pending Review"),
-    UNDER_REVIEW("Under Review"),
-    INVESTIGATING("Investigating"),
-    AWAITING_CLARIFICATION("Awaiting Clarification"),
+    PENDING("Pending"),
+    UNDER_INVESTIGATION("Under Investigation"),
     RESOLVED("Resolved"),
-    REJECTED("Rejected"),
-    DISMISSED("Dismissed");
+    REJECTED("Rejected");
 
     private final String displayName;
 

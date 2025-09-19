@@ -235,7 +235,7 @@ public class UserComplaintService {
                 .orElseThrow(() -> new RuntimeException("Complaint not found"));
         
         // Update complaint
-        complaint.setStatus(ComplaintStatus.AWAITING_CLARIFICATION);
+        complaint.setStatus(ComplaintStatus.UNDER_INVESTIGATION);
         complaint.setAdminAction("CLARIFICATION_REQUESTED");
         complaint.setAdminResponse("Clarification requested: " + clarificationRequest);
         complaint.setClarificationDeadline(LocalDateTime.now().plusHours(24));
@@ -305,16 +305,16 @@ public class UserComplaintService {
     
     public void processExpiredClarifications() {
         List<UserComplaint> expiredComplaints = userComplaintRepository
-                .findExpiredClarificationRequests(ComplaintStatus.AWAITING_CLARIFICATION, LocalDateTime.now());
+                .findExpiredClarificationRequests(ComplaintStatus.UNDER_INVESTIGATION, LocalDateTime.now());
         
         for (UserComplaint complaint : expiredComplaints) {
-            complaint.setStatus(ComplaintStatus.DISMISSED);
-            complaint.setAdminResponse(complaint.getAdminResponse() + " [Auto-dismissed: No clarification provided within deadline]");
+            complaint.setStatus(ComplaintStatus.REJECTED);
+            complaint.setAdminResponse(complaint.getAdminResponse() + " [Auto-rejected: No clarification provided within deadline]");
             complaint.setResolvedAt(LocalDateTime.now());
             userComplaintRepository.save(complaint);
             
             // Notify customer
-            String message = "Your complaint has been dismissed due to no response within the 24-hour clarification deadline.";
+            String message = "Your complaint has been rejected due to no response within the 24-hour clarification deadline.";
             notificationService.createCustomerNotification(complaint.getReportedByCustomer(), message);
         }
         
