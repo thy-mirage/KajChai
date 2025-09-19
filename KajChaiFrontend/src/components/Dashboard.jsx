@@ -137,7 +137,7 @@ const Dashboard = () => {
           ) : (
             <>
               <Link to="/current-works" className="action-card">
-                <div className="action-icon">�</div>
+                <div className="action-icon">📝</div>
                 <h3>{t('dashboard.currentWorks', 'Current Works')}</h3>
                 <p>{t('dashboard.currentWorksDesc', 'View your ongoing booked jobs and their details')}</p>
                 <button className="action-btn">{t('dashboard.viewCurrentWorks', 'View Works')}</button>
@@ -149,7 +149,7 @@ const Dashboard = () => {
                 <button className="action-btn">{t('dashboard.viewReviews', 'View Reviews')}</button>
               </Link>
               <Link to="/past-jobs" className="action-card">
-                <div className="action-icon">�</div>
+                <div className="action-icon">📜</div>
                 <h3>{t('dashboard.pastJobs', 'Past Jobs')}</h3>
                 <p>{t('dashboard.pastJobsDesc', 'View your completed jobs and payment history')}</p>
                 <button className="action-btn">{t('dashboard.viewPastJobs', 'View History')}</button>
