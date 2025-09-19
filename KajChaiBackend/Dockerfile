@@ -26,4 +26,7 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
+# Set JVM timezone to Dhaka
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Dhaka"
+
 CMD ["java", "-Dserver.port=${PORT:-8080}", "-Dserver.address=0.0.0.0", "-Dspring.profiles.active=production", "-jar", "app.jar"]
