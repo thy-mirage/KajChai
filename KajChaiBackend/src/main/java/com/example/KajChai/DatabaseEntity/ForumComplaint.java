@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Table(name = "forum_complaints")
 public class ForumComplaint {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "complaint_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long complaintId;
 
     // Reference to the complained post
@@ -29,13 +29,13 @@ public class ForumComplaint {
     private ForumPost forumPost;
 
     // Complainant information
-    @Column(nullable = false)
+    @Column(name = "complainant_id",nullable = false)
     private Integer complainantId;
 
-    @Column(nullable = false)
+    @Column(name = "complainant_name",nullable = false)
     private String complainantName;
 
-    @Column
+    @Column(name = "complainant_email")
     private String complainantEmail;
 
     // Complaint details
@@ -57,20 +57,20 @@ public class ForumComplaint {
     private ComplaintStatus status = ComplaintStatus.PENDING;
 
     // Admin response
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "admin_response",columnDefinition = "TEXT")
     private String adminResponse;
 
-    @Column
+    @Column(name = "reviewed_by")
     private Integer reviewedBy; // Admin ID who reviewed the complaint
 
-    @Column
+    @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at",nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name="updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }

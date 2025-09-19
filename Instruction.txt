@@ -1,13 +1,5 @@
-Now we need to organize the customer end dashboard. I've given you the image of our current view of the dashboard for a customer. Now as you can see there are mock data and we have to replace it with actual data from the database. Instead of Active posts the name should be Acitve Hire Posts and you can get the data of it by looking in the hirepost table and there the posts of the customer which are not completed will be considered as active hireposts. 
-Now let's come to the next part which is completed jobs. It's very easy. You just have to count the number of completed jobs that is in the hirepost table for that particular customer. 
-Next the total spent. Simply, we have to count the sum of the payments for that particular customer.
-Next is total reveiw given. It's also very easier. You just have to count the number of reviews that is in the reviews table by that customer
+Now in the admin end, in forum complaints as you can see from the image still mock data is being shown in the total complaints, resolved and rejected. We need to show the reald ata fetched from the db. You can get the information very easily from the forum_complaints table's status field. 
+Implement it and also as the data fetching takes time from db you can add loading transition as you have applied for the customer and worker for the same cause.
 
-Let's come to quick actions section. Instead of four actions, we'll keep 2 actions. One is already implemented that is my hireposts and another one which is also already implemented that is message which is currently now on the navbar. You just have to omit that from navbar and keep it in the quick actions portion.
-
-
-Also remeber to implement the translations also. And as the data fetching of active hirepost count, completed jobs counts this take time from the db, you should use the loading the animation that you have already used for the same purpose in the worker dashbaord data fetching. 
-
-Then from the image as you are seeing the the navbar is not fitting in the browser correctly though it is 100% zoomed . fix this also
-
-Do the full implementation end to end and then cross check the implementation
+If you want to run frontend and backend you just have to use the following cmnd:
+relative path then ; then ./mvnw spring-boot:run 

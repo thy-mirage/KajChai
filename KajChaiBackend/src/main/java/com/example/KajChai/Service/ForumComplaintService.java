@@ -205,22 +205,35 @@ public class ForumComplaintService {
     
     // Get complaint statistics for admin dashboard
     public ComplaintStats getComplaintStats() {
+        log.info("=== FETCHING COMPLAINT STATS ===");
+        
         long totalComplaints = forumComplaintRepository.count();
+        log.info("Total complaints count: {}", totalComplaints);
+        
         long pendingComplaints = forumComplaintRepository.countByStatus(ComplaintStatus.PENDING);
+        log.info("Pending complaints count: {}", pendingComplaints);
+        
         long resolvedComplaints = forumComplaintRepository.countByStatus(ComplaintStatus.RESOLVED);
+        log.info("Resolved complaints count: {}", resolvedComplaints);
+        
         long rejectedComplaints = forumComplaintRepository.countByStatus(ComplaintStatus.REJECTED);
+        log.info("Rejected complaints count: {}", rejectedComplaints);
         
         // Get recent complaints (last 7 days)
         LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
         List<ForumComplaint> recentComplaints = forumComplaintRepository.findRecentComplaints(weekAgo);
+        log.info("Recent complaints count: {}", recentComplaints.size());
         
-        return ComplaintStats.builder()
+        ComplaintStats stats = ComplaintStats.builder()
                 .totalComplaints(totalComplaints)
                 .pendingComplaints(pendingComplaints)
                 .resolvedComplaints(resolvedComplaints)
                 .rejectedComplaints(rejectedComplaints)
                 .recentComplaintsCount(recentComplaints.size())
                 .build();
+                
+        log.info("Built ComplaintStats: {}", stats);
+        return stats;
     }
     
     // Helper method to convert ForumComplaint to ForumComplaintResponse

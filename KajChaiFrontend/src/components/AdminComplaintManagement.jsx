@@ -11,6 +11,7 @@ const AdminComplaintManagement = ({ embedded = false }) => {
     const { t } = useTranslation();
     const [complaints, setComplaints] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [statsLoading, setStatsLoading] = useState(false);
     const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
@@ -24,6 +25,7 @@ const AdminComplaintManagement = ({ embedded = false }) => {
 
     const complaintStatuses = [
         { value: '', label: t('forumAdmin.allStatuses') },
+        { value: 'PENDING', label: t('forumAdmin.pending') },
         { value: 'RESOLVED', label: t('forumAdmin.resolved') },
         { value: 'REJECTED', label: t('forumAdmin.rejected') }
     ];
@@ -59,12 +61,26 @@ const AdminComplaintManagement = ({ embedded = false }) => {
 
     const fetchStats = async () => {
         try {
+            setStatsLoading(true);
+            console.log('=== FETCHING STATS FROM FRONTEND ===');
             const response = await complaintService.admin.getComplaintStats();
-            if (response.success) {
+            console.log('Raw API Response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response keys:', Object.keys(response || {}));
+            if (response && response.success) {
+                console.log('Stats Data from API:', response.data);
+                console.log('Data type:', typeof response.data);
+                console.log('Data keys:', Object.keys(response.data || {}));
                 setStats(response.data);
+                console.log('Stats set in state:', response.data);
+            } else {
+                console.error('Stats API failed or success is false:', response);
             }
         } catch (error) {
             console.error('Error fetching complaint stats:', error);
+            console.error('Error details:', error.message, error.stack);
+        } finally {
+            setStatsLoading(false);
         }
     };
 
@@ -182,18 +198,30 @@ const AdminComplaintManagement = ({ embedded = false }) => {
 
             {/* Statistics */}
             <div className="complaint-stats">
-                <div className="stat-card">
-                    <h3>{t('forumAdmin.totalComplaints')}</h3>
-                    <div className="stat-number">{stats.totalComplaints || 0}</div>
-                </div>
-                <div className="stat-card resolved">
-                    <h3>{t('forumAdmin.resolved')}</h3>
-                    <div className="stat-number">{stats.resolvedComplaints || 0}</div>
-                </div>
-                <div className="stat-card rejected">
-                    <h3>{t('forumAdmin.rejected')}</h3>
-                    <div className="stat-number">{stats.rejectedComplaints || 0}</div>
-                </div>
+                {statsLoading ? (
+                    <div className="stats-loading">
+                        <div className="loading">{t('common.loading', 'Loading...')}</div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="stat-card">
+                            <h3>{t('forumAdmin.totalComplaints')}</h3>
+                            <div className="stat-number">{stats.totalComplaints || 0}</div>
+                        </div>
+                        <div className="stat-card pending">
+                            <h3>{t('forumAdmin.pending')}</h3>
+                            <div className="stat-number">{stats.pendingComplaints || 0}</div>
+                        </div>
+                        <div className="stat-card resolved">
+                            <h3>{t('forumAdmin.resolved')}</h3>
+                            <div className="stat-number">{stats.resolvedComplaints || 0}</div>
+                        </div>
+                        <div className="stat-card rejected">
+                            <h3>{t('forumAdmin.rejected')}</h3>
+                            <div className="stat-number">{stats.rejectedComplaints || 0}</div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Filters and Search */}

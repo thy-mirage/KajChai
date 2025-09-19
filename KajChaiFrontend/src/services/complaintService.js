@@ -155,10 +155,10 @@ const complaintService = {
     getComplaintStats: async () => {
       try {
         const response = await adminAPI.getComplaintStats();
-        return {
-          success: true,
-          data: response
-        };
+        console.log('AdminAPI response:', response);
+        // The adminAPI already returns { success: true, data: ComplaintStats }
+        // So we can return it directly
+        return response;
       } catch (error) {
         console.error('Error fetching complaint stats:', error);
         const errorMessage = error.response?.data?.message || 'Failed to fetch complaint statistics';
