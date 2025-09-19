@@ -19,7 +19,7 @@ public class HirePostResponse {
     private Integer postId;
     private String description;
     private String field;
-    private Float estimatedPayment;
+    private Float payment;
     private LocalDate deadline;
     private HirePostStatus status;
     private List<String> images;

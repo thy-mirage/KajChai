@@ -107,8 +107,8 @@ export const hirePostAPI = {
   },
 
   // Mark post as completed (Customer only)
-  markPostAsCompleted: (postId) => {
-    return apiClient.post(`/hireposts/${postId}/complete`);
+  markPostAsCompleted: (postId, paymentAmount) => {
+    return apiClient.post(`/hireposts/${postId}/complete?paymentAmount=${paymentAmount}`);
   },
 
   // Check if worker has applied to a post (Worker only)

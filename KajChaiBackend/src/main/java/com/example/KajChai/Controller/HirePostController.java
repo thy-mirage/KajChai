@@ -197,12 +197,14 @@ public class HirePostController {
     }
     
     @PostMapping("/{postId}/complete")
-    public ResponseEntity<?> markPostAsCompleted(@PathVariable Integer postId) {
+    public ResponseEntity<?> markPostAsCompleted(
+            @PathVariable Integer postId,
+            @RequestParam Float paymentAmount) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             Integer customerId = getUserIdFromAuth(auth, "CUSTOMER");
             
-            hirePostService.markPostAsCompleted(postId, customerId);
+            hirePostService.markPostAsCompleted(postId, customerId, paymentAmount);
             return ResponseEntity.ok(new SuccessResponse("Post marked as completed"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

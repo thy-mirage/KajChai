@@ -89,6 +89,12 @@ const Dashboard = () => {
                 <p>{t('dashboard.browseWorkersDesc', 'Find and hire professional workers for your needs')}</p>
                 <button className="action-btn">{t('common.browse', 'Browse')}</button>
               </Link>
+              <Link to="/my-hire-posts" className="action-card">
+                <div className="action-icon">📄</div>
+                <h3>{t('jobs.myHirePosts')}</h3>
+                <p>{t('dashboard.myHirePostsDesc', 'View and manage your created job posts')}</p>
+                <button className="action-btn">{t('common.view', 'View')}</button>
+              </Link>
               <Link to="/my-profile" className="action-card">
                 <div className="action-icon">📋</div>
                 <h3>{t('workers.viewProfile')}</h3>

@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 @Table(name = "Booking")
 public class Booking {
     @Id
-    @GeneratedValue
+    @Column(name = "booking_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer bookingId;
 
     @ManyToOne
@@ -30,7 +31,4 @@ public class Booking {
     @CreationTimestamp
     @Column(name = "booking_time", nullable = false, updatable = false)
     private LocalDateTime bookingTime;
-
-    @Column(nullable = false)
-    private float payment;
 }

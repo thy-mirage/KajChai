@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "hire_post")
 public class HirePost {
     @Id
-    @GeneratedValue
+    @Column(name = "post_id") @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer postId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -30,8 +30,8 @@ public class HirePost {
     @Column(nullable = false)
     private String field;
 
-    @Column(nullable = false)
-    private float estimatedPayment;
+    @Column(nullable = true)
+    private Float payment;
 
     private LocalDate deadline;
 
@@ -40,6 +40,7 @@ public class HirePost {
     private HirePostStatus status;
 
     @Column(name = "images")
+    @Builder.Default
     private List<String> images = new ArrayList<>();
 
     @ManyToOne

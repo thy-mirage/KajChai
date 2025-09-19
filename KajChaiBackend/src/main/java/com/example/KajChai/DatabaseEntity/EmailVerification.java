@@ -28,21 +28,26 @@ public class EmailVerification {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "verification_code", nullable = false)
     private String verificationCode;
 
-    @Column(nullable = false)
+    @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
 
     @Builder.Default
     @Column(nullable = false)
     private Boolean verified = false;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        // Ensure expiryDate is set if not already provided
+        if (expiryDate == null) {
+            expiryDate = LocalDateTime.now().plusMinutes(5); // Default 5 minutes expiry
+        }
     }
 
     public boolean isExpired() {

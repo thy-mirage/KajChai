@@ -138,6 +138,15 @@ function App() {
             />
             
             <Route 
+              path="/my-hire-posts" 
+              element={
+                <ProtectedRoute>
+                  <HirePostList viewMode="customer" />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
               path="/my-posts/:postId/applications" 
               element={
                 <ProtectedRoute>

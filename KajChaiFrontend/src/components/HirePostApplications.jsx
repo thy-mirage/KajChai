@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import hirePostService from '../services/hirePostService';
+import reviewService from '../services/reviewService';
 import './HirePost.css';
 
 const HirePostApplications = () => {
@@ -14,6 +15,10 @@ const HirePostApplications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [selectedWorkerReviews, setSelectedWorkerReviews] = useState([]);
+  const [selectedWorkerName, setSelectedWorkerName] = useState('');
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   useEffect(() => {
     loadPostAndApplications();
@@ -50,11 +55,41 @@ const HirePostApplications = () => {
     }
   };
 
+  const handleOpenReviews = async (workerId, workerName) => {
+    setLoadingReviews(true);
+    setSelectedWorkerName(workerName);
+    setShowReviewsModal(true);
+    
+    try {
+      const response = await reviewService.getWorkerReviews(workerId);
+      if (response.success) {
+        setSelectedWorkerReviews(response.data || []);
+      } else {
+        setSelectedWorkerReviews([]);
+      }
+    } catch (err) {
+      console.error('Failed to load reviews:', err);
+      setSelectedWorkerReviews([]);
+      alert('Failed to load reviews');
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  const closeReviewsModal = () => {
+    setShowReviewsModal(false);
+    setSelectedWorkerReviews([]);
+    setSelectedWorkerName('');
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
 
   const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) {
+      return t('jobs.paymentNotSet');
+    }
     return `৳${amount.toLocaleString()}`;
   };
 
@@ -96,7 +131,7 @@ const HirePostApplications = () => {
           <h2>Applications for: {post.field} Job</h2>
           <div className="post-info">
             <p><strong>Description:</strong> {post.description}</p>
-            <p><strong>Payment:</strong> {formatCurrency(post.estimatedPayment)}</p>
+            <p><strong>Payment:</strong> {formatCurrency(post.payment)}</p>
             <p><strong>Status:</strong> <span className={`status-${post.status.toLowerCase()}`}>{post.status}</span></p>
             {post.deadline && <p><strong>Deadline:</strong> {formatDate(post.deadline)}</p>}
           </div>
@@ -197,6 +232,13 @@ const HirePostApplications = () => {
                   >
                     Contact Worker
                   </button>
+                  
+                  <button 
+                    className="btn-secondary"
+                    onClick={() => handleOpenReviews(application.workerId, application.workerName)}
+                  >
+                    {t('jobs.openReviews')}
+                  </button>
                 </div>
               </div>
             ))}
@@ -212,6 +254,71 @@ const HirePostApplications = () => {
           Back to My Posts
         </button>
       </div>
+
+      {/* Reviews Modal */}
+      {showReviewsModal && (
+        <div className="modal-overlay" onClick={closeReviewsModal}>
+          <div className="modal-content reviews-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{t('jobs.reviewsFor')} {selectedWorkerName}</h3>
+              <button className="modal-close" onClick={closeReviewsModal}>&times;</button>
+            </div>
+            
+            <div className="modal-body">
+              {loadingReviews ? (
+                <div className="loading-reviews">{t('jobs.loadingReviews')}</div>
+              ) : selectedWorkerReviews.length === 0 ? (
+                <div className="no-reviews">
+                  <p>{t('jobs.noReviewsAvailable')}</p>
+                </div>
+              ) : (
+                <div className="reviews-list">
+                  {selectedWorkerReviews.map((review, index) => (
+                    <div key={review.reviewId || index} className="review-item">
+                      <div className="review-header">
+                        <div className="review-rating">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i} className={`star ${i < review.stars ? 'filled' : ''}`}>
+                              ⭐
+                            </span>
+                          ))}
+                          <span className="rating-text">({review.stars}/5)</span>
+                        </div>
+                        <div className="review-date">
+                          {formatDate(review.reviewTime)}
+                        </div>
+                      </div>
+                      
+                      <div className="review-content">
+                        <p>{review.message}</p>
+                      </div>
+                      
+                      {review.customer && (
+                        <div className="review-customer">
+                          <small>By: {review.customer.customerName}</small>
+                        </div>
+                      )}
+                      
+                      {review.images && review.images.length > 0 && (
+                        <div className="review-images">
+                          {review.images.map((image, imgIndex) => (
+                            <img 
+                              key={imgIndex} 
+                              src={image} 
+                              alt={`Review image ${imgIndex + 1}`}
+                              className="review-image"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

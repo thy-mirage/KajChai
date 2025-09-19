@@ -67,7 +67,6 @@ public class AuthController {
             @RequestParam("city") String city,
             @RequestParam("upazila") String upazila,
             @RequestParam("district") String district,
-            @RequestParam("division") String division,
             @RequestParam(value = "field", required = false) String field,
             @RequestParam(value = "experience", required = false) Float experience,
             @RequestParam(value = "photo", required = false) MultipartFile photo) {

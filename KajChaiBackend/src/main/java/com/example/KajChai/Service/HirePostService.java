@@ -50,7 +50,7 @@ public class HirePostService {
         HirePost hirePost = HirePost.builder()
                 .description(request.getDescription())
                 .field(request.getField())
-                .estimatedPayment(request.getEstimatedPayment())
+                .payment(null)
                 .deadline(request.getDeadline())
                 .status(HirePostStatus.AVAILABLE)
                 .images(request.getImages() != null ? request.getImages() : new ArrayList<>())
@@ -109,8 +109,8 @@ public class HirePostService {
         if (request.getDescription() != null) {
             post.setDescription(request.getDescription());
         }
-        if (request.getEstimatedPayment() != null) {
-            post.setEstimatedPayment(request.getEstimatedPayment());
+        if (request.getPayment() != null) {
+            post.setPayment(request.getPayment());
         }
         if (request.getDeadline() != null) {
             post.setDeadline(request.getDeadline());
@@ -274,7 +274,6 @@ public class HirePostService {
         Booking booking = Booking.builder()
                 .hirePost(post)
                 .worker(selectedWorker)
-                .payment(post.getEstimatedPayment())
                 .build();
         bookingRepository.save(booking);
         
@@ -306,7 +305,7 @@ public class HirePostService {
     }
     
     @Transactional
-    public void markPostAsCompleted(Integer postId, Integer customerId) {
+    public void markPostAsCompleted(Integer postId, Integer customerId, Float paymentAmount) {
         HirePost post = hirePostRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Hire post not found"));
         
@@ -320,8 +319,14 @@ public class HirePostService {
             throw new RuntimeException("Only booked posts can be marked as completed");
         }
         
-        // Update post status to COMPLETED
+        // Validate payment amount
+        if (paymentAmount == null || paymentAmount <= 0) {
+            throw new RuntimeException("Payment amount must be positive");
+        }
+        
+        // Update post status to COMPLETED and set payment
         post.setStatus(HirePostStatus.COMPLETED);
+        post.setPayment(paymentAmount);
         hirePostRepository.save(post);
     }
     
@@ -332,7 +337,7 @@ public class HirePostService {
                 .postId(post.getPostId())
                 .description(post.getDescription())
                 .field(post.getField())
-                .estimatedPayment(post.getEstimatedPayment())
+                .payment(post.getPayment())
                 .deadline(post.getDeadline())
                 .status(post.getStatus())
                 .images(post.getImages())

@@ -12,7 +12,6 @@ const CreateHirePost = ({ onPostCreated }) => {
   const [formData, setFormData] = useState({
     description: '',
     field: '',
-    estimatedPayment: '',
     deadline: '',
     images: []
   });
@@ -71,7 +70,6 @@ const CreateHirePost = ({ onPostCreated }) => {
     try {
       const postData = {
         ...formData,
-        estimatedPayment: parseFloat(formData.estimatedPayment),
         deadline: formData.deadline || null
       };
 
@@ -80,7 +78,6 @@ const CreateHirePost = ({ onPostCreated }) => {
       setFormData({
         description: '',
         field: '',
-        estimatedPayment: '',
         deadline: '',
         images: []
       });
@@ -141,21 +138,6 @@ const CreateHirePost = ({ onPostCreated }) => {
             onChange={handleChange}
             placeholder={t('jobs.descriptionPlaceholder')}
             rows={4}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="estimatedPayment">{t('jobs.estimatedPayment')} *</label>
-          <input
-            type="number"
-            id="estimatedPayment"
-            name="estimatedPayment"
-            value={formData.estimatedPayment}
-            onChange={handleChange}
-            placeholder={t('jobs.paymentPlaceholder')}
-            min="0"
-            step="0.01"
             required
           />
         </div>

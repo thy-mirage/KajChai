@@ -105,6 +105,9 @@ const HirePostList = ({ viewMode }) => {
   };
 
   const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) {
+      return t('jobs.paymentNotSet');
+    }
     return `৳${amount.toLocaleString()}`;
   };
 
@@ -229,7 +232,7 @@ const HirePostList = ({ viewMode }) => {
                 
                 <div className="post-details">
                   <div className="detail-item">
-                    <strong>{t('jobs.payment')}:</strong> {formatCurrency(post.estimatedPayment)}
+                    <strong>{t('jobs.payment')}:</strong> {formatCurrency(post.payment)}
                   </div>
                   
                   {post.deadline && (
@@ -281,10 +284,15 @@ const HirePostList = ({ viewMode }) => {
                       <button 
                         className="btn-success"
                         onClick={() => {
-                          // Mark as completed
-                          hirePostService.markPostAsCompleted(post.postId)
-                            .then(() => loadPosts())
-                            .catch(err => alert(err.response?.data?.message || t('jobs.failedToMarkCompleted')));
+                          // Prompt for payment amount
+                          const paymentAmount = prompt(t('jobs.enterPaymentAmount'));
+                          if (paymentAmount && !isNaN(paymentAmount) && parseFloat(paymentAmount) > 0) {
+                            hirePostService.markPostAsCompleted(post.postId, parseFloat(paymentAmount))
+                              .then(() => loadPosts())
+                              .catch(err => alert(err.response?.data?.message || t('jobs.failedToMarkCompleted')));
+                          } else if (paymentAmount !== null) {
+                            alert(t('jobs.invalidPaymentAmount'));
+                          }
                         }}
                       >
                         {t('jobs.markAsCompleted')}

@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class HirePostUpdateRequest {
     
     private String description;
-    private Float estimatedPayment;
+    private Float payment;
     private java.time.LocalDate deadline;
 }

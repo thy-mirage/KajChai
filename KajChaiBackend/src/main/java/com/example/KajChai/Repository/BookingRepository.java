@@ -31,15 +31,15 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     // Check if a hire post is already booked
     boolean existsByHirePost(HirePost hirePost);
     
-    // Get total earnings for a worker
-    @Query("SELECT COALESCE(SUM(b.payment), 0) FROM Booking b WHERE b.worker.workerId = :workerId")
+    // Get total earnings for a worker (from completed hire posts)
+    @Query("SELECT COALESCE(SUM(hp.payment), 0) FROM Booking b JOIN b.hirePost hp WHERE b.worker.workerId = :workerId AND hp.status = 'COMPLETED'")
     Double getTotalEarningsByWorkerId(@Param("workerId") Integer workerId);
     
-    // Get total spent by a customer
-    @Query("SELECT COALESCE(SUM(b.payment), 0) FROM Booking b WHERE b.hirePost.customer.customerId = :customerId")
+    // Get total spent by a customer (from completed hire posts)
+    @Query("SELECT COALESCE(SUM(hp.payment), 0) FROM Booking b JOIN b.hirePost hp WHERE hp.customer.customerId = :customerId AND hp.status = 'COMPLETED'")
     Double getTotalSpentByCustomerId(@Param("customerId") Integer customerId);
     
     // Count completed jobs for a worker
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.worker.workerId = :workerId")
+    @Query("SELECT COUNT(b) FROM Booking b JOIN b.hirePost hp WHERE b.worker.workerId = :workerId AND hp.status = 'COMPLETED'")
     Long countCompletedJobsByWorkerId(@Param("workerId") Integer workerId);
 }

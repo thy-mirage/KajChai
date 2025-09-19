@@ -1,8 +1,6 @@
 package com.example.KajChai.DTO;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,10 +20,6 @@ public class HirePostCreateRequest {
     
     @NotBlank(message = "Field is required")
     private String field;
-    
-    @NotNull(message = "Estimated payment is required")
-    @Positive(message = "Estimated payment must be positive")
-    private Float estimatedPayment;
     
     private LocalDate deadline;
     

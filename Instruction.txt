@@ -1,1 +1,8 @@
-for searching under investigation complaints this error is coming and also in the second image you can see the status is in awaiting clarification. I think there is error for this. fix the error. And also show the user management complaints in sorted order like always the latest one will be showed first and then the other ones. implement this 
+Now we need to fix the dashboard of the worker. I've sent you the image of our current dashboard. Here instead of mock data we have to fetch real data from the database. In jobs completed you can get it from the table booking and hirepost table. How? the answer is you will fetch the bookings of the particular worker and check if the post_id of that booking is completed. You will get the rating from the worker table and you will have to sum the payment of all the hireposts for that particular worker worked. Instead of active bids rename it to active jobs and
+there the number of hirepost for which that particular worker is booked.  
+
+Now come to the quick sections part here instead of find jobs here we will display a option named Current works and here when the worker will click then we will show small postcard of what hireposts he is currently booked for and not completed yet where there will be detail of that hirepost.
+Then instead of my profile there will be option named My reviews where he can see the review about himself like postcards. 
+
+Now instead of the notifications we will keep an option of seeing past jobs and here he will see his past jobs and the payment information will also be there.
+

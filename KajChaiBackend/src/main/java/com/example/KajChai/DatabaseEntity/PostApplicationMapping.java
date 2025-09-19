@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Table(name = "Post_application_mapping")
 public class PostApplicationMapping {
     @Id
-    @GeneratedValue
+    @Column(name = "application_id") @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer applicationId;
 
     @ManyToOne
