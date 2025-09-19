@@ -31,6 +31,10 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query("SELECT COUNT(r) FROM Review r WHERE r.worker = :worker")
     Long countReviewsByWorker(@Param("worker") Worker worker);
     
+    // Count total reviews given by a customer
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.customer = :customer")
+    Long countReviewsByCustomer(@Param("customer") Customer customer);
+    
     // Find reviews by worker and minimum rating
     @Query("SELECT r FROM Review r WHERE r.worker = :worker AND r.rating >= :minRating ORDER BY r.reviewTime DESC")
     List<Review> findReviewsByWorkerAndMinRating(@Param("worker") Worker worker, @Param("minRating") Integer minRating);

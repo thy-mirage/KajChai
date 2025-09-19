@@ -3,17 +3,21 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import workerDashboardService from '../services/workerDashboardService';
+import customerDashboardService from '../services/customerDashboardService';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [workerStatsData, setWorkerStatsData] = useState(null);
+  const [customerStatsData, setCustomerStatsData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'WORKER') {
       loadWorkerStats();
+    } else if (user?.role === 'CUSTOMER') {
+      loadCustomerStats();
     }
   }, [user]);
 
@@ -29,6 +33,18 @@ const Dashboard = () => {
     }
   };
 
+  const loadCustomerStats = async () => {
+    try {
+      setLoading(true);
+      const stats = await customerDashboardService.getCustomerDashboardStats();
+      setCustomerStatsData(stats);
+    } catch (error) {
+      console.error('Error loading customer stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getWelcomeMessage = () => {
     const hour = new Date().getHours();
     if (hour < 12) return t('dashboard.goodMorning', 'Good Morning');
@@ -36,8 +52,13 @@ const Dashboard = () => {
     return t('dashboard.goodEvening', 'Good Evening');
   };
 
-  const customerStats = [
-    { label: t('dashboard.activePosts', 'Active Posts'), value: '3', icon: '📝', color: '#3498db' },
+  const customerStats = customerStatsData ? [
+    { label: t('dashboard.activeHirePosts', 'Active Hire Posts'), value: customerStatsData.activeHirePosts?.toString() || '0', icon: '📝', color: '#3498db' },
+    { label: t('dashboard.completedJobs', 'Completed Jobs'), value: customerStatsData.completedJobs?.toString() || '0', icon: '✅', color: '#27ae60' },
+    { label: t('dashboard.totalSpent', 'Total Spent'), value: `$${customerStatsData.totalSpent?.toFixed(2) || '0.00'}`, icon: '💰', color: '#f39c12' },
+    { label: t('dashboard.reviewsGiven', 'Reviews Given'), value: customerStatsData.reviewsGiven?.toString() || '0', icon: '⭐', color: '#e74c3c' },
+  ] : [
+    { label: t('dashboard.activeHirePosts', 'Active Hire Posts'), value: '3', icon: '📝', color: '#3498db' },
     { label: t('dashboard.completedJobs', 'Completed Jobs'), value: '12', icon: '✅', color: '#27ae60' },
     { label: t('dashboard.totalSpent', 'Total Spent'), value: '$1,250', icon: '💰', color: '#f39c12' },
     { label: t('dashboard.reviewsGiven', 'Reviews Given'), value: '8', icon: '⭐', color: '#e74c3c' },
@@ -83,7 +104,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      {loading && user?.role === 'WORKER' ? (
+      {loading ? (
         <div className="stats-grid">
           <div className="loading">{t('common.loading', 'Loading...')}</div>
         </div>
@@ -109,29 +130,17 @@ const Dashboard = () => {
         <div className="actions-grid">
           {user?.role === 'CUSTOMER' ? (
             <>
-              <Link to="/create-post" className="action-card">
-                <div className="action-icon">📝</div>
-                <h3>{t('dashboard.postJob', 'Post a Job')}</h3>
-                <p>{t('dashboard.postJobDesc', 'Create a new job posting and find skilled workers')}</p>
-                <button className="action-btn">{t('jobs.createJob')}</button>
-              </Link>
-              <Link to="/jobs" className="action-card">
-                <div className="action-icon">👥</div>
-                <h3>{t('dashboard.browseWorkers', 'Browse Workers')}</h3>
-                <p>{t('dashboard.browseWorkersDesc', 'Find and hire professional workers for your needs')}</p>
-                <button className="action-btn">{t('common.browse', 'Browse')}</button>
-              </Link>
               <Link to="/my-hire-posts" className="action-card">
                 <div className="action-icon">📄</div>
                 <h3>{t('jobs.myHirePosts')}</h3>
                 <p>{t('dashboard.myHirePostsDesc', 'View and manage your created job posts')}</p>
                 <button className="action-btn">{t('common.view', 'View')}</button>
               </Link>
-              <Link to="/my-profile" className="action-card">
-                <div className="action-icon">📋</div>
-                <h3>{t('workers.viewProfile')}</h3>
-                <p>{t('dashboard.viewProfileDesc', 'Check your profile and account information')}</p>
-                <button className="action-btn">{t('workers.viewProfile')}</button>
+              <Link to="/chat" className="action-card">
+                <div className="action-icon">💬</div>
+                <h3>{t('dashboard.messages', 'Messages')}</h3>
+                <p>{t('dashboard.messagesDesc', 'View and manage your conversations')}</p>
+                <button className="action-btn">{t('common.view', 'View')}</button>
               </Link>
             </>
           ) : (

@@ -181,4 +181,16 @@ public class ReviewController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/customer/given-reviews-count")
+    public ResponseEntity<Integer> getCustomerGivenReviewsCount(Authentication authentication) {
+        try {
+            Integer customerId = reviewService.getCustomerIdFromAuthentication(authentication);
+            Integer reviewsCount = reviewService.getCustomerGivenReviewsCount(customerId);
+            return ResponseEntity.ok(reviewsCount);
+        } catch (Exception e) {
+            System.err.println("Error fetching customer reviews count: " + e.getMessage());
+            return ResponseEntity.ok(0); // Return 0 if there's an error
+        }
+    }
 }

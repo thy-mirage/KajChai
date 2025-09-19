@@ -20,7 +20,7 @@ import java.util.List;
 public class Review {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer reviewId;
 
     @Column(nullable = false, columnDefinition = "TEXT")

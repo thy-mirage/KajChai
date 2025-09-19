@@ -64,7 +64,6 @@ const Navbar = () => {
     { path: '/jobs', label: t('navigation.findWorkers'), icon: '🔍', description: 'Browse available workers' },
     { path: '/forum', label: t('navigation.forum'), icon: '👥', description: 'Community forum' },
     { path: '/notifications', label: t('navigation.notifications'), icon: '🔔', description: 'View your notifications' },
-    { path: '/chat', label: t('navigation.messages'), icon: '💬', description: 'Chat with workers' },
     { path: '/reviews', label: t('navigation.reviews'), icon: '⭐', description: 'View and manage reviews' },
   ];
 

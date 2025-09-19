@@ -131,6 +131,21 @@ public class ReviewService {
         return completedWorkers.stream().anyMatch(w -> w.getWorkerId().equals(workerId));
     }
     
+    public Integer getCustomerGivenReviewsCount(Integer customerId) {
+        try {
+            Optional<Customer> customerOpt = customerRepository.findById(customerId);
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                Long count = reviewRepository.countReviewsByCustomer(customer);
+                return count.intValue();
+            }
+            return 0;
+        } catch (Exception e) {
+            System.err.println("Error getting customer reviews count: " + e.getMessage());
+            return 0;
+        }
+    }
+    
     private void updateWorkerRating(Worker worker) {
         Double avgRating = reviewRepository.findAverageRatingByWorker(worker);
         if (avgRating != null) {
