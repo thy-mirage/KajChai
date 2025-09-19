@@ -61,14 +61,28 @@ const HirePostApplications = () => {
     setShowReviewsModal(true);
     
     try {
+      console.log('Fetching reviews for worker ID:', workerId);
+      console.log('Worker ID type:', typeof workerId);
+      
       const response = await reviewService.getWorkerReviews(workerId);
-      if (response.success) {
-        setSelectedWorkerReviews(response.data || []);
+      console.log('Reviews API response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response || {}));
+      
+      if (response && response.data && response.data.success) {
+        console.log('Reviews data:', response.data.data);
+        console.log('Reviews data type:', typeof response.data.data);
+        console.log('Reviews data length:', response.data.data ? response.data.data.length : 'undefined');
+        setSelectedWorkerReviews(response.data.data || []);
       } else {
+        console.log('API returned success: false or no response');
+        console.log('Full response structure:', JSON.stringify(response, null, 2));
         setSelectedWorkerReviews([]);
       }
     } catch (err) {
       console.error('Failed to load reviews:', err);
+      console.error('Error details:', err.message);
+      console.error('Error response:', err.response);
       setSelectedWorkerReviews([]);
       alert('Failed to load reviews');
     } finally {
