@@ -1,5 +1,0 @@
-Now we need to add another hthin g that is:
-When a customer is marking a hirepost as completed and inputgting the payment amount then after that a notification to the worker will be sent that his work of this has been completed and the customer xyz payed this amount.
-
-
-Now you just need to add the notification mechanism in this process and rest is already implemented
