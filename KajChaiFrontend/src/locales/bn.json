@@ -1,7 +1,7 @@
 {
   "navigation": {
     "dashboard": "ড্যাশবোর্ড",
-    "jobs": "উপলব্ধ কাজ",
+    "jobs": "কাজ খুঁজুন",
     "findWorkers": "কর্মী খুঁজুন",
     "createJob": "কাজ তৈরি করুন",
     "myPosts": "আমার পোস্ট",
@@ -215,7 +215,7 @@
     "allBookedWorksCompleted": "✅ সব বুকড কাজ সম্পন্ন হয়েছে"
   },
   "jobs": {
-    "availableJobs": "উপলব্ধ কাজ",
+    "availableJobs": "কাজ খুঁজুন",
     "myJobs": "আমার কাজ",
     "jobTitle": "কাজের শিরোনাম",
     "jobDescription": "কাজের বিবরণ",
