@@ -246,4 +246,10 @@ public class ChatService {
         }
         return false;
     }
+    
+    // Get unread chat message count for a customer
+    public Long getUnreadChatMessageCount(Integer customerId) {
+        // Count unread messages in all chat rooms where this customer is a participant
+        return chatMessageRepository.countUnreadMessagesByCustomerId(customerId);
+    }
 }

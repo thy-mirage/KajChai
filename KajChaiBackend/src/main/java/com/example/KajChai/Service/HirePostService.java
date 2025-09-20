@@ -433,4 +433,9 @@ public class HirePostService {
         
         return distance;
     }
+    
+    // Get count of pending bookings for a customer (hire posts with BOOKED status)
+    public Long getPendingBookingsCountForCustomer(Integer customerId) {
+        return hirePostRepository.countByCustomerCustomerIdAndStatus(customerId, HirePostStatus.BOOKED);
+    }
 }

@@ -113,6 +113,17 @@ const customerDashboardService = {
       console.error('Error fetching recent activities:', error);
       throw error;
     }
+  },
+
+  // Get customer reminders (unread messages, notifications, pending bookings)
+  getCustomerReminders: async () => {
+    try {
+      const response = await apiClient.get('/customer/dashboard/reminders');
+      return response.reminders;
+    } catch (error) {
+      console.error('Error fetching customer reminders:', error);
+      throw error;
+    }
   }
 };
 

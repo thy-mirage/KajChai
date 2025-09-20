@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,6 +16,8 @@ const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const dropdownRef = useRef(null);
+  const userInfoRef = useRef(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -45,6 +47,26 @@ const Navbar = () => {
       setUnreadCount(0);
     }
   }, [user, getUnreadCount]);
+
+  // Adjust dropdown position to stay within viewport
+  useEffect(() => {
+    if (showUserMenu && dropdownRef.current && userInfoRef.current) {
+      const dropdown = dropdownRef.current;
+      const userInfo = userInfoRef.current;
+      const rect = userInfo.getBoundingClientRect();
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      
+      // If dropdown extends beyond right edge, adjust position
+      if (rect.right + dropdownRect.width > viewportWidth - 20) {
+        dropdown.style.right = '0px';
+        dropdown.style.transform = `translateX(-${Math.min(50, (rect.right + dropdownRect.width) - viewportWidth + 20)}px)`;
+      } else {
+        dropdown.style.right = '0px';
+        dropdown.style.transform = 'translateX(-10px)';
+      }
+    }
+  }, [showUserMenu]);
 
   const handleLogout = async () => {
     try {
@@ -112,7 +134,7 @@ const Navbar = () => {
         {/* User Profile & Language Switcher & Logout */}
         <div className="navbar-user">
           <LanguageSwitcher />
-          <div className="user-info" onClick={() => setShowUserMenu(!showUserMenu)}>
+          <div className="user-info" ref={userInfoRef} onClick={() => setShowUserMenu(!showUserMenu)}>
             <div className="user-avatar">
               {user.photo ? (
                 <img src={user.photo} alt={user.name || user.email} className="avatar-image" />
@@ -131,7 +153,7 @@ const Navbar = () => {
           </div>
           
           {showUserMenu && (
-            <div className="user-dropdown">
+            <div className="user-dropdown" ref={dropdownRef}>
               <div className="dropdown-header">
                 <div className="dropdown-avatar">
                   {user.photo ? (

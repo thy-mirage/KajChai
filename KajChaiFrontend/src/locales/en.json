@@ -203,7 +203,14 @@
     "daysAgo5": "5 days ago",
     "goodMorning": "Good Morning",
     "goodAfternoon": "Good Afternoon",
-    "goodEvening": "Good Evening"
+    "goodEvening": "Good Evening",
+    "reminders": "Reminders",
+    "unreadMessages": "{{count}} unread chat messages",
+    "noUnreadMessages": "✅ No unread messages",
+    "unreadNotifications": "{{count}} unread notifications",
+    "noNewNotifications": "✅ No new notifications", 
+    "pendingBookings": "{{count}} bookings pending completion & payment",
+    "allBookingsCompleted": "✅ All bookings are completed"
   },
   "jobs": {
     "availableJobs": "Available Jobs",

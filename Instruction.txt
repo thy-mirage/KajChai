@@ -1,17 +1,2 @@
-In the admin end, remove the system report and in our current implementation in the recent activity mock data is getting shown.
-
-Now I want that in the admin end, instead of mock data in the recent activity, I will name this section as reminder and here  we will show the number of forum complaints that are in pending state and number of user complaints that are in pending state in 2 seperate message. So make a reminde here.
-
-We already have the number of pending forum post count in the forum management and number of pending user complaints in the user management page in the admin end.
-
-The messages can be:
-- You have 5 forum complaints waiting for review.  
-- You have 2 user complaints pending action.  
-
-If there are none, make it positive:
-
-🎉 All clear! No pending forum complaints.  
-🎉 All clear! No pending user complaints.
-
-Make sure to add translations also. implement the full requirement and cross check and if you want to run the frontend or backend then you can easilly do it by:
-relative path then ; ./mvnw spring-boot:run
+As you can see from the image that in the quick actions If I click on any part of the card then it is getting redirected to the correct page. But I want that this redirection shopuld only happen if someone clicks on the view button. fix this issue.
+In the same image you can see that pofile picture, name of the customer is getting cut in the navbar. Fix that also 

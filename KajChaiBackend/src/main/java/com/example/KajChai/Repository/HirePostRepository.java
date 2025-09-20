@@ -35,4 +35,7 @@ public interface HirePostRepository extends JpaRepository<HirePost, Integer> {
     // Find all available posts ordered by post time
     @Query("SELECT hp FROM HirePost hp WHERE hp.status = 'AVAILABLE' ORDER BY hp.postTime DESC")
     List<HirePost> findAllAvailablePosts();
+    
+    // Count hire posts by customer and status
+    Long countByCustomerCustomerIdAndStatus(Integer customerId, HirePostStatus status);
 }

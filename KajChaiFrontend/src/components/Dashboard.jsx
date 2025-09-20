@@ -11,6 +11,12 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const [workerStatsData, setWorkerStatsData] = useState(null);
   const [customerStatsData, setCustomerStatsData] = useState(null);
+  const [reminderData, setReminderData] = useState({
+    unreadChatCount: 0,
+    unreadNotificationCount: 0,
+    pendingBookingsCount: 0,
+    loading: true
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -18,6 +24,7 @@ const Dashboard = () => {
       loadWorkerStats();
     } else if (user?.role === 'CUSTOMER') {
       loadCustomerStats();
+      loadCustomerReminders();
     }
   }, [user]);
 
@@ -42,6 +49,22 @@ const Dashboard = () => {
       console.error('Error loading customer stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCustomerReminders = async () => {
+    try {
+      setReminderData(prev => ({ ...prev, loading: true }));
+      const reminders = await customerDashboardService.getCustomerReminders();
+      setReminderData({
+        unreadChatCount: reminders.unreadChatCount || 0,
+        unreadNotificationCount: reminders.unreadNotificationCount || 0,
+        pendingBookingsCount: reminders.pendingBookingsCount || 0,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Error loading customer reminders:', error);
+      setReminderData(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -130,59 +153,138 @@ const Dashboard = () => {
         <div className="actions-grid">
           {user?.role === 'CUSTOMER' ? (
             <>
-              <Link to="/my-hire-posts" className="action-card">
+              <div className="action-card">
                 <div className="action-icon">📄</div>
                 <h3>{t('jobs.myHirePosts')}</h3>
                 <p>{t('dashboard.myHirePostsDesc', 'View and manage your created job posts')}</p>
-                <button className="action-btn">{t('common.view', 'View')}</button>
-              </Link>
-              <Link to="/chat" className="action-card">
-                <div className="action-icon">💬</div>
+                <Link to="/my-hire-posts" className="action-btn">{t('common.view', 'View')}</Link>
+              </div>
+              <div className="action-card">
+                <div className="action-icon">
+                  💬
+                  {reminderData.unreadChatCount > 0 && (
+                    <span className="unread-badge">{reminderData.unreadChatCount}</span>
+                  )}
+                </div>
                 <h3>{t('dashboard.messages', 'Messages')}</h3>
                 <p>{t('dashboard.messagesDesc', 'View and manage your conversations')}</p>
-                <button className="action-btn">{t('common.view', 'View')}</button>
-              </Link>
+                <Link to="/chat" className="action-btn">{t('common.view', 'View')}</Link>
+              </div>
             </>
           ) : (
             <>
-              <Link to="/current-works" className="action-card">
+              <div className="action-card">
                 <div className="action-icon">📝</div>
                 <h3>{t('dashboard.currentWorks', 'Current Works')}</h3>
                 <p>{t('dashboard.currentWorksDesc', 'View your ongoing booked jobs and their details')}</p>
-                <button className="action-btn">{t('dashboard.viewCurrentWorks', 'View Works')}</button>
-              </Link>
-              <Link to="/my-reviews" className="action-card">
+                <Link to="/current-works" className="action-btn">{t('dashboard.viewCurrentWorks', 'View Works')}</Link>
+              </div>
+              <div className="action-card">
                 <div className="action-icon">⭐</div>
                 <h3>{t('dashboard.myReviews', 'My Reviews')}</h3>
                 <p>{t('dashboard.myReviewsDesc', 'See what customers are saying about your work')}</p>
-                <button className="action-btn">{t('dashboard.viewReviews', 'View Reviews')}</button>
-              </Link>
-              <Link to="/past-jobs" className="action-card">
+                <Link to="/my-reviews" className="action-btn">{t('dashboard.viewReviews', 'View Reviews')}</Link>
+              </div>
+              <div className="action-card">
                 <div className="action-icon">📜</div>
                 <h3>{t('dashboard.pastJobs', 'Past Jobs')}</h3>
                 <p>{t('dashboard.pastJobsDesc', 'View your completed jobs and payment history')}</p>
-                <button className="action-btn">{t('dashboard.viewPastJobs', 'View History')}</button>
-              </Link>
+                <Link to="/past-jobs" className="action-btn">{t('dashboard.viewPastJobs', 'View History')}</Link>
+              </div>
             </>
           )}
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="recent-activity">
-        <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
-        <div className="activity-list">
-          {recentActivities.map((activity) => (
-            <div key={activity.id} className="activity-item">
-              <div className="activity-icon">{activity.icon}</div>
-              <div className="activity-content">
-                <p className="activity-action">{activity.action}</p>
-                <span className="activity-time">{activity.time}</span>
+      {/* Recent Activity / Reminders */}
+      {user?.role === 'CUSTOMER' ? (
+        <div className="recent-activity">
+          <h2 className="section-title">{t('dashboard.reminders', 'Reminders')}</h2>
+          {reminderData.loading ? (
+            <div className="loading">{t('common.loading', 'Loading...')}</div>
+          ) : (
+            <div className="reminder-list">
+              <div className="reminder-item">
+                <div className="reminder-icon">💬</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.unreadChatCount > 0 
+                      ? t('dashboard.unreadMessages', {
+                          count: reminderData.unreadChatCount,
+                          defaultValue: `${reminderData.unreadChatCount} unread chat messages`
+                        })
+                      : t('dashboard.noUnreadMessages', 'No unread messages')
+                    }
+                  </p>
+                  {reminderData.unreadChatCount > 0 && (
+                    <Link to="/chat" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.unreadChatCount === 0 && <span className="reminder-check">✅</span>}
+                </div>
+              </div>
+              
+              <div className="reminder-item">
+                <div className="reminder-icon">🔔</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.unreadNotificationCount > 0 
+                      ? t('dashboard.unreadNotifications', {
+                          count: reminderData.unreadNotificationCount,
+                          defaultValue: `${reminderData.unreadNotificationCount} unread notifications`
+                        })
+                      : t('dashboard.noNewNotifications', 'No new notifications')
+                    }
+                  </p>
+                  {reminderData.unreadNotificationCount > 0 && (
+                    <Link to="/notifications" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.unreadNotificationCount === 0 && <span className="reminder-check">✅</span>}
+                </div>
+              </div>
+              
+              <div className="reminder-item">
+                <div className="reminder-icon">📌</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.pendingBookingsCount > 0 
+                      ? t('dashboard.pendingBookings', {
+                          count: reminderData.pendingBookingsCount,
+                          defaultValue: `${reminderData.pendingBookingsCount} bookings pending completion & payment`
+                        })
+                      : t('dashboard.allBookingsCompleted', 'All bookings are completed')
+                    }
+                  </p>
+                  {reminderData.pendingBookingsCount > 0 && (
+                    <Link to="/my-hire-posts" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.pendingBookingsCount === 0 && <span className="reminder-check">✅</span>}
+                </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="recent-activity">
+          <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
+          <div className="activity-list">
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="activity-item">
+                <div className="activity-icon">{activity.icon}</div>
+                <div className="activity-content">
+                  <p className="activity-action">{activity.action}</p>
+                  <span className="activity-time">{activity.time}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

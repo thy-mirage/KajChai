@@ -203,7 +203,14 @@
     "daysAgo5": "৫ দিন আগে",
     "goodMorning": "শুভ সকাল",
     "goodAfternoon": "শুভ অপরাহ্ন",
-    "goodEvening": "শুভ সন্ধ্যা"
+    "goodEvening": "শুভ সন্ধ্যা",
+    "reminders": "রিমাইন্ডার",
+    "unreadMessages": "{{count}}টি অপঠিত চ্যাট বার্তা",
+    "noUnreadMessages": "✅ কোন অপঠিত বার্তা নেই",
+    "unreadNotifications": "{{count}}টি অপঠিত নোটিফিকেশন",
+    "noNewNotifications": "✅ কোন নতুন নোটিফিকেশন নেই",
+    "pendingBookings": "{{count}}টি বুকিং সম্পূর্ণতা ও পেমেন্ট বাকি",
+    "allBookingsCompleted": "✅ সব বুকিং সম্পন্ন হয়েছে"
   },
   "jobs": {
     "availableJobs": "উপলব্ধ কাজ",
