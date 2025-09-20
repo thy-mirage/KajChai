@@ -97,7 +97,7 @@
     "fieldOfWork": "Field of Work",
     "selectField": "Select a field",
     "experience": "Experience (years)",
-    "CreateAccount": "Create Account",
+    "createAccount": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
     "signInHere": "Sign in here",
     "experiencePlaceholder": "Enter years of experience",
