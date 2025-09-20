@@ -85,9 +85,15 @@ const AdminUserComplaintManagement = ({ embedded = false }) => {
 
     const fetchStats = async () => {
         try {
+            const token = getCurrentUserToken();
+            if (!token) {
+                console.error('No authentication token available');
+                return;
+            }
+
             const complaints = await fetch(`${API_CONFIG.BASE_URL}/api/admin/user-complaints`, {
                 headers: {
-                    'Authorization': `Bearer ${getCurrentUserToken()}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             }).then(res => res.json());

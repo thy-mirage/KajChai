@@ -9,7 +9,7 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const [adminStats, setAdminStats] = useState({
     totalCustomers: 0,
@@ -32,7 +32,14 @@ const AdminDashboard = () => {
   }, []);
 
   const getCurrentUserToken = () => {
-    return getToken ? getToken() : localStorage.getItem('token');
+    const currentUserEmail = sessionStorage.getItem('current_user_email');
+    if (currentUserEmail) {
+      const userToken = localStorage.getItem(`jwt_token_${currentUserEmail}`);
+      if (userToken) {
+        return userToken;
+      }
+    }
+    return localStorage.getItem('jwt_token');
   };
 
   const fetchReminderData = async () => {
@@ -47,9 +54,14 @@ const AdminDashboard = () => {
       }
 
       // Fetch user complaint stats
+      const token = getCurrentUserToken();
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+
       const userResponse = await fetch(`${API_CONFIG.BASE_URL}/api/admin/user-complaints`, {
         headers: {
-          'Authorization': `Bearer ${getCurrentUserToken()}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       }).then(res => res.json());
