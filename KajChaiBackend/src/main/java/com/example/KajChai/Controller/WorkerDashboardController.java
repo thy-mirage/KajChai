@@ -7,6 +7,8 @@ import com.example.KajChai.Enum.UserRole;
 import com.example.KajChai.Repository.CustomerRepository;
 import com.example.KajChai.Repository.WorkerRepository;
 import com.example.KajChai.Service.WorkerDashboardService;
+import com.example.KajChai.Service.ChatService;
+import com.example.KajChai.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/worker-dashboard")
@@ -30,6 +34,8 @@ public class WorkerDashboardController {
     private final WorkerDashboardService workerDashboardService;
     private final CustomerRepository customerRepository;
     private final WorkerRepository workerRepository;
+    private final ChatService chatService;
+    private final NotificationService notificationService;
     
     @GetMapping("/stats")
     public ResponseEntity<?> getWorkerDashboardStats() {
@@ -84,6 +90,39 @@ public class WorkerDashboardController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Failed to fetch past jobs", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/reminders")
+    public ResponseEntity<?> getWorkerReminders() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            Integer workerId = getUserIdFromAuth(auth, "WORKER");
+            
+            // Get unread chat messages count
+            Long unreadChatCount = chatService.getUnreadChatMessageCountForWorker(workerId);
+            
+            // Get unread notifications count
+            Long unreadNotificationCount = notificationService.getUnreadNotificationsCountForWorker(workerId);
+            
+            // Get pending booked works count (jobs with status BOOKED for this worker)
+            Long pendingBookedWorksCount = workerDashboardService.getActiveJobsCount(workerId);
+            
+            Map<String, Object> reminders = new HashMap<>();
+            reminders.put("unreadChatCount", unreadChatCount);
+            reminders.put("unreadNotificationCount", unreadNotificationCount);
+            reminders.put("pendingBookedWorksCount", pendingBookedWorksCount);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("reminders", reminders);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to fetch worker reminders: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
     

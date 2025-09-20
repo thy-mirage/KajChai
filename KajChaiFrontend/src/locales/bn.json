@@ -210,7 +210,9 @@
     "unreadNotifications": "{{count}}টি অপঠিত নোটিফিকেশন",
     "noNewNotifications": "✅ কোন নতুন নোটিফিকেশন নেই",
     "pendingBookings": "{{count}}টি বুকিং সম্পূর্ণতা ও পেমেন্ট বাকি",
-    "allBookingsCompleted": "✅ সব বুকিং সম্পন্ন হয়েছে"
+    "allBookingsCompleted": "✅ সব বুকিং সম্পন্ন হয়েছে",
+    "pendingBookedWorks": "{{count}}টি বুকড কাজ সম্পূর্ণ করা বাকি",
+    "allBookedWorksCompleted": "✅ সব বুকড কাজ সম্পন্ন হয়েছে"
   },
   "jobs": {
     "availableJobs": "উপলব্ধ কাজ",

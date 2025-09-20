@@ -15,6 +15,7 @@ const Dashboard = () => {
     unreadChatCount: 0,
     unreadNotificationCount: 0,
     pendingBookingsCount: 0,
+    pendingBookedWorksCount: 0,
     loading: true
   });
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user?.role === 'WORKER') {
       loadWorkerStats();
+      loadWorkerReminders();
     } else if (user?.role === 'CUSTOMER') {
       loadCustomerStats();
       loadCustomerReminders();
@@ -64,6 +66,22 @@ const Dashboard = () => {
       });
     } catch (error) {
       console.error('Error loading customer reminders:', error);
+      setReminderData(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const loadWorkerReminders = async () => {
+    try {
+      setReminderData(prev => ({ ...prev, loading: true }));
+      const reminders = await workerDashboardService.getWorkerReminders();
+      setReminderData({
+        unreadChatCount: reminders.unreadChatCount || 0,
+        unreadNotificationCount: reminders.unreadNotificationCount || 0,
+        pendingBookedWorksCount: reminders.pendingBookedWorksCount || 0,
+        loading: false
+      });
+    } catch (error) {
+      console.error('Error loading worker reminders:', error);
       setReminderData(prev => ({ ...prev, loading: false }));
     }
   };
@@ -271,18 +289,75 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="recent-activity">
-          <h2 className="section-title">{t('dashboard.recentActivity')}</h2>
-          <div className="activity-list">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-icon">{activity.icon}</div>
-                <div className="activity-content">
-                  <p className="activity-action">{activity.action}</p>
-                  <span className="activity-time">{activity.time}</span>
+          <h2 className="section-title">{t('dashboard.reminders', 'Reminders')}</h2>
+          {reminderData.loading ? (
+            <div className="loading">{t('common.loading', 'Loading...')}</div>
+          ) : (
+            <div className="reminder-list">
+              <div className="reminder-item">
+                <div className="reminder-icon">💬</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.unreadChatCount > 0 
+                      ? t('dashboard.unreadMessages', {
+                          count: reminderData.unreadChatCount,
+                          defaultValue: `${reminderData.unreadChatCount} unread chat messages`
+                        })
+                      : t('dashboard.noUnreadMessages', 'No unread messages')
+                    }
+                  </p>
+                  {reminderData.unreadChatCount > 0 && (
+                    <Link to="/chat" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.unreadChatCount === 0 && <span className="reminder-check">✅</span>}
                 </div>
               </div>
-            ))}
-          </div>
+              
+              <div className="reminder-item">
+                <div className="reminder-icon">🔔</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.unreadNotificationCount > 0 
+                      ? t('dashboard.unreadNotifications', {
+                          count: reminderData.unreadNotificationCount,
+                          defaultValue: `${reminderData.unreadNotificationCount} unread notifications`
+                        })
+                      : t('dashboard.noNewNotifications', 'No new notifications')
+                    }
+                  </p>
+                  {reminderData.unreadNotificationCount > 0 && (
+                    <Link to="/notifications" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.unreadNotificationCount === 0 && <span className="reminder-check">✅</span>}
+                </div>
+              </div>
+              
+              <div className="reminder-item">
+                <div className="reminder-icon">📌</div>
+                <div className="reminder-content">
+                  <p className="reminder-text">
+                    {reminderData.pendingBookedWorksCount > 0 
+                      ? t('dashboard.pendingBookedWorks', {
+                          count: reminderData.pendingBookedWorksCount,
+                          defaultValue: `${reminderData.pendingBookedWorksCount} booked works pending completion`
+                        })
+                      : t('dashboard.allBookedWorksCompleted', 'All booked works are completed')
+                    }
+                  </p>
+                  {reminderData.pendingBookedWorksCount > 0 && (
+                    <Link to="/current-works" className="action-btn">
+                      {t('common.view', 'View')}
+                    </Link>
+                  )}
+                  {reminderData.pendingBookedWorksCount === 0 && <span className="reminder-check">✅</span>}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import hirePostService from '../services/hirePostService';
+import workerDashboardService from '../services/workerDashboardService';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -14,6 +15,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const dropdownRef = useRef(null);
@@ -47,6 +49,30 @@ const Navbar = () => {
       setUnreadCount(0);
     }
   }, [user, getUnreadCount]);
+
+  // Get unread chat count for workers
+  useEffect(() => {
+    if (user?.role === 'WORKER') {
+      const updateChatCount = async () => {
+        try {
+          const count = await workerDashboardService.getUnreadChatCount();
+          setUnreadChatCount(count);
+        } catch (error) {
+          console.error('Error fetching unread chat count:', error);
+          setUnreadChatCount(0);
+        }
+      };
+      
+      updateChatCount(); // Initial update
+      
+      // Update every 5 seconds
+      const interval = setInterval(updateChatCount, 5000);
+      
+      return () => clearInterval(interval);
+    } else {
+      setUnreadChatCount(0);
+    }
+  }, [user]);
 
   // Adjust dropdown position to stay within viewport
   useEffect(() => {
@@ -124,6 +150,9 @@ const Navbar = () => {
                   <span className="nav-text">{item.label}</span>
                   {item.path === '/notifications' && unreadCount > 0 && (
                     <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                  )}
+                  {item.path === '/chat' && user?.role === 'WORKER' && unreadChatCount > 0 && (
+                    <span className="notification-badge">{unreadChatCount > 99 ? '99+' : unreadChatCount}</span>
                   )}
                 </Link>
               </li>

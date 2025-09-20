@@ -68,6 +68,10 @@ public class WorkerDashboardService {
                 .collect(Collectors.toList());
     }
     
+    public Long getActiveJobsCount(Integer workerId) {
+        return bookingRepository.countActiveJobsByWorkerId(workerId);
+    }
+    
     private HirePostResponse convertToHirePostResponse(HirePost post) {
         return HirePostResponse.builder()
                 .postId(post.getPostId())

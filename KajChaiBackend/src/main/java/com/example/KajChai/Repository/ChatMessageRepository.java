@@ -25,4 +25,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Query("SELECT COUNT(cm) FROM ChatMessage cm JOIN cm.chatRoom cr WHERE " +
            "cr.customerId = :customerId AND cm.senderId != :customerId AND cm.isRead = false")
     Long countUnreadMessagesByCustomerId(Integer customerId);
+    
+    // Count all unread messages for a worker across all their chat rooms
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm JOIN cm.chatRoom cr WHERE " +
+           "cr.workerId = :workerId AND cm.senderId != :workerId AND cm.isRead = false")
+    Long countUnreadMessagesByWorkerId(Integer workerId);
 }

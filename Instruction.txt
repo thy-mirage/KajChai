@@ -1,2 +1,25 @@
-As you can see from the image that in the quick actions If I click on any part of the card then it is getting redirected to the correct page. But I want that this redirection shopuld only happen if someone clicks on the view button. fix this issue.
-In the same image you can see that pofile picture, name of the customer is getting cut in the navbar. Fix that also 
+Now in the worker end, In thye recent activity portion I want to replcae it with the reminders and here we will show the number of unread notifications that we have also shown for the cuomer, it would be shoown here in the same way for the worker and then we wil give reminder of number of unread chats similarly as we have done for the customer, you have to just do it in the same way for the worker and then we will show the worker the number of booked work and emphasize him to complete the work.
+
+UI Idea (Worker Reminder Card)
+
+Reminders
+
+💬 4 unread chat messages
+
+🔔 3 unread notifications
+
+📌 2 booked works pending completion
+
+If all clear:
+
+Reminders
+
+✅ No unread messages
+
+✅ No new notifications
+
+✅ All booked works are completed
+
+In the navbar as we are showing unread notification count in the notification option similarly we can show the unread chat count in the mnessages option in the same way. I've given you the image for this reference
+
+you just need to follow how the customer end it has been implemented. keep in mind the translations

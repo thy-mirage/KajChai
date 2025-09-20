@@ -194,7 +194,7 @@ public class AuthController {
                 Cookie jwtCookie = new Cookie("jwt", token);
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
-                jwtCookie.setMaxAge(30 * 60); // 30 minutes
+                jwtCookie.setMaxAge(60 * 60); // 1 hour
                 // jwtCookie.setSecure(true); // Enable for HTTPS
                 
                 response.addCookie(jwtCookie);
@@ -242,7 +242,7 @@ public class AuthController {
                 Cookie jwtCookie = new Cookie("jwt", authResponse.getToken());
                 jwtCookie.setHttpOnly(true);
                 jwtCookie.setPath("/");
-                jwtCookie.setMaxAge(30 * 60); // 30 minutes
+                jwtCookie.setMaxAge(60 * 60); // 1 hour
                 // jwtCookie.setSecure(true); // Enable for HTTPS
                 
                 response.addCookie(jwtCookie);

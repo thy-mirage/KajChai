@@ -90,6 +90,28 @@ const workerDashboardService = {
       throw error;
     }
   },
+
+  // Get worker reminders (unread messages, notifications, pending booked works)
+  async getWorkerReminders() {
+    try {
+      const response = await apiClient.get('/worker-dashboard/reminders');
+      return response.reminders;
+    } catch (error) {
+      console.error('Error fetching worker reminders:', error);
+      throw error;
+    }
+  },
+
+  // Get unread chat message count for navbar badge
+  async getUnreadChatCount() {
+    try {
+      const reminders = await this.getWorkerReminders();
+      return reminders.unreadChatCount || 0;
+    } catch (error) {
+      console.error('Error fetching unread chat count:', error);
+      return 0;
+    }
+  },
 };
 
 export default workerDashboardService;

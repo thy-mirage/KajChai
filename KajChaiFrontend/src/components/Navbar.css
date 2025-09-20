@@ -73,7 +73,8 @@
   display: flex;
   justify-content: center;
   max-width: calc(100% - 400px); /* Ensure it doesn't overflow */
-  overflow: hidden;
+  overflow: visible; /* Allow proper spacing */
+  min-width: 0; /* Allow flex items to shrink properly */
 }
 
 .navbar-nav {
@@ -81,17 +82,19 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0.25rem;
+  gap: 0.5rem; /* Increased gap between nav items */
 }
 
 .nav-item {
   position: relative;
+  flex-shrink: 0; /* Prevent items from shrinking */
+  isolation: isolate; /* Create stacking context to prevent overlap */
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 0.5rem 0.7rem;
+  padding: 0.6rem 0.8rem; /* Increased padding for better spacing */
   color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   border-radius: 12px;
@@ -99,6 +102,9 @@
   font-weight: 500;
   font-size: 0.9rem;
   position: relative;
+  white-space: nowrap; /* Prevent text wrapping */
+  min-width: fit-content; /* Ensure proper width */
+  box-sizing: border-box; /* Include padding in width calculation */
   /* Remove overflow: hidden to prevent badge cutoff */
 }
 
@@ -106,22 +112,25 @@
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .nav-link:hover::before {
-  left: 100%;
+  opacity: 1;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: none; /* Remove transform to prevent layout shift */
+  box-shadow: none; /* Remove shadow to prevent overflow */
 }
 
 .nav-link.active {
@@ -444,7 +453,8 @@
   border: 2px solid white;
   box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
   animation: pulse-badge 2s infinite;
-  z-index: 10;
+  z-index: 20; /* Ensure badge is above hover effects */
+  pointer-events: none; /* Prevent badge from interfering with clicks */
 }
 
 @keyframes pulse-badge {
@@ -466,7 +476,7 @@
   }
   
   .navbar-nav {
-    gap: 0.25rem;
+    gap: 0.3rem; /* Maintain some gap even on smaller screens */
   }
   
   .nav-link {
@@ -516,11 +526,11 @@
   }
   
   .navbar-nav {
-    gap: 0.1rem;
+    gap: 0.2rem; /* Maintain minimum gap */
   }
   
   .nav-link {
-    padding: 0.5rem;
+    padding: 0.5rem 0.6rem; /* Slightly better padding */
   }
   
   .user-avatar {
@@ -551,14 +561,15 @@
   }
   
   .navbar-nav {
-    gap: 0;
+    gap: 0.1rem; /* Small but present gap */
     flex-wrap: wrap;
     justify-content: center;
   }
   
   .nav-link {
-    padding: 0.4rem;
+    padding: 0.4rem 0.5rem; /* Better padding for touch targets */
     border-radius: 8px;
+    min-width: 44px; /* Minimum touch target size */
   }
   
   .nav-icon {
@@ -592,12 +603,12 @@
   }
 
   .navbar-nav {
-    gap: 0;
+    gap: 0.05rem; /* Minimal gap for very small screens */
   }
 
   .nav-link {
-    padding: 0.3rem;
-    min-width: 35px;
+    padding: 0.3rem 0.4rem; /* Better padding */
+    min-width: 40px; /* Minimum touch target */
   }
 
   .nav-icon {

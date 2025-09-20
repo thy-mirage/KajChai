@@ -210,7 +210,9 @@
     "unreadNotifications": "{{count}} unread notifications",
     "noNewNotifications": "✅ No new notifications", 
     "pendingBookings": "{{count}} bookings pending completion & payment",
-    "allBookingsCompleted": "✅ All bookings are completed"
+    "allBookingsCompleted": "✅ All bookings are completed",
+    "pendingBookedWorks": "{{count}} booked works pending completion",
+    "allBookedWorksCompleted": "✅ All booked works are completed"
   },
   "jobs": {
     "availableJobs": "Available Jobs",
