@@ -22,17 +22,17 @@ public class PasswordReset {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 6)
+    @Column(name = "reset_code", nullable = false, length = 6)
     private String resetCode;
 
-    @Column(nullable = false)
+    @Column(name="expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
     @Builder.Default
     @Column(nullable = false)
     private Boolean used = false;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist

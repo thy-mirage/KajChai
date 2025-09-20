@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
 
     @Column(nullable = false)
@@ -51,17 +51,18 @@ public class User implements UserDetails {
     private Boolean enabled = false;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "account_non_expired", nullable = false)
     private Boolean accountNonExpired = true;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "account_non_locked",nullable = false)
     private Boolean accountNonLocked = true;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "credentials_non_expired", nullable = false)
     private Boolean credentialsNonExpired = true;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

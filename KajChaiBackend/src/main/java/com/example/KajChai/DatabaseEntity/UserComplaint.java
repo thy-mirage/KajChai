@@ -32,7 +32,7 @@ import lombok.NoArgsConstructor;
 public class UserComplaint {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "complaint_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer complaintId;
 
     @ManyToOne(fetch = FetchType.LAZY)

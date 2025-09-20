@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "customer_notification")
 public class CustomerNotification {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer notificationId;
 
     @Column(nullable = false, columnDefinition = "TEXT")

@@ -17,18 +17,18 @@ import java.time.LocalDateTime;
 @Table(name = "chat_messages")
 public class ChatMessage {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "message_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long messageId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @Column(nullable = false)
+    @Column(name = "sender_id", nullable = false)
     private Integer senderId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "sender_role", nullable = false)
     private com.example.KajChai.Enum.UserRole senderRole;
 
     @Column(nullable = false, columnDefinition = "TEXT")

@@ -14,10 +14,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "Customer", uniqueConstraints = @UniqueConstraint(columnNames = "gmail"))
 public class Customer {
     @Id
-    @GeneratedValue
+    @Column(name = "customer_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer customerId;
 
-    @Column(nullable = false)
+    @Column(name = "customer_name", nullable = false)
     private String customerName;
 
     private String photo;
@@ -47,6 +47,7 @@ public class Customer {
     private String district;
 
     // Full formatted address for display
+    @Column(name = "full_address")
     private String fullAddress;
 
     // Helper methods to get names

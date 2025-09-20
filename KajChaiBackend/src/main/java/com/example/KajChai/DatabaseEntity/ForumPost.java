@@ -22,7 +22,7 @@ import java.util.List;
 @Table(name = "forum_posts")
 public class ForumPost {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;
 
     @Column(nullable = false)
@@ -43,25 +43,25 @@ public class ForumPost {
     private ForumCategory category;
 
     // Author information - references User entity
-    @Column(nullable = false)
+    @Column(name = "author_id", nullable = false)
     private Integer authorId;
 
-    @Column(nullable = false)
+    @Column(name = "author_name", nullable = false)
     private String authorName;
 
-    @Column
+    @Column(name = "author_photo")
     private String authorPhoto;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name= "likes_count", nullable = false)
     private Integer likesCount = 0;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "dislikes_count", nullable = false)
     private Integer dislikesCount = 0;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "comments_count",nullable = false)
     private Integer commentsCount = 0;
 
     // Moderation fields
@@ -70,18 +70,18 @@ public class ForumPost {
     @Column(nullable = true) // Allow null for existing records
     private PostStatus status = PostStatus.PENDING_REVIEW;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "moderation_reason", columnDefinition = "TEXT")
     private String moderationReason;
 
-    @Column
+    @Column(name = "moderated_at")
     private LocalDateTime moderatedAt;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     // For managing relationships

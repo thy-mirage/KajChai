@@ -17,17 +17,17 @@ import java.time.LocalDateTime;
 @Table(name = "forum_likes", uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"}))
 public class ForumLike {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "like_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long likeId;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer userId;
 
-    @Column(nullable = false)
+    @Column(name = "is_like", nullable = false)
     private Boolean isLike; // true for like, false for dislike
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     // Foreign key relationship with ForumPost

@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "Worker")
 public class Worker {
     @Id
-    @GeneratedValue
+    @Column(name = "worker_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer workerId;
 
     @Column(nullable = false)
@@ -50,6 +50,7 @@ public class Worker {
     private String district;
 
     // Full formatted address for display
+    @Column(name = "full_address")
     private String fullAddress;
 
     @Column(nullable = false)

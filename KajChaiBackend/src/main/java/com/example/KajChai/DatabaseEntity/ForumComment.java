@@ -17,24 +17,24 @@ import java.time.LocalDateTime;
 @Table(name = "forum_comments")
 public class ForumComment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "comment_id")@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     // Comment author information
-    @Column(nullable = false)
+    @Column(name = "author_id", nullable = false)
     private Integer authorId;
 
-    @Column(nullable = false)
+    @Column(name = "author_name", nullable = false)
     private String authorName;
 
-    @Column
+    @Column(name = "author_photo")
     private String authorPhoto;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     // Foreign key relationship with ForumPost
