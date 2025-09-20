@@ -7,6 +7,7 @@
   z-index: 1000;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  padding-top: 20px; /* Add top padding to prevent clipping */
 }
 
 .navbar.scrolled {
@@ -19,7 +20,7 @@
   max-width: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 8px 1rem 0 1rem; /* Increased top padding */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -303,7 +304,7 @@
 /* User Dropdown */
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 8px); /* Increased spacing from navbar */
   right: 0;
   background: white;
   border-radius: 12px;
@@ -317,6 +318,7 @@
   /* Ensure dropdown stays within viewport */
   transform: translateX(-10px);
   box-sizing: border-box;
+  margin-top: 4px; /* Additional top margin to prevent clipping */
 }
 
 @keyframes slideDown {
@@ -472,7 +474,7 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .navbar-container {
-    padding: 0 0.5rem;
+    padding: 8px 0.5rem 0 0.5rem; /* Maintain top padding */
   }
   
   .navbar-nav {
@@ -513,7 +515,7 @@
 @media (max-width: 768px) {
   .navbar-container {
     height: 60px;
-    padding: 0 0.75rem;
+    padding: 6px 0.75rem 0 0.75rem; /* Maintain top padding */
   }
   
   .brand-text {
@@ -548,7 +550,7 @@
 
   .user-dropdown {
     position: fixed;
-    top: 60px;
+    top: 66px; /* Adjusted for navbar height + padding */
     right: 0.75rem;
     min-width: 200px;
   }
@@ -557,7 +559,7 @@
 @media (max-width: 480px) {
   .navbar-container {
     height: 55px;
-    padding: 0 0.5rem;
+    padding: 4px 0.5rem 0 0.5rem; /* Maintain top padding */
   }
   
   .navbar-nav {
@@ -579,6 +581,7 @@
   .user-dropdown {
     right: 0.5rem;
     min-width: 180px;
+    top: 59px; /* Adjusted for navbar height + padding */
   }
 
   .dropdown-header {
@@ -595,7 +598,7 @@
 @media (max-width: 360px) {
   .navbar-container {
     height: 50px;
-    padding: 0 0.25rem;
+    padding: 4px 0.25rem 0 0.25rem; /* Maintain top padding */
   }
 
   .brand-logo {
@@ -627,6 +630,6 @@
   .user-dropdown {
     right: 0.25rem;
     min-width: 160px;
-    top: 50px;
+    top: 54px; /* Adjusted for navbar height + padding */
   }
 }

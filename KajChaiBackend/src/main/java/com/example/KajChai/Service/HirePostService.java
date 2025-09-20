@@ -328,6 +328,26 @@ public class HirePostService {
         post.setStatus(HirePostStatus.COMPLETED);
         post.setPayment(paymentAmount);
         hirePostRepository.save(post);
+        
+        // Find the booked worker and send completion notification
+        Optional<Booking> booking = bookingRepository.findByHirePost(post);
+        if (booking.isPresent()) {
+            Worker selectedWorker = booking.get().getWorker();
+            Customer customer = post.getCustomer();
+            
+            // Create notification message for the worker
+            String notificationMessage = String.format(
+                "Great news! %s has marked your work as completed for the job: \"%s\". Payment received: ৳%.2f",
+                customer.getCustomerName(),
+                post.getDescription().length() > 50 ? 
+                    post.getDescription().substring(0, 50) + "..." : 
+                    post.getDescription(),
+                paymentAmount
+            );
+            
+            // Send notification to the worker
+            notificationService.createWorkerNotification(selectedWorker, notificationMessage);
+        }
     }
     
     private HirePostResponse convertToResponse(HirePost post) {

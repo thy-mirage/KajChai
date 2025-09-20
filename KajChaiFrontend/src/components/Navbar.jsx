@@ -82,14 +82,25 @@ const Navbar = () => {
       const rect = userInfo.getBoundingClientRect();
       const dropdownRect = dropdown.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Reset styles first
+      dropdown.style.right = '0px';
+      dropdown.style.left = 'auto';
+      dropdown.style.transform = 'translateX(0)';
+      dropdown.style.maxHeight = `${Math.min(400, viewportHeight - rect.bottom - 20)}px`;
       
       // If dropdown extends beyond right edge, adjust position
-      if (rect.right + dropdownRect.width > viewportWidth - 20) {
-        dropdown.style.right = '0px';
-        dropdown.style.transform = `translateX(-${Math.min(50, (rect.right + dropdownRect.width) - viewportWidth + 20)}px)`;
-      } else {
-        dropdown.style.right = '0px';
-        dropdown.style.transform = 'translateX(-10px)';
+      if (rect.right > viewportWidth - 280) {
+        const offset = Math.min(rect.right - (viewportWidth - 280), 100);
+        dropdown.style.transform = `translateX(-${offset}px)`;
+      }
+      
+      // If dropdown extends beyond left edge (on very small screens)
+      if (rect.left < 20) {
+        dropdown.style.right = 'auto';
+        dropdown.style.left = '20px';
+        dropdown.style.transform = 'translateX(0)';
       }
     }
   }, [showUserMenu]);
@@ -163,7 +174,7 @@ const Navbar = () => {
         {/* User Profile & Language Switcher & Logout */}
         <div className="navbar-user">
           <LanguageSwitcher />
-          <div className="user-info" ref={userInfoRef} onClick={() => setShowUserMenu(!showUserMenu)}>
+          <div className={`user-info ${showUserMenu ? 'active' : ''}`} ref={userInfoRef} onClick={() => setShowUserMenu(!showUserMenu)}>
             <div className="user-avatar">
               {user.photo ? (
                 <img src={user.photo} alt={user.name || user.email} className="avatar-image" />
