@@ -1,5 +1,17 @@
-Now in the admin end, in forum complaints as you can see from the image still mock data is being shown in the total complaints, resolved and rejected. We need to show the reald ata fetched from the db. You can get the information very easily from the forum_complaints table's status field. 
-Implement it and also as the data fetching takes time from db you can add loading transition as you have applied for the customer and worker for the same cause.
+In the admin end, remove the system report and in our current implementation in the recent activity mock data is getting shown.
 
-If you want to run frontend and backend you just have to use the following cmnd:
-relative path then ; then ./mvnw spring-boot:run 
+Now I want that in the admin end, instead of mock data in the recent activity, I will name this section as reminder and here  we will show the number of forum complaints that are in pending state and number of user complaints that are in pending state in 2 seperate message. So make a reminde here.
+
+We already have the number of pending forum post count in the forum management and number of pending user complaints in the user management page in the admin end.
+
+The messages can be:
+- You have 5 forum complaints waiting for review.  
+- You have 2 user complaints pending action.  
+
+If there are none, make it positive:
+
+🎉 All clear! No pending forum complaints.  
+🎉 All clear! No pending user complaints.
+
+Make sure to add translations also. implement the full requirement and cross check and if you want to run the frontend or backend then you can easilly do it by:
+relative path then ; ./mvnw spring-boot:run

@@ -37,11 +37,6 @@ const AdminLayout = ({ children }) => {
       label: t('adminNavigation.userManagement'),
       path: '/admin/user-complaints',
       icon: '👥'
-    },
-    {
-      label: t('adminNavigation.systemReports'),
-      path: '/admin/reports',
-      icon: '📊'
     }
   ];
 

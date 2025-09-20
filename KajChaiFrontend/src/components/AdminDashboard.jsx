@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import adminService from '../services/adminService';
+import complaintService from '../services/complaintService';
+import { API_CONFIG } from '../config/api';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const { t } = useTranslation();
   const [adminStats, setAdminStats] = useState({
     totalCustomers: 0,
@@ -18,11 +20,60 @@ const AdminDashboard = () => {
     tipsAndProjects: 0,
     customerExperiences: 0
   });
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [reminderData, setReminderData] = useState({
+    forumComplaints: 0,
+    userComplaints: 0,
+    loading: true
+  });
 
   useEffect(() => {
     fetchAdminData();
+    fetchReminderData();
   }, []);
+
+  const getCurrentUserToken = () => {
+    return getToken ? getToken() : localStorage.getItem('token');
+  };
+
+  const fetchReminderData = async () => {
+    try {
+      setReminderData(prev => ({ ...prev, loading: true }));
+      
+      // Fetch forum complaint stats
+      const forumResponse = await complaintService.admin.getComplaintStats();
+      let forumPendingCount = 0;
+      if (forumResponse && forumResponse.success) {
+        forumPendingCount = forumResponse.data.pendingComplaints || 0;
+      }
+
+      // Fetch user complaint stats
+      const userResponse = await fetch(`${API_CONFIG.BASE_URL}/api/admin/user-complaints`, {
+        headers: {
+          'Authorization': `Bearer ${getCurrentUserToken()}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => res.json());
+
+      let userPendingCount = 0;
+      if (userResponse && Array.isArray(userResponse)) {
+        userPendingCount = userResponse.filter(c => c.status === 'PENDING').length;
+      }
+
+      setReminderData({
+        forumComplaints: forumPendingCount,
+        userComplaints: userPendingCount,
+        loading: false
+      });
+
+    } catch (error) {
+      console.error('Error fetching reminder data:', error);
+      setReminderData({
+        forumComplaints: 0,
+        userComplaints: 0,
+        loading: false
+      });
+    }
+  };
 
   const fetchAdminData = async () => {
     try {
@@ -43,67 +94,8 @@ const AdminDashboard = () => {
           customerExperiences: postsBySection.CUSTOMER_EXPERIENCE || 0
         });
       }
-
-      // Fetch recent activity
-      const activityResponse = await adminService.getRecentActivity();
-      
-      if (activityResponse.success) {
-        const activities = activityResponse.data || [];
-        setRecentActivity(activities.map(activity => ({
-          action: activity.action,
-          time: activity.time,
-          icon: activity.icon || '📝'
-        })));
-      } else {
-        // Fallback to translated mock data if API fails
-        setRecentActivity([
-          {
-            action: t('adminDashboard.recentActivities.newCustomerJoined'),
-            time: '2 hours ago',
-            icon: '👤'
-          },
-          {
-            action: t('adminDashboard.recentActivities.newHirePostCreated'),
-            time: '4 hours ago',
-            icon: '📝'
-          },
-          {
-            action: t('adminDashboard.recentActivities.newForumPost'),
-            time: '6 hours ago',
-            icon: '💬'
-          },
-          {
-            action: t('adminDashboard.recentActivities.workerVerified'),
-            time: '8 hours ago',
-            icon: '✅'
-          },
-          {
-            action: t('adminDashboard.recentActivities.customerExperienceShared'),
-            time: '1 day ago',
-            icon: '⭐'
-          }
-        ]);
-      }
     } catch (error) {
       console.error('Error fetching admin data:', error);
-      // Keep default values on error and set fallback recent activity
-      setRecentActivity([
-        {
-          action: t('adminDashboard.recentActivities.newCustomerJoined'),
-          time: '2 hours ago',
-          icon: '👤'
-        },
-        {
-          action: t('adminDashboard.recentActivities.newHirePostCreated'),
-          time: '4 hours ago',
-          icon: '📝'
-        },
-        {
-          action: t('adminDashboard.recentActivities.newForumPost'),
-          time: '6 hours ago',
-          icon: '💬'
-        }
-      ]);
     }
   };
 
@@ -111,13 +103,13 @@ const AdminDashboard = () => {
     {
       label: t('adminDashboard.totalCustomers'),
       value: adminStats.totalCustomers,
-      icon: '�',
+      icon: '🧑',
       color: '#3498db'
     },
     {
       label: t('adminDashboard.totalWorkers'),
       value: adminStats.totalWorkers,
-      icon: '�',
+      icon: '👷',
       color: '#f39c12'
     },
     {
@@ -167,12 +159,6 @@ const AdminDashboard = () => {
       description: t('adminDashboard.quickActions.workerComplaintManagementDesc'),
       icon: '👤',
       action: () => navigate('/admin/user-complaints')
-    },
-    {
-      title: t('adminDashboard.quickActions.systemReports'),
-      description: t('adminDashboard.quickActions.systemReportsDesc'),
-      icon: '📊',
-      action: () => console.log('System reports coming soon')
     }
   ];
 
@@ -234,19 +220,62 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="recent-activity">
-        <h2 className="section-title">{t('adminDashboard.recentActivity.title')}</h2>
-        <div className="activity-list">
-          {recentActivity.map((activity, index) => (
-            <div key={index} className="activity-item">
-              <span className="activity-icon">{activity.icon}</span>
-              <div className="activity-content">
-                <div className="activity-action">{activity.action}</div>
-                <div className="activity-time">{activity.time}</div>
-              </div>
+      {/* Reminder Section */}
+      <div className="reminder-section">
+        <h2 className="section-title">{t('adminDashboard.reminder.title')}</h2>
+        <div className="reminder-list">
+          {reminderData.loading ? (
+            <div className="reminder-loading">
+              <div className="loading-spinner"></div>
+              <p>{t('common.loading')}</p>
             </div>
-          ))}
+          ) : (
+            <>
+              {/* Forum Complaints Reminder */}
+              <div className="reminder-item">
+                <span className="reminder-icon">💬</span>
+                <div className="reminder-content">
+                  <div className="reminder-message">
+                    {reminderData.forumComplaints > 0 ? (
+                      t('adminDashboard.reminder.forumComplaintsPending', { count: reminderData.forumComplaints })
+                    ) : (
+                      t('adminDashboard.reminder.noForumComplaints')
+                    )}
+                  </div>
+                  {reminderData.forumComplaints > 0 && (
+                    <button 
+                      className="reminder-action-btn"
+                      onClick={() => navigate('/admin/complaints')}
+                    >
+                      {t('common.view')}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* User Complaints Reminder */}
+              <div className="reminder-item">
+                <span className="reminder-icon">👤</span>
+                <div className="reminder-content">
+                  <div className="reminder-message">
+                    {reminderData.userComplaints > 0 ? (
+                      t('adminDashboard.reminder.userComplaintsPending', { count: reminderData.userComplaints })
+                    ) : (
+                      t('adminDashboard.reminder.noUserComplaints')
+                    )}
+                  </div>
+                  {reminderData.userComplaints > 0 && (
+                    <button 
+                      className="reminder-action-btn"
+                      onClick={() => navigate('/admin/user-complaints')}
+                    >
+                      {t('common.view')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

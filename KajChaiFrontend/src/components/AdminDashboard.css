@@ -274,8 +274,8 @@
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* Recent Activity */
-.recent-activity {
+/* Reminder Section */
+.reminder-section {
   background: white;
   padding: 2rem;
   border-radius: 16px;
@@ -283,47 +283,90 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.activity-list {
+.reminder-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.activity-item {
+.reminder-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.reminder-item {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  background: #f8f9fa;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   border-radius: 12px;
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
+  border: 1px solid #e9ecef;
 }
 
-.activity-item:hover {
-  background: #e9ecef;
+.reminder-item:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
   border-left-color: #667eea;
   transform: translateX(4px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.activity-icon {
-  font-size: 1.5rem;
-  margin-right: 1rem;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+.reminder-icon {
+  font-size: 1.8rem;
+  margin-right: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.activity-content {
+.reminder-content {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.activity-action {
+.reminder-message {
   font-weight: 500;
   color: #2c3e50;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
-.activity-time {
-  font-size: 0.85rem;
-  color: #7f8c8d;
+.reminder-action-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: capitalize;
+  font-size: 0.9rem;
+}
+
+.reminder-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 /* Responsive Design */
@@ -389,7 +432,7 @@
     padding: 1.5rem;
   }
   
-  .recent-activity {
+  .reminder-section {
     padding: 1.5rem;
   }
   

@@ -689,6 +689,13 @@
     "recentActivity": {
       "title": "Recent Activity"
     },
+    "reminder": {
+      "title": "Reminders",
+      "forumComplaintsPending": "You have {{count}} forum complaints waiting for review.",
+      "userComplaintsPending": "You have {{count}} user complaints pending action.",
+      "noForumComplaints": "🎉 All clear! No pending forum complaints.",
+      "noUserComplaints": "🎉 All clear! No pending user complaints."
+    },
     "recentActivities": {
       "newCustomerJoined": "New customer joined",
       "newHirePostCreated": "New hire post created",
